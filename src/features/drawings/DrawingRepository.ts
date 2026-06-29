@@ -1,10 +1,14 @@
-﻿import { LocalDrawingStorage, RemoteDrawingStorage, type DrawingStorage } from "@/features/drawings/DrawingStorage"
+import { LocalDrawingStorage, RemoteDrawingStorage, type DrawingStorage } from "@/features/drawings/DrawingStorage"
 import type { SavedDrawing } from "@/features/drawings/types"
+
+const isSupabaseConnected = typeof window !== "undefined" && 
+  !!process.env.NEXT_PUBLIC_SUPABASE_URL && 
+  !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 export class DrawingRepository {
   private storage: DrawingStorage
 
-  constructor(isConnected = false) {
+  constructor(isConnected = isSupabaseConnected) {
     this.storage = isConnected ? new RemoteDrawingStorage() : new LocalDrawingStorage()
   }
 

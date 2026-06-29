@@ -1,8 +1,8 @@
-﻿import { DrawingRepository } from "@/features/drawings/DrawingRepository"
+import { DrawingRepository } from "@/features/drawings/DrawingRepository"
 import type { DrawingSort, SaveDrawingInput } from "@/features/drawings/types"
 
 export class DrawingService {
-  constructor(private repository = new DrawingRepository(false)) {}
+  constructor(private repository = new DrawingRepository()) {}
 
   async list(filters?: { search?: string; category?: string; sort?: DrawingSort }) {
     const drawings = await this.repository.list()
