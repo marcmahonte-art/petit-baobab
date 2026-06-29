@@ -135,9 +135,9 @@ export function ColoringBooksPage() {
         const mappedList = list.map((draw) => ({
           id: draw.id,
           name: draw.name,
-          image: draw.image,
+          image: draw.isColored ? draw.image : draw.template.image,
           category: draw.category,
-          isPersonal: true,
+          isPersonal: draw.isColored,
         }))
         useBookStore.getState().setCustomDrawings(mappedList)
       }, 0)
@@ -151,9 +151,9 @@ export function ColoringBooksPage() {
     ...savedDrawings.map((draw) => ({
       id: draw.id,
       name: draw.name,
-      image: draw.image,
+      image: draw.isColored ? draw.image : draw.template.image,
       category: draw.category,
-      isPersonal: true,
+      isPersonal: draw.isColored,
     })),
   ]
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ColoringHeader } from "@/components/coloring-header"
 import { DrawingToolsPanel } from "@/components/drawing-tools-panel"
 import { CanvasCard, CanvasCardRef } from "@/components/canvas-card"
@@ -32,9 +32,23 @@ export function ColoringPage() {
     setSaved,
     setAddedToLivre,
     clearHistory,
+    selectedCategory,
     activeSavedDrawingId,
     setActiveSavedDrawingId,
   } = useColoringStore()
+
+  // Auto-save template to "Mes dessins" when a new model is selected
+  useEffect(() => {
+    if (!activeSavedDrawingId && currentDrawing.id) {
+      drawingService.saveFromTemplate(
+        currentDrawing,
+        currentDrawing.category || selectedCategory
+      ).then((result) => {
+        if (result) setGalleryRefreshKey((k) => k + 1)
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDrawing.id])
 
   const handleUndo = () => canvasRef.current?.undo()
   const handleRedo = () => canvasRef.current?.redo()
@@ -64,7 +78,7 @@ export function ColoringPage() {
     setActiveSavedDrawingId(savedResult.id)
     setSaved(true)
     setGalleryRefreshKey((key) => key + 1)
-    showToast('✅ Votre dessin a été enregistré dans "Mes dessins".')
+    showToast('✅ Dessin enregistré dans Mes dessins.')
   }
 
   const handleOpenSavedDrawing = (drawing: SavedDrawing) => {

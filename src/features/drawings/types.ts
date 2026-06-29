@@ -1,4 +1,4 @@
-﻿import type { DrawingItem, ToolType } from "@/lib/store"
+import type { DrawingItem, ToolType } from "@/lib/store"
 
 export type DrawingProgress = "completed" | "in_progress"
 
@@ -19,6 +19,7 @@ export interface SavedDrawing {
   createdAt: string
   updatedAt: string
   progress: DrawingProgress
+  isColored: boolean
   image: string
   thumbnail: string
   template: DrawingItem

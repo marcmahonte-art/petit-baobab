@@ -16,7 +16,11 @@ const formatDate = (date: string) =>
   new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(date))
 
 export function DrawingCard({ drawing, onOpen, onDelete, onDownload, onPrint, onAddToBook }: DrawingCardProps) {
-  const isCompleted = drawing.progress === "completed"
+  const badgeInfo = !drawing.isColored
+    ? { label: "Nouveau", className: "shrink-0 rounded-full bg-[#60A5FA]/15 px-2.5 py-1 text-[11px] font-black text-[#1D4ED8]" }
+    : drawing.progress === "completed"
+      ? { label: "Terminé", className: "shrink-0 rounded-full bg-[#25C76F]/15 px-2.5 py-1 text-[11px] font-black text-[#18884E]" }
+      : { label: "En cours", className: "shrink-0 rounded-full bg-[#FFD53D]/25 px-2.5 py-1 text-[11px] font-black text-[#7A5200]" }
 
   return (
     <article className="rounded-[18px] border border-[#EFE7DB] bg-white p-4 shadow-[0_4px_14px_rgba(59,36,22,0.07)] flex flex-col justify-between">
@@ -28,8 +32,8 @@ export function DrawingCard({ drawing, onOpen, onDelete, onDownload, onPrint, on
             <h3 className="truncate text-base font-black text-[#261B4B]">{drawing.name}</h3>
             <p className="mt-0.5 text-xs font-semibold text-[#7A6A5E]">{formatDate(drawing.createdAt)} - {drawing.category}</p>
           </div>
-          <span className={isCompleted ? "shrink-0 rounded-full bg-[#25C76F]/15 px-2.5 py-1 text-[11px] font-black text-[#18884E]" : "shrink-0 rounded-full bg-[#FFD53D]/25 px-2.5 py-1 text-[11px] font-black text-[#7A5200]"}>
-            {isCompleted ? "Trophée Terminé" : "En cours"}
+          <span className={badgeInfo.className}>
+            {badgeInfo.label}
           </span>
         </div>
       </div>

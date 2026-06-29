@@ -1,5 +1,6 @@
 import { DrawingRepository } from "@/features/drawings/DrawingRepository"
-import type { DrawingSort, SaveDrawingInput } from "@/features/drawings/types"
+import type { DrawingItem } from "@/lib/store"
+import type { DrawingSort, SaveDrawingInput, SavedDrawing } from "@/features/drawings/types"
 
 export class DrawingService {
   constructor(private repository = new DrawingRepository()) {}
@@ -40,7 +41,7 @@ export class DrawingService {
       }
     }
 
-    const drawing = {
+    const drawing: SavedDrawing = {
       id,
       name: input.name,
       modelName: input.template.name,
@@ -48,10 +49,42 @@ export class DrawingService {
       createdAt,
       updatedAt: now,
       progress: (input.state.filledZones >= 6 ? "completed" : "in_progress") as "completed" | "in_progress",
+      isColored: true,
       image: input.image,
       thumbnail: input.thumbnail,
       template: input.template,
       state: input.state,
+    }
+
+    return this.repository.save(drawing)
+  }
+
+  async saveFromTemplate(template: DrawingItem, category: string): Promise<SavedDrawing | null> {
+    const existing = await this.repository.list()
+    const alreadySaved = existing.find((d) => d.template.id === template.id && !d.isColored)
+    if (alreadySaved) return null
+
+    const now = new Date().toISOString()
+    const drawing: SavedDrawing = {
+      id: this.createId(),
+      name: template.name,
+      modelName: template.name,
+      category,
+      createdAt: now,
+      updatedAt: now,
+      progress: "in_progress",
+      isColored: false,
+      image: template.image,
+      thumbnail: template.image,
+      template,
+      state: {
+        canvasJson: "",
+        selectedTool: "brush",
+        selectedColor: "#FFD95C",
+        brushSize: 6,
+        usedColors: [],
+        filledZones: 0,
+      },
     }
 
     return this.repository.save(drawing)
@@ -75,3 +108,4 @@ export class DrawingService {
 }
 
 export const drawingService = new DrawingService()
+
