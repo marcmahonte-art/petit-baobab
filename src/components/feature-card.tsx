@@ -1,18 +1,20 @@
 import Image from "next/image"
+import Link from "next/link"
 
 interface FeatureCardProps {
   title: string
   illustration: string
   topColor: string
   bottomColor: string
+  href: string
   imgW?: number
   imgH?: number
 }
 
-export function FeatureCard({ title, illustration, topColor, bottomColor, imgW = 118, imgH = 118 }: FeatureCardProps) {
+export function FeatureCard({ title, illustration, topColor, bottomColor, href, imgW = 118, imgH = 118 }: FeatureCardProps) {
   return (
-    <a
-      href="#"
+    <Link
+      href={href}
       className="feature-card h-[180px] rounded-[24px] overflow-hidden flex flex-col"
     >
       <div
@@ -34,6 +36,6 @@ export function FeatureCard({ title, illustration, topColor, bottomColor, imgW =
       >
         <span className="text-base font-extrabold text-white">{title}</span>
       </div>
-    </a>
+    </Link>
   )
 }

@@ -1,12 +1,12 @@
 import { FeatureCard } from "@/components/feature-card"
 
 const features = [
-  { title: "Coloriage", illustration: "/illustrations/lion.webp", topColor: "#C5BCFF", bottomColor: "#8067F8", imgW: 130, imgH: 130 },
-  { title: "Dessin magique", illustration: "/illustrations/robot.webp", topColor: "#C6F5E7", bottomColor: "#20C997", imgW: 130, imgH: 130 },
-  { title: "Livres de coloriage", illustration: "/illustrations/book.webp", topColor: "#FFE7A0", bottomColor: "#FFB300", imgW: 140, imgH: 125 },
-  { title: "Jeux éducatifs", illustration: "/illustrations/puzzle.webp", topColor: "#B9DDFF", bottomColor: "#0094FF", imgW: 130, imgH: 130 },
-  { title: "Histoires", illustration: "/illustrations/reading-girl.webp", topColor: "#FFC6D3", bottomColor: "#FF557E", imgW: 130, imgH: 130 },
-  { title: "Activités", illustration: "/illustrations/crayons.webp", topColor: "#BFF5ED", bottomColor: "#13C6A2", imgW: 130, imgH: 130 },
+  { title: "Coloriage", illustration: "/illustrations/lion.webp", topColor: "#C5BCFF", bottomColor: "#8067F8", href: "/coloriage", imgW: 130, imgH: 130 },
+  { title: "Dessin magique", illustration: "/illustrations/robot.webp", topColor: "#C6F5E7", bottomColor: "#20C997", href: "/magic-drawing", imgW: 130, imgH: 130 },
+  { title: "Livres de coloriage", illustration: "/illustrations/book.webp", topColor: "#FFE7A0", bottomColor: "#FFB300", href: "/livres-de-coloriage", imgW: 140, imgH: 125 },
+  { title: "Jeux éducatifs", illustration: "/illustrations/puzzle.webp", topColor: "#B9DDFF", bottomColor: "#0094FF", href: "#", imgW: 130, imgH: 130 },
+  { title: "Histoires", illustration: "/illustrations/reading-girl.webp", topColor: "#FFC6D3", bottomColor: "#FF557E", href: "#", imgW: 130, imgH: 130 },
+  { title: "Activités", illustration: "/illustrations/crayons.webp", topColor: "#BFF5ED", bottomColor: "#13C6A2", href: "#", imgW: 130, imgH: 130 },
 ]
 
 export function FeatureModules() {
