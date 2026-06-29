@@ -72,7 +72,7 @@ export class DrawingService {
 
   async saveFromTemplate(template: DrawingItem, category: string, profileId: string): Promise<SavedDrawing | null> {
     const existing = await this.repository.list()
-    const alreadySaved = existing.find((d) => d.template.id === template.id && !d.isColored)
+    const alreadySaved = existing.find((d) => d.template.id === template.id && !d.isColored && d.profileId === profileId)
     if (alreadySaved) return null
 
     const now = new Date().toISOString()
@@ -103,7 +103,7 @@ export class DrawingService {
     return this.repository.save(drawing)
   }
 
-  async saveIA(input: SaveDrawingInput, profileId: string) {
+  async saveIA(input: SaveDrawingInput) {
     const now = new Date().toISOString()
     const id = this.createId()
 
@@ -114,7 +114,7 @@ export class DrawingService {
       category: input.category,
       origin: "ia",
       status: "completed",
-      profileId,
+      profileId: input.profileId,
       createdAt: now,
       updatedAt: now,
       isColored: false,

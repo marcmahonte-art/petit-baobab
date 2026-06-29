@@ -9,14 +9,15 @@ import confetti from "canvas-confetti"
 
 export function RewardPopup() {
   const { isRewardPopupOpen, setRewardPopupOpen } = useColoringStore()
+  const activeProfileId = useProfileStore((s) => s.activeProfileId)
   const addPoints = useProfileStore((s) => s.addPoints)
   const addBadge = useProfileStore((s) => s.addBadge)
 
   // Trigger confetti when popup opens
   useEffect(() => {
-    if (isRewardPopupOpen) {
-      addPoints(10)
-      addBadge("Super Artiste")
+    if (isRewardPopupOpen && activeProfileId) {
+      addPoints(activeProfileId, 10)
+      addBadge(activeProfileId, "Super Artiste")
       const duration = 3 * 1000
       const end = Date.now() + duration
 
@@ -43,7 +44,7 @@ export function RewardPopup() {
 
       frame()
     }
-  }, [isRewardPopupOpen, addPoints, addBadge])
+  }, [isRewardPopupOpen, activeProfileId, addPoints, addBadge])
 
   return (
     <AnimatePresence>

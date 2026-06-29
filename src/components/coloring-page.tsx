@@ -83,6 +83,12 @@ export function ColoringPage() {
     setSaved(true)
     setGalleryRefreshKey((key) => key + 1)
     showToast('✅ Dessin enregistré dans Mes dessins.')
+
+    if (snapshot.state.filledZones >= 6 && profileId) {
+      useProfileStore.getState().addPoints(profileId, 10)
+      useProfileStore.getState().addBadge(profileId, "Super Artiste")
+      useColoringStore.getState().setRewardPopupOpen(true)
+    }
   }
 
   const handleOpenSavedDrawing = (drawing: SavedDrawing) => {
@@ -111,6 +117,12 @@ export function ColoringPage() {
 
     setAddedToLivre(true)
     showToast("✅ Dessin enregistré et ajouté au livre !")
+
+    if (snapshot.state.filledZones >= 6 && profileId) {
+      useProfileStore.getState().addPoints(profileId, 10)
+      useProfileStore.getState().addBadge(profileId, "Super Artiste")
+      useColoringStore.getState().setRewardPopupOpen(true)
+    }
   }
 
   return (

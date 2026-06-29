@@ -472,7 +472,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       printWindow.document.close()
     },
     saveDrawing: async () => {
-      if (!fabricInstance) return null
+      if (!fabricInstance || !profileId) return null
       const canvasJson = JSON.stringify(fabricInstance.toJSON())
       const image = fabricInstance.toDataURL({ format: "png", quality: 1, multiplier: 1 })
       const thumbnail = fabricInstance.toDataURL({ format: "png", quality: 0.85, multiplier: 0.28 })

@@ -151,30 +151,27 @@ export default function MagicDrawingPage() {
 
       if (profileId) {
         try {
-          await drawingService.saveIA(
-            {
-              name: prompt.slice(0, 60),
-              category: "Mes dessins",
-              origin: "ia",
-              profileId,
-              image: data.imageUrl,
-              thumbnail: data.imageUrl,
-              template: {
-                id: `magic-${Date.now()}`,
-                name: prompt.slice(0, 60),
-                image: data.imageUrl,
-              },
-              state: {
-                canvasJson: "",
-                selectedTool: "brush",
-                selectedColor: "#FFD95C",
-                brushSize: 6,
-                usedColors: [],
-                filledZones: 0,
-              },
-            },
+          await drawingService.saveIA({
+            name: prompt.slice(0, 60),
+            category: "Mes dessins",
+            origin: "ia",
             profileId,
-          );
+            image: data.imageUrl,
+            thumbnail: data.imageUrl,
+            template: {
+              id: `magic-${Date.now()}`,
+              name: prompt.slice(0, 60),
+              image: data.imageUrl,
+            },
+            state: {
+              canvasJson: "",
+              selectedTool: "brush",
+              selectedColor: "#FFD95C",
+              brushSize: 6,
+              usedColors: [],
+              filledZones: 0,
+            },
+          });
         } catch (saveError) {
           console.error("Auto-save failed:", saveError);
         }
