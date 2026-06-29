@@ -81,6 +81,7 @@ export const useColoringStore = create<ColoringState>((set, get) => ({
     const { canvasHistory, historyIndex } = get()
     const nextHistory = canvasHistory.slice(0, historyIndex + 1)
     nextHistory.push(json)
+    if (nextHistory.length > 100) nextHistory.splice(0, nextHistory.length - 100)
     set({
       canvasHistory: nextHistory,
       historyIndex: nextHistory.length - 1,

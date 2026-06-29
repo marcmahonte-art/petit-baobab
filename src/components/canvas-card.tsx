@@ -37,6 +37,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const outlineImgRef = useRef<fabric.Image | null>(null)
+  const isRestoringRef = useRef(false)
 
   const profileId = useProfileStore((s) => s.activeProfileId)
 
@@ -65,7 +66,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   }, [])
 
   const loadJsonIntoCanvas = useCallback((canvas: fabric.Canvas, canvasJson: string, shouldReplaceHistory = true) => {
-    canvas.loadFromJSON(canvasJson, () => {
+    return canvas.loadFromJSON(canvasJson).then(() => {
       restoreOutlineRef(canvas)
       canvas.renderAll()
       if (shouldReplaceHistory) replaceHistory(canvasJson)
@@ -207,7 +208,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       setFabricInstance(canvas)
 
       const handleCanvasChange = () => {
-        if (!canvas) return
+        if (!canvas || isRestoringRef.current) return
         pushHistory(JSON.stringify(canvas.toJSON()))
         useColoringStore.getState().setSaved(false)
       }
@@ -368,14 +369,28 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   }, [])
   const handleUndo = useCallback(() => {
     if (!fabricInstance) return
+    isRestoringRef.current = true
     const { canUndo, stateJson } = storeUndo()
-    if (canUndo && stateJson) loadJsonIntoCanvas(fabricInstance, stateJson, false)
+    if (canUndo && stateJson) {
+      loadJsonIntoCanvas(fabricInstance, stateJson, false).then(() => {
+        isRestoringRef.current = false
+      })
+    } else {
+      isRestoringRef.current = false
+    }
   }, [fabricInstance, storeUndo, loadJsonIntoCanvas])
 
   const handleRedo = useCallback(() => {
     if (!fabricInstance) return
+    isRestoringRef.current = true
     const { canRedo, stateJson } = storeRedo()
-    if (canRedo && stateJson) loadJsonIntoCanvas(fabricInstance, stateJson, false)
+    if (canRedo && stateJson) {
+      loadJsonIntoCanvas(fabricInstance, stateJson, false).then(() => {
+        isRestoringRef.current = false
+      })
+    } else {
+      isRestoringRef.current = false
+    }
   }, [fabricInstance, storeRedo, loadJsonIntoCanvas])
 
   useEffect(() => {
