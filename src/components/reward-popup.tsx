@@ -2,21 +2,21 @@
 
 import { useEffect } from "react"
 import { useColoringStore } from "@/lib/store"
+import { useProfileStore } from "@/lib/profile-store"
 import { motion, AnimatePresence } from "framer-motion"
 import { Star, Award, Sparkles, Check } from "lucide-react"
 import confetti from "canvas-confetti"
 
 export function RewardPopup() {
-  const { isRewardPopupOpen, setRewardPopupOpen, addPoints, addBadge } = useColoringStore()
+  const { isRewardPopupOpen, setRewardPopupOpen } = useColoringStore()
+  const addPoints = useProfileStore((s) => s.addPoints)
+  const addBadge = useProfileStore((s) => s.addBadge)
 
   // Trigger confetti when popup opens
   useEffect(() => {
     if (isRewardPopupOpen) {
-      // Add points and badge Artiste
       addPoints(10)
       addBadge("Super Artiste")
-
-      // Trigger Confetti
       const duration = 3 * 1000
       const end = Date.now() + duration
 

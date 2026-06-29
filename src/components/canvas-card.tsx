@@ -6,6 +6,7 @@ import { Maximize, Minimize } from "lucide-react"
 import { useColoringStore } from "@/lib/store"
 import { savaneArtPaths } from "@/lib/line-art"
 import { floodFill, hexToRgba } from "@/lib/floodFill"
+import { useProfileStore } from "@/lib/profile-store"
 import type { SaveDrawingInput, SavedDrawing } from "@/features/drawings/types"
 
 ;(fabric.FabricObject as unknown as { customProperties: string[] }).customProperties = ["id", "name"]
@@ -36,6 +37,8 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(1)
   const outlineImgRef = useRef<fabric.Image | null>(null)
+
+  const profileId = useProfileStore((s) => s.activeProfileId)
 
   const {
     selectedTool,
@@ -478,6 +481,8 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       return {
         name: currentDrawing.name,
         category: currentDrawing.category || selectedCategory,
+        origin: "coloriage",
+        profileId,
         image,
         thumbnail,
         template: { ...currentDrawing, category: currentDrawing.category || selectedCategory },

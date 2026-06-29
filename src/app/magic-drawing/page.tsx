@@ -19,8 +19,13 @@ import {
   Menu,
   Sparkles,
   Check,
+  Lock,
 } from "lucide-react";
 import Image from "next/image";
+import { useCreditStore, getCreditCost, canGenerate, type StyleType } from "@/lib/credit-store";
+import { useProfileStore, getActiveProfile } from "@/lib/profile-store";
+import { drawingService } from "@/features/drawings/DrawingService";
+import { useI18n } from "@/lib/i18n-provider";
 
 /* ------------------------------------------------------------------ */
 /* Suggestion chips data                                               */
@@ -47,7 +52,7 @@ const suggestions = [
 /* ------------------------------------------------------------------ */
 /* Style cards data                                                    */
 /* ------------------------------------------------------------------ */
-const styleOptions = [
+const styleOptions: { id: StyleType; label: string; image: string; selected: boolean }[] = [
   {
     id: "noir_blanc",
     label: "Coloriage\n(Noir & Blanc)",
@@ -89,7 +94,7 @@ const varianteImages = [
 /* ================================================================== */
 export default function MagicDrawingPage() {
   const [prompt, setPrompt] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState("noir_blanc");
+  const [selectedStyle, setSelectedStyle] = useState<StyleType>("noir_blanc");
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
@@ -99,8 +104,26 @@ export default function MagicDrawingPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const maxChars = 200;
 
+  const credits = useCreditStore();
+  const profileId = useProfileStore((s) => s.activeProfileId);
+  const { t } = useI18n();
+  const creditInfo = credits.useCredits();
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+
+    const check = canGenerate(selectedStyle);
+    if (!check.allowed) {
+      setGenerationError(check.reason || "Impossible de créer le dessin.");
+      return;
+    }
+
+    const consumeResult = credits.consume(selectedStyle);
+    if (!consumeResult.success) {
+      setGenerationError(consumeResult.reason || "Impossible de créer le dessin.");
+      return;
+    }
+
     setIsGenerating(true);
     setGenerationError("");
     setBookMessage("");
@@ -119,11 +142,43 @@ export default function MagicDrawingPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        credits.refund(selectedStyle);
         throw new Error(data?.error || "Impossible de créer le dessin.");
       }
 
       setGeneratedImage(data.imageUrl);
       setHasResult(true);
+
+      if (profileId) {
+        try {
+          await drawingService.saveIA(
+            {
+              name: prompt.slice(0, 60),
+              category: "Mes dessins",
+              origin: "ia",
+              profileId,
+              image: data.imageUrl,
+              thumbnail: data.imageUrl,
+              template: {
+                id: `magic-${Date.now()}`,
+                name: prompt.slice(0, 60),
+                image: data.imageUrl,
+              },
+              state: {
+                canvasJson: "",
+                selectedTool: "brush",
+                selectedColor: "#FFD95C",
+                brushSize: 6,
+                usedColors: [],
+                filledZones: 0,
+              },
+            },
+            profileId,
+          );
+        } catch (saveError) {
+          console.error("Auto-save failed:", saveError);
+        }
+      }
     } catch (error) {
       setGenerationError(
         error instanceof Error
@@ -267,7 +322,7 @@ export default function MagicDrawingPage() {
               </p>
             </div>
 
-            {/* Right: Stars + History + Avatar */}
+            {/* Right: Stars + Credits + History + Avatar */}
             <div className="hidden md:flex items-center gap-3 shrink-0">
               {/* Stars badge */}
               <div className="flex items-center gap-2 h-[48px] px-4 rounded-full bg-[#FFF5CC] border border-[#FFE08A]">
@@ -278,6 +333,19 @@ export default function MagicDrawingPage() {
                   </span>
                   <span className="text-[10px] font-semibold text-[#7A6A5E]">
                     Mes étoiles
+                  </span>
+                </div>
+              </div>
+
+              {/* Credits badge */}
+              <div className="flex items-center gap-2 h-[48px] px-4 rounded-full bg-[#F3EFFF] border border-[#D4C8FF]">
+                <Sparkles className="w-5 h-5 text-[#7C57FF]" />
+                <div className="flex flex-col leading-none">
+                  <span className="text-[17px] font-extrabold text-[#3B2416]">
+                    {creditInfo.remaining}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#7A6A5E]">
+                    Crédits
                   </span>
                 </div>
               </div>
@@ -391,19 +459,30 @@ export default function MagicDrawingPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {styleOptions.map((style) => {
                     const isSelected = selectedStyle === style.id;
+                    const cost = getCreditCost(style.id);
+                    const isLocked = credits.plan === "free" && style.id !== "contour_simple";
                     return (
                       <button
                         key={style.id}
-                        onClick={() => setSelectedStyle(style.id)}
-                        className={`relative flex flex-col items-center gap-2 p-3 rounded-[18px] border-2 transition-all cursor-pointer group ${
-                          isSelected
-                            ? "border-[#7C57FF] bg-[#F3EFFF] shadow-[0_0_0_3px_rgba(124,87,255,0.15)]"
-                            : "border-[#EFE7DB] bg-white hover:border-[#7C57FF]/30 hover:bg-[#FAFAF8]"
+                        onClick={() => {
+                          if (!isLocked) setSelectedStyle(style.id);
+                        }}
+                        className={`relative flex flex-col items-center gap-2 p-3 rounded-[18px] border-2 transition-all group ${
+                          isLocked
+                            ? "border-[#EFE7DB] bg-white opacity-55 cursor-not-allowed"
+                            : isSelected
+                            ? "border-[#7C57FF] bg-[#F3EFFF] shadow-[0_0_0_3px_rgba(124,87,255,0.15)] cursor-pointer"
+                            : "border-[#EFE7DB] bg-white hover:border-[#7C57FF]/30 hover:bg-[#FAFAF8] cursor-pointer"
                         }`}
                       >
-                        {isSelected && (
+                        {isSelected && !isLocked && (
                           <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#7C57FF] flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                        {isLocked && (
+                          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-[#7A6A5E]/60 flex items-center justify-center">
+                            <Lock className="w-3 h-3 text-white" />
                           </div>
                         )}
                         <div className="w-[80px] h-[80px] rounded-[12px] overflow-hidden bg-[#F9F7F4] flex items-center justify-center">
@@ -422,6 +501,14 @@ export default function MagicDrawingPage() {
                         <span className="text-xs font-bold text-center text-[#3B2416] whitespace-pre-line leading-tight">
                           {style.label}
                         </span>
+                        <span className="text-[10px] font-semibold text-[#7A6A5E]">
+                          {cost} crédit{cost > 1 ? "s" : ""}
+                        </span>
+                        {isLocked && (
+                          <span className="text-[9px] font-semibold text-[#7C57FF]">
+                            Réservé aux abonnés
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -484,7 +571,7 @@ export default function MagicDrawingPage() {
                   </p>
                 )}
                 <p className="text-center text-xs font-semibold text-[#7A6A5E] mt-2">
-                  Coût : 1 étoile
+                  Coût : {getCreditCost(selectedStyle)} crédit{getCreditCost(selectedStyle) > 1 ? "s" : ""}
                 </p>
               </div>
 
@@ -659,13 +746,3 @@ export default function MagicDrawingPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-

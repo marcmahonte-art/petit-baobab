@@ -18,7 +18,7 @@ const formatDate = (date: string) =>
 export function DrawingCard({ drawing, onOpen, onDelete, onDownload, onPrint, onAddToBook }: DrawingCardProps) {
   const badgeInfo = !drawing.isColored
     ? { label: "Nouveau", className: "shrink-0 rounded-full bg-[#60A5FA]/15 px-2.5 py-1 text-[11px] font-black text-[#1D4ED8]" }
-    : drawing.progress === "completed"
+    : drawing.status === "completed"
       ? { label: "Terminé", className: "shrink-0 rounded-full bg-[#25C76F]/15 px-2.5 py-1 text-[11px] font-black text-[#18884E]" }
       : { label: "En cours", className: "shrink-0 rounded-full bg-[#FFD53D]/25 px-2.5 py-1 text-[11px] font-black text-[#7A5200]" }
 

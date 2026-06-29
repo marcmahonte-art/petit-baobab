@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { I18nProvider } from "@/lib/i18n-provider";
 
 export const metadata: Metadata = {
   title: "Petit Baobab",
-  description: "Creative platform for children",
+  description: "Application créative pour enfants de 3 à 7 ans",
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <I18nProvider>{children}</I18nProvider>
+      </body>
     </html>
   );
 }

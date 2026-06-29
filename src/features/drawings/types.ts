@@ -1,7 +1,5 @@
 import type { DrawingItem, ToolType } from "@/lib/store"
 
-export type DrawingProgress = "completed" | "in_progress"
-
 export interface SavedDrawingState {
   canvasJson: string
   selectedTool: ToolType
@@ -16,9 +14,11 @@ export interface SavedDrawing {
   name: string
   modelName: string
   category: string
+  origin: "coloriage" | "ia"
+  status: "in_progress" | "completed" | "error"
+  profileId: string
   createdAt: string
   updatedAt: string
-  progress: DrawingProgress
   isColored: boolean
   image: string
   thumbnail: string
@@ -29,6 +29,8 @@ export interface SavedDrawing {
 export interface SaveDrawingInput {
   name: string
   category: string
+  origin: "coloriage" | "ia"
+  profileId: string
   image: string
   thumbnail: string
   template: DrawingItem

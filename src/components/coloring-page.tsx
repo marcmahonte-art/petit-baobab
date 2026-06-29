@@ -15,6 +15,7 @@ import { SaveDrawingModal } from "@/components/drawings/SaveDrawingModal"
 import { drawingService } from "@/features/drawings/DrawingService"
 import type { SavedDrawing } from "@/features/drawings/types"
 import { useColoringStore } from "@/lib/store"
+import { useProfileStore } from "@/lib/profile-store"
 import { useBookStore } from "@/features/coloring-book/store/useBookStore"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -25,6 +26,8 @@ export function ColoringPage() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [galleryRefreshKey, setGalleryRefreshKey] = useState(0)
   const [toast, setToast] = useState("")
+
+  const profileId = useProfileStore((s) => s.activeProfileId)
 
   const {
     currentDrawing,
@@ -39,16 +42,17 @@ export function ColoringPage() {
 
   // Auto-save template to "Mes dessins" when a new model is selected
   useEffect(() => {
-    if (!activeSavedDrawingId && currentDrawing.id) {
+    if (!activeSavedDrawingId && currentDrawing.id && profileId) {
       drawingService.saveFromTemplate(
         currentDrawing,
-        currentDrawing.category || selectedCategory
+        currentDrawing.category || selectedCategory,
+        profileId
       ).then((result) => {
         if (result) setGalleryRefreshKey((k) => k + 1)
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDrawing.id])
+  }, [currentDrawing.id, profileId])
 
   const handleUndo = () => canvasRef.current?.undo()
   const handleRedo = () => canvasRef.current?.redo()

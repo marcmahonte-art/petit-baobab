@@ -123,6 +123,20 @@ export const libraryDrawings: LibraryDrawing[] = [
   { id: "balafon", name: "Petite fille", image: "/illustrations/culture/balafon.svg", category: "culture" },
   { id: "baobab", name: "Baobab", image: "/illustrations/animals/vache-et-veau-sous-l'arbre.svg", category: "animals" },
   { id: "cameleon", name: "Caméléon", image: "/illustrations/animals/caméléon.svg", category: "animals" },
+  { id: "tortue", name: "Tortue", image: "/illustrations/animals/tortue.svg", category: "animals" },
+  { id: "hippopotame", name: "Hippopotame", image: "/illustrations/animals/hippopotame.svg", category: "animals" },
+  { id: "singe", name: "Singe", image: "/illustrations/animals/singe-avec-des-bananes.svg", category: "animals" },
+  { id: "poussins", name: "Poussins", image: "/illustrations/animals/poussins.svg", category: "animals" },
+  { id: "poule", name: "Poule", image: "/illustrations/animals/poule.svg", category: "animals" },
+  { id: "poisson", name: "Poisson", image: "/illustrations/animals/poisson.svg", category: "animals" },
+  { id: "papillon", name: "Papillon", image: "/illustrations/animals/papillon.svg", category: "animals" },
+  { id: "oiseau", name: "Oiseau", image: "/illustrations/animals/oiseau.svg", category: "animals" },
+  { id: "mouton", name: "Mouton", image: "/illustrations/animals/mouton.svg", category: "animals" },
+  { id: "canetons", name: "Maman cane et ses canetons", image: "/illustrations/animals/maman-cane-et-ses-canetons.svg", category: "animals" },
+  { id: "lapin", name: "Lapin", image: "/illustrations/animals/lapin.svg", category: "animals" },
+  { id: "escargot", name: "Escargot", image: "/illustrations/animals/escargot.svg", category: "animals" },
+  { id: "dinosaures", name: "Dinosaures", image: "/illustrations/animals/dinosaures.svg", category: "animals" },
+  { id: "chien", name: "Chien", image: "/illustrations/animals/chien.svg", category: "animals" },
 ]
 
 export const categories: DrawingCategory[] = [
