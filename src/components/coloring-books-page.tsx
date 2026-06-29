@@ -39,6 +39,8 @@ import Image from "next/image"
 import { categories, libraryDrawings } from "@/features/coloring-book/constants/book.constants"
 import { useBookWizard } from "@/features/coloring-book/hooks/useBookWizard"
 import type { SavedDrawing } from "@/features/drawings/types"
+import { useBookStore } from "@/features/coloring-book/store/useBookStore"
+import { drawingService } from "@/features/drawings/DrawingService"
 import { BookHeader } from "@/features/coloring-book/components/BookHeader"
 import { BookPreviewCanvas } from "@/features/coloring-book/components/BookPreviewCanvas"
 import { BookStepper } from "@/features/coloring-book/components/BookStepper"
@@ -125,19 +127,23 @@ export function ColoringBooksPage() {
   const [savedDrawings, setSavedDrawings] = useState<SavedDrawing[]>([])
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
-        if (raw) {
-          const parsed = JSON.parse(raw) as SavedDrawing[]
-          window.setTimeout(() => {
-            setSavedDrawings(parsed)
-          }, 0)
-        }
-      } catch (e) {
-        console.error("Error loading saved drawings for book selector:", e)
-      }
-    }
+    drawingService.list().then((list) => {
+      window.setTimeout(() => {
+        setSavedDrawings(list)
+        
+        // Populate customDrawings list in useBookStore
+        const mappedList = list.map((draw) => ({
+          id: draw.id,
+          name: draw.name,
+          image: draw.image,
+          category: draw.category,
+          isPersonal: true,
+        }))
+        useBookStore.getState().setCustomDrawings(mappedList)
+      }, 0)
+    }).catch((e) => {
+      console.error("Error loading saved drawings for book selector:", e)
+    })
   }, [])
 
   const allAvailableDrawings = [

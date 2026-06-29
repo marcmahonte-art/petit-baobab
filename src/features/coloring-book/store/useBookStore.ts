@@ -19,6 +19,7 @@ import type {
   BookWizardState,
   CoverPalette,
   CoverTemplate,
+  LibraryDrawing,
 } from "../types"
 
 type Updater<T> = T | ((current: T) => T)
@@ -27,12 +28,13 @@ function resolveUpdater<T>(current: T, next: Updater<T>): T {
   return typeof next === "function" ? (next as (value: T) => T)(current) : next
 }
 
-function rebuildPreview(state: Pick<BookWizardState, "selectedImages" | "options" | "bookInfo" | "cover">) {
+function rebuildPreview(state: Pick<BookWizardState, "selectedImages" | "options" | "bookInfo" | "cover" | "customDrawings">) {
   return buildPreview({
     selectedImages: state.selectedImages,
     options: state.options,
     bookInfo: state.bookInfo,
     cover: state.cover,
+    customDrawings: state.customDrawings,
   })
 }
 
@@ -54,6 +56,7 @@ export interface BookStore extends BookWizardState {
     value: Updater<BookWizardState["exportSettings"][K]>,
   ) => void
   setSetting: <K extends keyof BookWizardState["settings"]>(key: K, value: Updater<BookWizardState["settings"][K]>) => void
+  setCustomDrawings: (drawings: LibraryDrawing[]) => void
   hydrate: (state: Partial<BookWizardState>) => void
   validate: () => boolean
 }
@@ -82,6 +85,7 @@ const initialState: BookWizardState = {
   errors: {},
   isDirty: false,
   settings: DefaultSettings,
+  customDrawings: [],
 }
 
 initialState.preview = rebuildPreview(initialState)
@@ -89,6 +93,11 @@ initialState.preview = rebuildPreview(initialState)
 export const useBookStore = create<BookStore>((set, get) => ({
   ...initialState,
   setCurrentStep: (step) => set({ currentStep: step, isDirty: true }),
+  setCustomDrawings: (drawings) =>
+    set((state) => {
+      const nextState = { ...state, customDrawings: drawings }
+      return { customDrawings: drawings, preview: rebuildPreview(nextState) }
+    }),
   setSelectedImages: (images) =>
     set((state) => {
       const selectedImages = resolveUpdater(state.selectedImages, images).slice(0, Limits.maxSelectedDrawings)

@@ -1,34 +1,16 @@
 import { libraryDrawings } from "../constants/book.constants"
 import type { BookInfo, BookOptions, BookPage, BookStyle, LibraryDrawing, PrintSettings } from "../types"
 import { validateBook } from "../validators/book.validator"
-import type { SavedDrawing } from "@/features/drawings/types"
 
-export function getSelectedDrawings(selectedImages: string[]): LibraryDrawing[] {
-  let saved: SavedDrawing[] = []
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
-      if (raw) saved = JSON.parse(raw)
-    } catch (e) {
-      console.error("Error reading saved drawings in book utils:", e)
-    }
-  }
-
+export function getSelectedDrawings(selectedImages: string[], customDrawings: LibraryDrawing[] = []): LibraryDrawing[] {
   return selectedImages
     .map((id) => {
       const staticDraw = libraryDrawings.find((drawing) => drawing.id === id)
       if (staticDraw) return staticDraw
 
-      const savedDraw = saved.find((drawing) => drawing.id === id)
-      if (savedDraw) {
-        return {
-          id: savedDraw.id,
-          name: savedDraw.name,
-          image: savedDraw.image, // User-colored image (data URL / PNG)
-          category: savedDraw.category,
-          isPersonal: true,
-        }
-      }
+      const savedDraw = customDrawings.find((drawing) => drawing.id === id)
+      if (savedDraw) return savedDraw
+
       return undefined
     })
     .filter((drawing): drawing is LibraryDrawing => Boolean(drawing))
@@ -39,6 +21,7 @@ export function buildPreview(params: {
   options: Pick<BookOptions, "addTitlePage" | "belongsTo">
   bookInfo: Pick<BookInfo, "childName">
   cover: string
+  customDrawings?: LibraryDrawing[]
 }): BookPage[] {
   const pages: BookPage[] = []
 
@@ -50,7 +33,7 @@ export function buildPreview(params: {
     pages.push({ type: "belongs_to", label: "Page de garde", details: `Appartient à ${params.bookInfo.childName}` })
   }
 
-  getSelectedDrawings(params.selectedImages).forEach((drawing) => {
+  getSelectedDrawings(params.selectedImages, params.customDrawings).forEach((drawing) => {
     pages.push({ type: "drawing", label: drawing.name, image: drawing.image, details: drawing.category, isPersonal: drawing.isPersonal })
   })
 

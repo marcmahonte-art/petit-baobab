@@ -59,4 +59,5 @@ export interface BookWizardState {
   errors: Partial<Record<keyof BookInfo | "selectedImages" | "cover" | "format" | "style", string>>
   isDirty: boolean
   settings: BookSettings
+  customDrawings: LibraryDrawing[]
 }
