@@ -489,6 +489,17 @@ startxref
                       <span className="text-[10px] font-bold text-[#64748B]">Ajouter plus</span>
                     </div>
                   </div>
+
+                  <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} className="mt-4">
+                    <Button 
+                      onClick={() => setActiveStep(2)}
+                      disabled={selectedIds.length === 0}
+                      className="w-full h-[52px] rounded-[18px] bg-[#22C55E] text-white hover:bg-[#22C55E]/90 font-bold text-sm flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer disabled:opacity-50"
+                    >
+                      <Sparkles className="w-4 h-4 fill-current" />
+                      <span>Personnaliser</span>
+                    </Button>
+                  </motion.div>
                 </Card>
               </div>
 
