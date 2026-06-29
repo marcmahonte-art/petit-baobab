@@ -16,7 +16,7 @@ const navItems = [
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },
   { icon: Users, label: "Espace parents", href: "/parents" },
-  { icon: Settings, label: "Paramètres", href: "#" },
+  { icon: Settings, label: "Paramètres", href: "/parametres" },
 ]
 
 export function Sidebar() {

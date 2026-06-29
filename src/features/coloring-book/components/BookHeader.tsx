@@ -16,10 +16,10 @@ export function BookHeader({ currentChild, setCurrentChild }: BookHeaderProps) {
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 px-2">
         <div>
           <h1 className="text-[32px] md:text-[40px] font-extrabold text-[#1F2937] leading-none tracking-tight flex items-center gap-2">
-            <span>📚</span> Livres de coloriage
+            <BookOpen className="w-8 h-8 text-[#7D6AF8]" /> Livres de coloriage
           </h1>
           <p className="text-[15px] md:text-[16px] font-bold text-[#64748B] mt-1.5 flex items-center gap-1">
-            Crée ton propre livre de coloriage personnalisé ! 😍
+            Crée ton propre livre de coloriage personnalisé !
           </p>
         </div>
 

@@ -90,7 +90,7 @@ export function RewardPopup() {
 
             {/* Title */}
             <h2 className="text-3xl font-extrabold text-[#2D1846] flex items-center justify-center gap-1.5 leading-tight">
-              <span>⭐</span> Bravo Awa !
+              <Star className="w-7 h-7 text-[#FFB300] fill-current" /> Bravo Awa !
             </h2>
             <p className="text-[#7A6A5E] text-base font-bold mt-2 leading-tight">
               Ton coloriage est magnifique !

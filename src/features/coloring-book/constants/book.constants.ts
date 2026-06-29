@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   BookFrameOption,
   BookFormat,
   BookInfo,
@@ -28,18 +28,18 @@ export const Orientations: Array<{ id: BookOrientation; name: string; desc: stri
 ]
 
 export const Frames: BookFrameOption[] = [
-  { id: "Nature", label: "Nature", icon: "🌿" },
-  { id: "Faso Dan Fani", label: "Faso Dan Fani", icon: "🧵" },
+  { id: "Nature", label: "Nature", icon: "⚘" },
+  { id: "Faso Dan Fani", label: "Faso Dan Fani", icon: "≣" },
   { id: "Bogolan", label: "Bogolan", icon: "◼" },
   { id: "Savane", label: "Savane", icon: "☀" },
-  { id: "Animaux", label: "Animaux", icon: "🦁" },
+  { id: "Animaux", label: "Animaux", icon: "★" },
   { id: "Aucun", label: "Aucun", icon: "∅" },
 ]
 
 export const Styles: BookStyleOption[] = [
-  { id: "Contour simple", name: "Contour simple", desc: "Traits propres", icon: "✏" },
+  { id: "Contour simple", name: "Contour simple", desc: "Traits propres", icon: "✎" },
   { id: "Noir & Blanc détaillé", name: "Noir & Blanc détaillé", desc: "Plus de détails", icon: "◐" },
-  { id: "Version couleur", name: "Version couleur", desc: "Aperçu coloré", icon: "🎨" },
+  { id: "Version couleur", name: "Version couleur", desc: "Aperçu coloré", icon: "◉" },
   { id: "Traits épais", name: "Traits épais", desc: "Pour les petits", icon: "▬" },
 ]
 
@@ -126,10 +126,10 @@ export const libraryDrawings: LibraryDrawing[] = [
 ]
 
 export const categories: DrawingCategory[] = [
-  { id: "all", label: "Tous", icon: "✨" },
-  { id: "animals", label: "Animaux", icon: "🦁" },
-  { id: "culture", label: "Afrique", icon: "🥁" },
-  { id: "jobs", label: "Métiers", icon: "👨🏾" },
-  { id: "school", label: "École", icon: "🎒" },
-  { id: "fruits", label: "Fruits", icon: "🍎" },
+  { id: "all", label: "Tous", icon: "✦" },
+  { id: "animals", label: "Animaux", icon: "★" },
+  { id: "culture", label: "Afrique", icon: "♫" },
+  { id: "jobs", label: "Métiers", icon: "⚒" },
+  { id: "school", label: "École", icon: "⌂" },
+  { id: "fruits", label: "Fruits", icon: "❀" },
 ]

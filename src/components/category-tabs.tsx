@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { ChevronRight, ChevronDown } from "lucide-react"
+import { ChevronRight, ChevronDown, Cat, Apple, Briefcase, Drum, Type, TreePalm, Home, TreePine, GraduationCap, PartyPopper, type LucideIcon } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useColoringStore } from "@/lib/store"
@@ -10,23 +10,23 @@ import { useColoringStore } from "@/lib/store"
 interface CategoryItem {
   id: string
   label: string
-  icon: string
+  icon: LucideIcon
 }
 
 const categories: CategoryItem[] = [
-  { id: "animals", label: "Animaux", icon: "🦁" },
-  { id: "fruits", label: "Fruits & Légumes", icon: "🍎" },
-  { id: "jobs", label: "Métiers", icon: "👨🏾" },
-  { id: "culture", label: "Culture Africaine", icon: "🥁" },
-  { id: "alphabet", label: "Alphabet ABC", icon: "🔤" },
+  { id: "animals", label: "Animaux", icon: Cat },
+  { id: "fruits", label: "Fruits & Légumes", icon: Apple },
+  { id: "jobs", label: "Métiers", icon: Briefcase },
+  { id: "culture", label: "Culture Africaine", icon: Drum },
+  { id: "alphabet", label: "Alphabet ABC", icon: Type },
 ]
 
 const themes: CategoryItem[] = [
-  { id: "savannah", label: "Savane Africaine", icon: "🦒" },
-  { id: "village", label: "Vie au Village", icon: "🛖" },
-  { id: "forest", label: "Grande Forêt", icon: "🌳" },
-  { id: "school", label: "L'École des Petits", icon: "🏫" },
-  { id: "party", label: "Fêtes & Danses", icon: "🎉" },
+  { id: "savannah", label: "Savane Africaine", icon: TreePalm },
+  { id: "village", label: "Vie au Village", icon: Home },
+  { id: "forest", label: "Grande Forêt", icon: TreePine },
+  { id: "school", label: "L'École des Petits", icon: GraduationCap },
+  { id: "party", label: "Fêtes & Danses", icon: PartyPopper },
 ]
 
 export function CategoryTabs() {
@@ -60,8 +60,8 @@ export function CategoryTabs() {
             )}
           >
             <div className="flex items-center gap-[16px]">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#FFF9F2] flex items-center justify-center text-[22px] shrink-0">
-                {item.icon}
+              <div className="w-[40px] h-[40px] rounded-full bg-[#FFF9F2] flex items-center justify-center shrink-0">
+                <item.icon className="w-5 h-5 text-[#7D6AF8]" />
               </div>
               <span className="text-[18px] font-semibold text-[#3B2416]">
                 {item.label}

@@ -27,22 +27,18 @@ import Image from "next/image";
 /* ------------------------------------------------------------------ */
 const suggestions = [
   {
-    emoji: "🐘",
     image: "/illustrations/animals/elephant.svg",
     label: "Un éléphant dans la savane",
   },
   {
-    emoji: "🏠",
     image: "/illustrations/village-case-girafe.webp",
     label: "Une maison africaine",
   },
   {
-    emoji: "🦁",
     image: "/illustrations/animals/lion.svg",
     label: "Un lion courageux",
   },
   {
-    emoji: "🏪",
     image: "/illustrations/coloring-balafon.png",
     label: "Un marché africain",
   },
@@ -262,12 +258,12 @@ export default function MagicDrawingPage() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-7 h-7 text-[#7C57FF]" />
                 <h1 className="text-2xl md:text-[28px] font-extrabold text-[#2D1846] leading-tight">
-                  ✨ Dessin Magique
+                  Dessin Magique
                 </h1>
               </div>
               <p className="text-sm md:text-[15px] font-medium text-[#7A6A5E] ml-9">
                 Décris ce que tu imagines et Petit Baobab crée un dessin à
-                colorier rien que pour toi ! 😊
+                colorier rien que pour toi !
               </p>
             </div>
 
@@ -478,7 +474,7 @@ export default function MagicDrawingPage() {
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Créer mon dessin magique ✨
+                      Créer mon dessin magique
                     </>
                   )}
                 </button>
@@ -488,7 +484,7 @@ export default function MagicDrawingPage() {
                   </p>
                 )}
                 <p className="text-center text-xs font-semibold text-[#7A6A5E] mt-2">
-                  Coût : 1 étoile ⭐
+                  Coût : 1 étoile
                 </p>
               </div>
 

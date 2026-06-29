@@ -20,7 +20,14 @@ import {
   Printer,
   ChevronUp,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  Gift,
+  Lightbulb,
+  BookText,
+  Zap,
+  Flame,
+  Package,
+  TreePine
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -619,7 +626,7 @@ startxref
                       Livre PDF prêt à l&apos;emploi
                     </span>
                     <p className="text-[10px] font-semibold text-[#16A34A] leading-normal mt-0.5">
-                      Génère un livre prêt à imprimer pour des heures de coloriage ludique ! 🌳
+                      Génère un livre prêt à imprimer pour des heures de coloriage ludique !
                     </p>
                   </div>
                 </Card>
@@ -648,7 +655,7 @@ startxref
                     >
                       <span className="flex items-center gap-2">
                         <Eye className="w-5 h-5 text-[#7D6AF8]" />
-                        <span>🔍 Voir l&apos;aperçu en direct ({selectedIds.length} dessins)</span>
+                        <span><Search className="w-3.5 h-3.5 inline-block mr-1" /> Voir l&apos;aperçu en direct ({selectedIds.length} dessins)</span>
                       </span>
                       {isPreviewOpen ? <ChevronUp className="w-5 h-5 text-[#64748B]" /> : <ChevronDown className="w-5 h-5 text-[#64748B]" />}
                     </button>
@@ -674,8 +681,8 @@ startxref
                           />
 
                           <div className="grid grid-cols-2 gap-3 text-xs font-semibold bg-white p-4 rounded-xl border border-neutral-100">
-                            <div>📚 Pages: <span className="font-extrabold text-[#7D6AF8]">{totalPagesCount} pages</span></div>
-                            <div>📦 Poids: <span className="font-extrabold text-[#20C997]">{calculatedPdfWeight} MB</span></div>
+                            <div><BookOpen className="w-3.5 h-3.5 inline-block mr-1" /> Pages: <span className="font-extrabold text-[#7D6AF8]">{totalPagesCount} pages</span></div>
+                            <div><Package className="w-3.5 h-3.5 inline-block mr-1" /> Poids: <span className="font-extrabold text-[#20C997]">{calculatedPdfWeight} MB</span></div>
                             <div>📐 Format: <span className="font-extrabold text-[#FFB300]">{bookFormat}</span></div>
                             <div>🧭 Orientation: <span className="font-extrabold text-[#1194FF]">{orientation}</span></div>
                           </div>
@@ -757,12 +764,12 @@ startxref
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {[
-                      { id: "petit-baobab", name: "🌳 Petit Baobab", color: "from-[#FFE5B4] to-[#FFF9E5]" },
-                      { id: "savane", name: "🦁 Savane", color: "from-[#FFEAA7] to-[#FFF5CC]" },
+                      { id: "petit-baobab", name: "Petit Baobab", color: "from-[#FFE5B4] to-[#FFF9E5]" },
+                      { id: "savane", name: "Savane", color: "from-[#FFEAA7] to-[#FFF5CC]" },
                       { id: "ecole", name: "🏫 École", color: "from-[#D2EAFF] to-[#E6F4FF]" },
-                      { id: "afrique", name: "🎉 Afrique", color: "from-[#FCDDEC] to-[#FFF0F7]" },
-                      { id: "coloree", name: "🌈 Colorée", color: "from-[#D5F5E3] to-[#E8F8F5]" },
-                      { id: "ia", name: "✨ Générée par IA", color: "from-[#E8DAEF] to-[#F4ECF7]" },
+                      { id: "afrique", name: "Afrique", color: "from-[#FCDDEC] to-[#FFF0F7]" },
+                      { id: "coloree", name: "Colorée", color: "from-[#D5F5E3] to-[#E8F8F5]" },
+                      { id: "ia", name: "Générée par IA", color: "from-[#E8DAEF] to-[#F4ECF7]" },
                     ].map((cov) => {
                       const isSelected = selectedCover === cov.id
                       return (
@@ -852,10 +859,10 @@ startxref
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {[
-                      { name: "Contour simple", desc: "Trait propre", emoji: "✏️" },
-                      { name: "Noir & Blanc détaillé", desc: "Ombrages", emoji: "🎨" },
-                      { name: "Contours épais", desc: "Pour les petits", emoji: "🖍️" },
-                      { name: "Version couleur", desc: "Livre coloré", emoji: "🌈" },
+                      { name: "Contour simple", desc: "Trait propre", emoji: "✎" },
+                      { name: "Noir & Blanc détaillé", desc: "Ombrages", emoji: "◐" },
+                      { name: "Contours épais", desc: "Pour les petits", emoji: "▬" },
+                      { name: "Version couleur", desc: "Livre coloré", emoji: "◉" },
                     ].map((style) => {
                       const isSelected = drawingStyle === style.name
                       return (
@@ -1014,7 +1021,7 @@ startxref
                       { id: "Faso Dan Fani", name: "🇧🇫 Faso Dan Fani", desc: "Bordure tissée" },
                       { id: "Bogolan", name: "🇲🇱 Bogolan", desc: "Motifs en terre" },
                       { id: "Nature", name: "🌿 Nature", desc: "Feuilles et lianes" },
-                      { id: "Savane", name: "🦁 Savane", desc: "Silhouettes sauvages" },
+                      { id: "Savane", name: "Savane", desc: "Silhouettes sauvages" },
                       { id: "Animaux", name: "🐾 Animaux", desc: "Empreintes de pattes" },
                       { id: "Aucun", name: "⬜ Aucun", desc: "Sans cadre" },
                     ].map((frame) => {
@@ -1229,7 +1236,7 @@ startxref
                 {/* SECTION 1: Titre & Sous-titre */}
                 <div>
                   <h2 className="text-[24px] font-black text-[#1F2937] flex items-center gap-2">
-                    👀 Aperçu de votre livre
+                    <Eye className="w-5 h-5 inline-block mr-1" /> Aperçu de votre livre
                   </h2>
                   <p className="text-sm font-semibold text-[#64748B] mt-1">
                     Vérifiez votre livre avant de le télécharger ou de l&apos;imprimer.
@@ -1318,13 +1325,13 @@ startxref
                             </div>
 
                             <div className="flex-1 flex flex-col justify-center items-center text-center gap-4">
-                              <span className="text-5xl">🎁</span>
+                              <Gift className="w-12 h-12 text-[#7D6AF8]" />
                               <h2 className="text-2xl font-black text-[#3B2416] tracking-tight uppercase">Ce livre appartient à :</h2>
                               <div className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#FFD95C] to-[#FFE08A] border-2 border-[#3B2416] shadow-sm transform -rotate-1">
                                 <span className="text-3xl font-extrabold text-[#3B2416] font-nunito">{childName || "Awa"}</span>
                               </div>
                               <p className="text-[11px] font-bold text-[#7A6A5E] italic max-w-[200px] mt-2">
-                                Prépare tes plus beaux crayons et amuse-toi bien ! 🖍️✨
+                                Prépare tes plus beaux crayons et amuse-toi bien !
                               </p>
                             </div>
 
@@ -1384,7 +1391,7 @@ startxref
                               <div className="bg-[#FFFDF7] p-2.5 rounded-xl border border-neutral-100 w-[90%] text-center shadow-sm shrink-0 z-10 mb-2">
                                 {funFact && (
                                   <>
-                                    <span className="text-[9px] font-black text-[#FFB300] uppercase tracking-wider block">💡 Le Savais-tu ?</span>
+                                    <span className="text-[9px] font-black text-[#FFB300] uppercase tracking-wider block flex items-center gap-1"><Lightbulb className="w-3 h-3" /> Le Savais-tu ?</span>
                                     <span className="text-[9px] font-extrabold text-[#7A6A5E] leading-tight block mt-0.5">
                                       {bookPages[currentBookPage].label === "Éléphant" ? "L'éléphant communique par infrasons inaudibles pour les humains !" :
                                        bookPages[currentBookPage].label === "Lion" ? "Le rugissement du lion peut s'entendre jusqu'à 8 kilomètres de distance !" :
@@ -1436,7 +1443,7 @@ startxref
                 {/* Miniatures horizontales strip */}
                 <div className="w-full flex flex-col gap-2 shrink-0">
                   <span className="text-xs font-black text-[#64748B] uppercase tracking-wider px-1">
-                    📖 Pages du livre ({totalPagesCount})
+                    <BookText className="w-5 h-5 inline-block mr-1" /> Pages du livre ({totalPagesCount})
                   </span>
 
                   <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-thin w-full items-stretch">
@@ -1462,9 +1469,9 @@ startxref
                           {/* Mini visual representing page */}
                           <div className="flex-1 w-full bg-[#FAFAFC] rounded-lg overflow-hidden flex items-center justify-center relative p-1 mt-1 border border-neutral-100">
                             {page.type === "cover" ? (
-                              <div className="text-[20px]">🌳</div>
+                              <TreePine className="w-5 h-5 text-[#22C55E]" />
                             ) : page.type === "belongs_to" ? (
-                              <div className="text-[20px]">🎁</div>
+                              <Gift className="w-5 h-5 text-[#7D6AF8]" />
                             ) : (
                               <div className="relative w-full h-full">
                                 <Image
@@ -1626,7 +1633,7 @@ startxref
                 {/* Generation Progress (only shown while generating) */}
                 {generationProgress < 100 && (
                   <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-8 bg-white shadow-sm flex flex-col items-center gap-5">
-                    <span className="text-5xl animate-bounce">⚡</span>
+                    <Zap className="w-12 h-12 text-[#FFB300] animate-bounce" />
                     <h3 className="text-xl font-extrabold text-[#1F2937]">Génération du PDF en cours…</h3>
                     <p className="text-xs text-[#64748B] text-center max-w-sm">
                       Nous assemblons {selectedIds.length} coloriages avec la couverture &ldquo;{title}&rdquo; et vos options personnalisées.
@@ -1732,7 +1739,7 @@ startxref
                         {[
                           { label: "Pages", value: `${totalPagesCount} pages`, icon: "📄", color: "#7D6AF8" },
                           { label: "Format", value: bookFormat, icon: "📐", color: "#1194FF" },
-                          { label: "Qualité", value: "300 DPI", icon: "✨", color: "#20C997" },
+                          { label: "Qualité", value: "300 DPI", icon: "★", color: "#20C997" },
                           { label: "Taille", value: `${calculatedPdfWeight} Mo`, icon: "💾", color: "#FFB300" },
                         ].map((item) => (
                           <div
@@ -1814,7 +1821,7 @@ startxref
                         }}
                         className="h-10 px-5 rounded-xl bg-neutral-100 text-[#64748B] hover:bg-neutral-200 border-none font-bold text-xs cursor-pointer"
                       >
-                        Créer un nouveau livre 📚
+                        Créer un nouveau livre
                       </Button>
                     </div>
                   </motion.div>
@@ -1935,7 +1942,7 @@ startxref
                       <p className="text-[10px] font-semibold text-[#6D5DE8] leading-none">Accès illimité</p>
                     </div>
                     <span className="ml-auto text-[10px] font-black bg-[#7D6AF8] text-white px-2.5 py-1 rounded-full shadow-sm">
-                      🔥 Populaire
+                      <Flame className="w-3.5 h-3.5 inline-block" /> Populaire
                     </span>
                   </div>
 

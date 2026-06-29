@@ -61,7 +61,9 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
                 <AvatarFallback>AW</AvatarFallback>
               </Avatar>
               <div className="flex items-center gap-1.5">
-                <span className="text-[16px] font-extrabold text-[#334155]">Awa</span>
+                <span className="text-[16px] font-extrabold text-[#334155]">
+                  {currentChild.charAt(0).toUpperCase() + currentChild.slice(1)}
+                </span>
                 <ChevronDown className="w-4 h-4 text-[#64748B]" />
               </div>
             </div>
