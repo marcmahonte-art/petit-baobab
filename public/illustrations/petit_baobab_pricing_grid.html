@@ -1,0 +1,198 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.page { padding: 1.5rem 0; }
+.header { text-align: center; margin-bottom: 1.75rem; }
+.header h1 { font-size: 22px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+.header p { font-size: 14px; color: var(--text-secondary); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-bottom: 1.5rem; }
+.card {
+  background: var(--surface-2);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.card.featured { border: 2px solid #7F77DD; }
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 500;
+  padding: 3px 10px; border-radius: 20px;
+  width: fit-content;
+}
+.badge-purple { background: #EEEDFE; color: #3C3489; }
+.badge-blue   { background: #E6F1FB; color: #0C447C; }
+.badge-green  { background: #EAF3DE; color: #27500A; }
+.badge-best   { background: #7F77DD; color: #fff; font-size: 11px; }
+.plan-name { font-size: 17px; font-weight: 500; color: var(--text-primary); margin-top: 4px; }
+.plan-desc { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.price { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+.price-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.credits-pill {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 13px; font-weight: 500; width: fit-content;
+}
+.cp-purple { background: #EEEDFE; color: #3C3489; }
+.cp-blue   { background: #E6F1FB; color: #0C447C; }
+.cp-green  { background: #EAF3DE; color: #27500A; }
+.divider { border: none; border-top: 0.5px solid var(--border); }
+.feat-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.feat-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-primary); line-height: 1.45; }
+.feat-list li .ti { font-size: 15px; color: #3B6D11; margin-top: 1px; flex-shrink: 0; }
+.cta-btn {
+  display: block; width: 100%; padding: 10px;
+  border-radius: 8px; border: none;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  text-align: center; margin-top: auto;
+}
+.btn-purple { background: #7F77DD; color: #fff; }
+.btn-blue   { background: #378ADD; color: #fff; }
+.btn-green  { background: #639922; color: #fff; }
+.free-note {
+  background: var(--surface-1);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  font-size: 13px; color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.free-note .ti { font-size: 18px; color: var(--text-muted); }
+.how-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1rem; }
+.how-card {
+  background: var(--surface-1);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+}
+.how-card .ti { font-size: 20px; color: #7F77DD; margin-bottom: 6px; }
+.how-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
+.how-body  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.section-label {
+  font-size: 12px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted);
+  margin-bottom: 10px;
+}
+</style>
+
+<div class="page">
+  <h2 class="sr-only">Grille tarifaire Petit Baobab — plans Découverte, Super Baobab et École/Pro</h2>
+
+  <div class="header">
+    <h1>Choisissez le plan qui vous convient</h1>
+    <p>Plus de créations, plus de styles, plus de possibilités</p>
+  </div>
+
+  <div class="free-note">
+    <i class="ti ti-gift" aria-hidden="true"></i>
+    <div>
+      <strong style="color:var(--text-primary); font-weight:500;">Plan gratuit inclus</strong> —
+      3 générations par jour (style Contour simple uniquement), réinitialisées à minuit GMT (Burkina Faso). Aucune carte requise.
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div>
+        <span class="badge badge-purple">Paiement unique</span>
+        <div class="plan-name">Découverte</div>
+        <div class="plan-desc">Pour plus de créativité</div>
+      </div>
+      <div>
+        <div class="price">2 000 FCFA</div>
+        <div class="price-sub">paiement unique</div>
+      </div>
+      <span class="credits-pill cp-purple">100 crédits inclus</span>
+      <hr class="divider">
+      <ul class="feat-list">
+        <li><i class="ti ti-check" aria-hidden="true"></i>100 crédits à utiliser quand vous voulez</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Tous les styles de dessin (1, 3 ou 6 crédits)</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Livres de coloriage</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Jeux éducatifs (accès basique)</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Histoires &amp; Activités illimitées</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Téléchargement de vos créations</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Support WhatsApp</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Aucune date d'expiration</li>
+      </ul>
+      <button class="cta-btn btn-purple" onclick="sendPrompt('Je veux souscrire au plan Découverte à 2000 FCFA')">Choisir Découverte ↗</button>
+    </div>
+
+    <div class="card featured">
+      <div>
+        <span class="badge badge-best">⭐ Le meilleur choix</span>
+        <div class="plan-name">Super Baobab</div>
+        <div class="plan-desc">Pour les familles</div>
+      </div>
+      <div>
+        <div class="price">4 500 FCFA</div>
+        <div class="price-sub">paiement unique</div>
+      </div>
+      <span class="credits-pill cp-blue">250 crédits inclus</span>
+      <hr class="divider">
+      <ul class="feat-list">
+        <li><i class="ti ti-check" aria-hidden="true"></i>250 crédits à utiliser quand vous voulez</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Tous les styles de dessin</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Livres de coloriage</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Jeux éducatifs (accès complet)</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Histoires &amp; Activités illimitées</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Jusqu'à 3 profils enfants</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Téléchargement de vos créations</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Support WhatsApp prioritaire</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Meilleur rapport qualité/prix</li>
+      </ul>
+      <button class="cta-btn btn-blue" onclick="sendPrompt('Je veux souscrire au plan Super Baobab à 4500 FCFA')">Choisir Super Baobab ↗</button>
+    </div>
+
+    <div class="card">
+      <div>
+        <span class="badge badge-green">Abonnement mensuel</span>
+        <div class="plan-name">École / Pro</div>
+        <div class="plan-desc">Pour les écoles et professionnels</div>
+      </div>
+      <div>
+        <div class="price">25 000 FCFA</div>
+        <div class="price-sub">par mois</div>
+      </div>
+      <span class="credits-pill cp-green">1 000 crédits / mois</span>
+      <hr class="divider">
+      <ul class="feat-list">
+        <li><i class="ti ti-check" aria-hidden="true"></i>1 000 crédits renouvelés chaque mois</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Tous les styles de dessin</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Livres et jeux éducatifs complets</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Histoires &amp; Activités illimitées</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Profils illimités (gestion de classe)</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Tableau de bord enseignant</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Téléchargement illimité</li>
+        <li><i class="ti ti-check" aria-hidden="true"></i>Support WhatsApp dédié + onboarding</li>
+      </ul>
+      <button class="cta-btn btn-green" onclick="sendPrompt('Je veux souscrire au plan École/Pro à 25000 FCFA/mois')">Choisir École / Pro ↗</button>
+    </div>
+
+  </div>
+
+  <div class="section-label">Comment ça fonctionne</div>
+  <div class="how-grid">
+    <div class="how-card">
+      <i class="ti ti-palette" aria-hidden="true"></i>
+      <div class="how-title">Choisissez votre style</div>
+      <div class="how-body">Chaque style a un coût différent : 1, 3 ou 6 crédits selon la complexité.</div>
+    </div>
+    <div class="how-card">
+      <i class="ti ti-sparkles" aria-hidden="true"></i>
+      <div class="how-title">Générez votre dessin</div>
+      <div class="how-body">Vos crédits ou votre quota journalier sont décomptés automatiquement.</div>
+    </div>
+    <div class="how-card">
+      <i class="ti ti-refresh" aria-hidden="true"></i>
+      <div class="how-title">Remboursement si échec</div>
+      <div class="how-body">Si la génération échoue, vos crédits sont remboursés automatiquement.</div>
+    </div>
+    <div class="how-card">
+      <i class="ti ti-clock" aria-hidden="true"></i>
+      <div class="how-title">Plan gratuit</div>
+      <div class="how-body">3 générations/jour, style Contour simple, réinitialisées à minuit (GMT Burkina Faso).</div>
+    </div>
+  </div>
+
+</div>

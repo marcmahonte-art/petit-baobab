@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: #FFF9F2;
+  --color-foreground: #3B2416;
+  --color-surface: #FFFFFF;
+  --color-border: #F0E7DA;
+  --color-muted: #7A6A5E;
+  --color-hero: #FFF5CC;
+  --color-yellow: #FFD95C;
+  --color-purple: #7D6AF8;
+  --color-green: #20C997;
+  --color-orange: #FFB300;
+  --color-blue: #1194FF;
+  --color-pink: #FF5E83;
+  --color-teal: #13C6A2;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #3B2416;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #3B2416;
+  --color-primary: #4A4EBE;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #FFB300;
+  --color-secondary-foreground: #3B2416;
+  --color-accent: #FFE08A;
+  --color-accent-foreground: #3B2416;
+  --color-destructive: #FF5E83;
+  --color-destructive-foreground: #FFFFFF;
+  --color-input: #EFE7DB;
+  --color-ring: #4A4EBE;
+  --color-chart-1: #FFD95C;
+  --color-chart-2: #20C997;
+  --color-chart-3: #1194FF;
+  --color-chart-4: #FF5E83;
+  --color-chart-5: #7D6AF8;
+
+  --radius-sm: 16px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --radius-hero: 32px;
+  --radius-pill: 999px;
+
+  --font-sans: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-float-slow {
+  animation: float 5s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.feature-card {
+  transition: all 0.22s ease;
+}
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.coloring-item {
+  transition: all 0.2s ease;
+}
+.coloring-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.badge-hover {
+  transition: transform 0.2s ease;
+}
+.badge-hover:hover {
+  transform: scale(1.08);
+}
+
+.nav-item {
+  transition: all 0.2s ease;
+}
+.nav-item:hover {
+  transform: scale(1.02);
+}
+.nav-item.active {
+  background: #FFE08A;
+}
