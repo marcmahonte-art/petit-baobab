@@ -74,7 +74,7 @@ export function PricingSection() {
       </motion.div>
 
       {/* Header */}
-      <div className="max-w-[70%] mb-12 text-left">
+      <div className="w-full lg:max-w-[70%] mb-8 md:mb-12 text-left">
         <h2 className="text-[28px] md:text-[36px] font-extrabold text-[#334155] leading-tight">
           Choisissez le plan qui vous convient
         </h2>
