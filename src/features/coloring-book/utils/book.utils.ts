@@ -1,10 +1,36 @@
-﻿import { libraryDrawings } from "../constants/book.constants"
+import { libraryDrawings } from "../constants/book.constants"
 import type { BookInfo, BookOptions, BookPage, BookStyle, LibraryDrawing, PrintSettings } from "../types"
 import { validateBook } from "../validators/book.validator"
+import type { SavedDrawing } from "@/features/drawings/types"
 
 export function getSelectedDrawings(selectedImages: string[]): LibraryDrawing[] {
+  let saved: SavedDrawing[] = []
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
+      if (raw) saved = JSON.parse(raw)
+    } catch (e) {
+      console.error("Error reading saved drawings in book utils:", e)
+    }
+  }
+
   return selectedImages
-    .map((id) => libraryDrawings.find((drawing) => drawing.id === id))
+    .map((id) => {
+      const staticDraw = libraryDrawings.find((drawing) => drawing.id === id)
+      if (staticDraw) return staticDraw
+
+      const savedDraw = saved.find((drawing) => drawing.id === id)
+      if (savedDraw) {
+        return {
+          id: savedDraw.id,
+          name: savedDraw.name,
+          image: savedDraw.image, // User-colored image (data URL / PNG)
+          category: savedDraw.category,
+          isPersonal: true,
+        }
+      }
+      return undefined
+    })
     .filter((drawing): drawing is LibraryDrawing => Boolean(drawing))
 }
 
@@ -25,7 +51,7 @@ export function buildPreview(params: {
   }
 
   getSelectedDrawings(params.selectedImages).forEach((drawing) => {
-    pages.push({ type: "drawing", label: drawing.name, image: drawing.image, details: drawing.category })
+    pages.push({ type: "drawing", label: drawing.name, image: drawing.image, details: drawing.category, isPersonal: drawing.isPersonal })
   })
 
   return pages

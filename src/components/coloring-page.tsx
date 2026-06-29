@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useRef, useState } from "react"
 import { ColoringHeader } from "@/components/coloring-header"
@@ -15,6 +15,7 @@ import { SaveDrawingModal } from "@/components/drawings/SaveDrawingModal"
 import { drawingService } from "@/features/drawings/DrawingService"
 import type { SavedDrawing } from "@/features/drawings/types"
 import { useColoringStore } from "@/lib/store"
+import { useBookStore } from "@/features/coloring-book/store/useBookStore"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sliders } from "lucide-react"
@@ -31,6 +32,8 @@ export function ColoringPage() {
     setSaved,
     setAddedToLivre,
     clearHistory,
+    activeSavedDrawingId,
+    setActiveSavedDrawingId,
   } = useColoringStore()
 
   const handleUndo = () => canvasRef.current?.undo()
@@ -57,14 +60,16 @@ export function ColoringPage() {
     const snapshot = await canvasRef.current?.saveDrawing()
     if (!snapshot) return
 
-    await drawingService.save(snapshot)
+    const savedResult = await drawingService.save(snapshot, activeSavedDrawingId)
+    setActiveSavedDrawingId(savedResult.id)
     setSaved(true)
     setGalleryRefreshKey((key) => key + 1)
-    showToast("Dessin enregistre avec succes !")
+    showToast('✅ Votre dessin a été enregistré dans "Mes dessins".')
   }
 
   const handleOpenSavedDrawing = (drawing: SavedDrawing) => {
     setCurrentDrawing(drawing.template)
+    setActiveSavedDrawingId(drawing.id)
     setIsGalleryOpen(false)
 
     window.setTimeout(() => {
@@ -72,8 +77,22 @@ export function ColoringPage() {
     }, currentDrawing.id === drawing.template.id ? 0 : 250)
   }
 
-  const handleAddToBook = () => {
+  const handleAddToBook = async () => {
+    const snapshot = await canvasRef.current?.saveDrawing()
+    if (!snapshot) return
+
+    const savedResult = await drawingService.save(snapshot, activeSavedDrawingId)
+    setActiveSavedDrawingId(savedResult.id)
+    setSaved(true)
+    setGalleryRefreshKey((key) => key + 1)
+
+    const selectedImages = useBookStore.getState().selectedImages
+    if (!selectedImages.includes(savedResult.id)) {
+      useBookStore.getState().setSelectedImages((prev) => [...prev, savedResult.id])
+    }
+
     setAddedToLivre(true)
+    showToast("✅ Dessin enregistré et ajouté au livre !")
   }
 
   return (

@@ -38,6 +38,7 @@ import { Slider } from "@/components/ui/slider"
 import Image from "next/image"
 import { categories, libraryDrawings } from "@/features/coloring-book/constants/book.constants"
 import { useBookWizard } from "@/features/coloring-book/hooks/useBookWizard"
+import type { SavedDrawing } from "@/features/drawings/types"
 import { BookHeader } from "@/features/coloring-book/components/BookHeader"
 import { BookPreviewCanvas } from "@/features/coloring-book/components/BookPreviewCanvas"
 import { BookStepper } from "@/features/coloring-book/components/BookStepper"
@@ -120,6 +121,35 @@ export function ColoringBooksPage() {
   const viewerContainerRef = useRef<HTMLDivElement>(null)
   const generationTimerRef = useRef<number | null>(null)
   const [isPrintableBookOpen, setIsPrintableBookOpen] = useState(false)
+
+  const [savedDrawings, setSavedDrawings] = useState<SavedDrawing[]>([])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
+        if (raw) {
+          const parsed = JSON.parse(raw) as SavedDrawing[]
+          window.setTimeout(() => {
+            setSavedDrawings(parsed)
+          }, 0)
+        }
+      } catch (e) {
+        console.error("Error loading saved drawings for book selector:", e)
+      }
+    }
+  }, [])
+
+  const allAvailableDrawings = [
+    ...libraryDrawings,
+    ...savedDrawings.map((draw) => ({
+      id: draw.id,
+      name: draw.name,
+      image: draw.image,
+      category: draw.category,
+      isPersonal: true,
+    })),
+  ]
 
   // Switch to Child values when child changes
   useEffect(() => {
@@ -208,7 +238,7 @@ export function ColoringBooksPage() {
   }
 
   // Filter drawings list
-  const filteredDrawings = libraryDrawings.filter((drawing) => {
+  const filteredDrawings = allAvailableDrawings.filter((drawing) => {
     const matchesSearch = drawing.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCat === "all" || drawing.category === selectedCat
     return matchesSearch && matchesCategory
@@ -403,11 +433,18 @@ startxref
                               </div>
                             )}
 
+                            {draw.isPersonal && (
+                              <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#22C55E] text-white text-[9px] font-black uppercase tracking-wider z-10 shadow-sm">
+                                Mes dessins
+                              </div>
+                            )}
+
                             <div className="flex-1 w-full relative flex items-center justify-center bg-[#FAFAFC] rounded-[12px] overflow-hidden p-2">
                               <Image
                                 src={draw.image}
                                 alt={draw.name}
                                 fill
+                                unoptimized={draw.isPersonal}
                                 className="object-contain p-2 group-hover:scale-102 transition-transform duration-200"
                               />
                             </div>
@@ -477,6 +514,7 @@ startxref
                               alt={draw.name}
                               width={60}
                               height={60}
+                              unoptimized={draw.isPersonal}
                               className="object-contain"
                             />
                           </div>
@@ -2099,9 +2137,10 @@ startxref
                             src={page.image || "/illustrations/animals/elephant.svg"}
                             alt={page.label}
                             fill
+                            unoptimized={page.isPersonal}
                             className={cn(
                               "object-contain",
-                              drawingStyle === "Version couleur" ? "" : "grayscale contrast-125 brightness-105"
+                              page.isPersonal || drawingStyle === "Version couleur" ? "" : "grayscale contrast-125 brightness-105"
                             )}
                           />
                         </div>

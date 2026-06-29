@@ -1,4 +1,4 @@
-﻿import type { BookExportSettings } from "./BookExport"
+import type { BookExportSettings } from "./BookExport"
 import type { BookFrame } from "./BookFrame"
 import type { BookPage } from "./BookPage"
 import type { BookSettings } from "./BookSettings"
@@ -15,6 +15,7 @@ export interface LibraryDrawing {
   name: string
   image: string
   category: string
+  isPersonal?: boolean
 }
 
 export interface DrawingCategory {

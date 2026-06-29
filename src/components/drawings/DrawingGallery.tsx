@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { Search } from "lucide-react"
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { DrawingCard } from "@/components/drawings/DrawingCard"
 import { drawingService } from "@/features/drawings/DrawingService"
 import type { DrawingSort, SavedDrawing } from "@/features/drawings/types"
+import { useBookStore } from "@/features/coloring-book/store/useBookStore"
 
 interface DrawingGalleryProps {
   refreshKey?: number
@@ -33,13 +34,6 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
 
   const visibleDrawings = drawings.slice(0, visibleCount)
 
-  const handleRename = async (drawing: SavedDrawing) => {
-    const name = window.prompt("Nouveau nom du dessin", drawing.name)?.trim()
-    if (!name) return
-    await drawingService.rename(drawing.id, name)
-    setDrawings(await drawingService.list({ search, category, sort }))
-  }
-
   const handleDelete = async (drawing: SavedDrawing) => {
     if (!window.confirm(`Supprimer "${drawing.name}" ?`)) return
     await drawingService.delete(drawing.id)
@@ -58,6 +52,17 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
     if (!printWindow) return
     printWindow.document.write(`<html><head><title>${drawing.name}</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:white}img{max-width:100%;max-height:100%;object-fit:contain}@media print{@page{size:A4 landscape;margin:0}img{width:100vw;height:100vh}}</style></head><body><img src="${drawing.image}" onload="window.print(); window.close();" /></body></html>`)
     printWindow.document.close()
+  }
+
+  const handleAddToBook = (drawing: SavedDrawing) => {
+    const selectedImages = useBookStore.getState().selectedImages
+    if (selectedImages.includes(drawing.id)) {
+      alert("Ce dessin est déjà ajouté à votre livre !")
+      return
+    }
+
+    useBookStore.getState().setSelectedImages((prev) => [...prev, drawing.id])
+    alert(`✅ "${drawing.name}" a été ajouté à votre livre !`)
   }
 
   return (
@@ -92,7 +97,7 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {visibleDrawings.map((drawing) => (
-              <DrawingCard key={drawing.id} drawing={drawing} onOpen={onOpen} onRename={handleRename} onDelete={handleDelete} onDownload={handleDownload} onPrint={handlePrint} />
+              <DrawingCard key={drawing.id} drawing={drawing} onOpen={onOpen} onDelete={handleDelete} onDownload={handleDownload} onPrint={handlePrint} onAddToBook={handleAddToBook} />
             ))}
           </div>
         )}

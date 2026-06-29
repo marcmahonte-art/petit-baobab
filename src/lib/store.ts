@@ -1,4 +1,4 @@
-﻿import { create } from "zustand"
+import { create } from "zustand"
 
 export type ToolType = "brush" | "bucket" | "eraser" | "fill"
 
@@ -24,6 +24,7 @@ export interface ColoringState {
   currentDrawing: DrawingItem
   magicCategory: string
   selectedCategory: string
+  activeSavedDrawingId: string | null
 
   setSelectedTool: (tool: ToolType) => void
   setSelectedColor: (color: string) => void
@@ -36,6 +37,7 @@ export interface ColoringState {
   setCurrentDrawing: (drawing: DrawingItem) => void
   setMagicCategory: (cat: string) => void
   setSelectedCategory: (category: string) => void
+  setActiveSavedDrawingId: (id: string | null) => void
   pushHistory: (canvasJson: string) => void
   undo: () => { canUndo: boolean; stateJson?: string }
   redo: () => { canRedo: boolean; stateJson?: string }
@@ -57,6 +59,7 @@ export const useColoringStore = create<ColoringState>((set, get) => ({
   currentDrawing: { id: "elephant", name: "Elephant", image: "/illustrations/animals/elephant.svg", category: "animals" },
   magicCategory: "",
   selectedCategory: "animals",
+  activeSavedDrawingId: null,
 
   setSelectedTool: (tool) => set({ selectedTool: tool }),
   setSelectedColor: (color) => set({ selectedColor: color }),
@@ -69,9 +72,10 @@ export const useColoringStore = create<ColoringState>((set, get) => ({
   setRewardPopupOpen: (isOpen) => set({ isRewardPopupOpen: isOpen }),
   setSaved: (saved) => set({ isSaved: saved }),
   setAddedToLivre: (added) => set({ isAddedToLivre: added }),
-  setCurrentDrawing: (drawing) => set({ currentDrawing: drawing, isSaved: false }),
+  setCurrentDrawing: (drawing) => set({ currentDrawing: drawing, isSaved: false, activeSavedDrawingId: null }),
   setMagicCategory: (cat) => set({ magicCategory: cat }),
   setSelectedCategory: (cat) => set({ selectedCategory: cat }),
+  setActiveSavedDrawingId: (id) => set({ activeSavedDrawingId: id }),
 
   pushHistory: (json) => {
     const { canvasHistory, historyIndex } = get()

@@ -22,21 +22,37 @@ export class DrawingService {
       })
   }
 
-  async save(input: SaveDrawingInput) {
+  async save(input: SaveDrawingInput, existingId?: string | null) {
     const now = new Date().toISOString()
+    let id = this.createId()
+    let createdAt = now
+
+    if (existingId) {
+      id = existingId
+      try {
+        const list = await this.repository.list()
+        const found = list.find((item) => item.id === existingId)
+        if (found) {
+          createdAt = found.createdAt
+        }
+      } catch (e) {
+        console.error("Error looking up existing drawing:", e)
+      }
+    }
+
     const drawing = {
-      id: this.createId(),
+      id,
       name: input.name,
       modelName: input.template.name,
       category: input.category,
-      createdAt: now,
+      createdAt,
       updatedAt: now,
-      progress: input.state.filledZones >= 6 ? "completed" : "in_progress",
+      progress: (input.state.filledZones >= 6 ? "completed" : "in_progress") as "completed" | "in_progress",
       image: input.image,
       thumbnail: input.thumbnail,
       template: input.template,
       state: input.state,
-    } as const
+    }
 
     return this.repository.save(drawing)
   }

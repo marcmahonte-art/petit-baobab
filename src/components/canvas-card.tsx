@@ -52,6 +52,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
     setSelectedColor,
     setBrushSize,
     setSaved,
+    activeSavedDrawingId,
   } = useColoringStore()
 
   const restoreOutlineRef = useCallback((canvas: fabric.Canvas) => {
@@ -94,25 +95,47 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       canvas.freeDrawingBrush.color = selectedTool === "eraser" ? "#FFFFFF" : selectedColor
       canvas.freeDrawingBrush.width = selectedTool === "eraser" ? brushSize * 2.5 : brushSize
 
-      if (currentDrawing.isVector) {
-        const sortedPaths = [...savaneArtPaths].sort((a, b) => a.zIndex - b.zIndex)
-        sortedPaths.forEach((artPath) => {
-          const path = new fb.Path(artPath.d, {
-            id: artPath.id,
-            name: artPath.name,
-            strokeWidth: artPath.strokeWidth,
-            stroke: artPath.stroke,
-            fill: artPath.fill,
-            selectable: false,
-            evented: true,
-            hoverCursor: "pointer",
+      const loadInitialContent = async () => {
+        if (!canvas) return
+        const activeId = activeSavedDrawingId
+        if (activeId) {
+          try {
+            const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
+            if (raw) {
+              const list = JSON.parse(raw) as SavedDrawing[]
+              const found = list.find((d) => d.id === activeId)
+              if (found && canvas) {
+                setSelectedTool(found.state.selectedTool)
+                setSelectedColor(found.state.selectedColor)
+                setBrushSize(found.state.brushSize)
+                loadJsonIntoCanvas(canvas, found.state.canvasJson, true)
+                setSaved(true)
+                return
+              }
+            }
+          } catch (e) {
+            console.error("Error loading saved drawing JSON on init:", e)
+          }
+        }
+
+        if (currentDrawing.isVector) {
+          const sortedPaths = [...savaneArtPaths].sort((a, b) => a.zIndex - b.zIndex)
+          sortedPaths.forEach((artPath) => {
+            const path = new fb.Path(artPath.d, {
+              id: artPath.id,
+              name: artPath.name,
+              strokeWidth: artPath.strokeWidth,
+              stroke: artPath.stroke,
+              fill: artPath.fill,
+              selectable: false,
+              evented: true,
+              hoverCursor: "pointer",
+            })
+            canvas?.add(path)
           })
-          canvas?.add(path)
-        })
-        canvas.renderAll()
-        pushHistory(JSON.stringify(canvas.toJSON()))
-      } else {
-        const loadImage = async () => {
+          canvas.renderAll()
+          pushHistory(JSON.stringify(canvas.toJSON()))
+        } else {
           let imageUrl = currentDrawing.image
 
           if (imageUrl.endsWith(".svg")) {
@@ -174,9 +197,9 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
             console.error("Error loading image:", err)
           })
         }
-
-        loadImage()
       }
+
+      loadInitialContent()
 
       setFabricInstance(canvas)
 
