@@ -450,33 +450,35 @@ export default function LandingPage() {
       {/* END: Testimonials */}
 
       {/* BEGIN: FooterCTA */}
-      <section className="px-6 pb-20 pt-12">
-        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8 md:pr-[390px]">
+      <section className="px-6 pb-24 pt-12">
+        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8">
           
-          {/* Left Column: Title and Subtitle */}
-          <div className="relative z-10 max-w-md">
+          {/* Left Column (40%): Title and Subtitle */}
+          <div className="relative z-10 md:w-[40%] text-center md:text-left">
             <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Prêt à éveiller la créativité<br className="hidden md:inline"/> de votre enfant ?</h2>
             <p className="text-indigo-100 text-sm opacity-80">Rejoignez des milliers de familles<br className="hidden md:inline"/> qui font déjà confiance à Petit Baobab.</p>
           </div>
 
-          {/* Center Column: CTA button */}
-          <div className="relative z-10 flex flex-col items-center gap-2">
+          {/* Center Column (20%): Centered CTA button */}
+          <div className="relative z-10 md:w-[20%] flex flex-col items-center justify-center gap-2">
             <button
               onClick={handleCTA}
-              className="px-8 py-3.5 bg-white text-[#635BFF] font-bold rounded-[32px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer text-sm w-full md:w-auto text-center"
+              className="px-8 py-3.5 bg-white text-[#635BFF] font-bold rounded-[32px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer text-sm w-full md:w-auto text-center whitespace-nowrap"
             >
               Commencer gratuitement
             </button>
-            <p className="text-[10px] text-white/70">Aucune carte bancaire requise</p>
+            <p className="text-[10px] text-white/70 whitespace-nowrap">Aucune carte bancaire requise</p>
           </div>
 
-          {/* Absolutely Positioned Image (1.7x scaled and overflowing) */}
-          <div className="absolute bottom-0 right-0 md:right-4 w-[220px] md:w-[320px] lg:w-[370px] translate-y-6 md:translate-y-10 z-20 pointer-events-none select-none">
-            <img
-              alt="Enfant qui dessine"
-              className="w-full h-auto drop-shadow-2xl"
-              src="/illustrations/enfant-Crayons%20de%20couleur.webp"
-            />
+          {/* Right Column (40%): Reserves space and holds the absolute overflowing image (3.3x scaled) */}
+          <div className="relative md:w-[40%] self-stretch min-h-[160px] md:min-h-0">
+            <div className="absolute bottom-0 right-0 md:-right-6 lg:-right-8 w-[280px] md:w-[440px] lg:w-[500px] translate-y-8 md:translate-y-16 z-20 pointer-events-none select-none">
+              <img
+                alt="Enfant qui dessine"
+                className="w-full h-auto drop-shadow-2xl"
+                src="/illustrations/enfant-Crayons%20de%20couleur.webp"
+              />
+            </div>
           </div>
 
           {/* Background Graphic Overlay */}
