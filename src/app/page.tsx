@@ -472,7 +472,7 @@ export default function LandingPage() {
 
           {/* Right Column (40%): Reserves space and holds the absolute overflowing image (3.3x scaled) */}
           <div className="relative md:w-[40%] self-stretch min-h-[160px] md:min-h-0">
-            <div className="absolute bottom-0 right-0 md:-right-8 lg:-right-10 w-[280px] md:w-[480px] lg:w-[560px] translate-y-12 md:translate-y-24 z-20 pointer-events-none select-none">
+            <div className="absolute bottom-0 right-0 md:-right-8 lg:-right-10 w-[280px] md:w-[480px] lg:w-[560px] translate-y-8 md:translate-y-16 z-20 pointer-events-none select-none">
               <img
                 alt="Enfant qui dessine"
                 className="w-full h-auto drop-shadow-2xl"
