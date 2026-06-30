@@ -43,7 +43,7 @@
   --radius-hero: 32px;
   --radius-pill: 999px;
 
-  --font-sans: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  --font-sans: var(--font-poppins), "Trebuchet MS", "Segoe UI", Arial, sans-serif;
 
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
