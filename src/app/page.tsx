@@ -31,10 +31,10 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="bg-[#FBFAEE] font-sans text-[#1F2937] antialiased overflow-x-hidden min-h-screen">
+    <div className="bg-[#fef5e0] font-sans text-[#1F2937] antialiased overflow-x-hidden min-h-screen">
       
       {/* BEGIN: MainHeader */}
-      <header className="sticky top-0 z-50 bg-[#FBFAEE]/90 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#fef5e0]/90 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
@@ -483,7 +483,7 @@ export default function LandingPage() {
       {/* END: FooterCTA */}
 
       {/* BEGIN: MainFooter */}
-      <footer className="bg-[#FBFAEE] pt-20 border-t border-gray-100">
+      <footer className="bg-[#fef5e0] pt-20 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
             
