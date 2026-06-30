@@ -144,7 +144,7 @@ export default function LandingPage() {
             <img
               alt="Enfant coloriant un livre"
               className="relative z-10 w-full md:scale-110 lg:scale-120 xl:scale-125 origin-center transition-transform duration-300 drop-shadow-2xl rounded-[24px]"
-              src="/illustrations/Petite%20fille%20tenant%20un%20crayon-village-girafe%20B.webp"
+              src="/illustrations/Petite%20fille%20tenant%20un%20crayon-village-girafe%20C.webp"
             />
             {/* Background Elements (Simulated) */}
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-50 -z-10"></div>
