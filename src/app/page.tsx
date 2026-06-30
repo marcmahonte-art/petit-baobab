@@ -321,8 +321,8 @@ export default function LandingPage() {
             <div className="md:w-1/3 flex justify-center">
               <img
                 alt="Enfants lisant"
-                className="w-full max-w-[280px] rounded-lg"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm9Alp4BE8J_VVhPs_Yz2aXTKxSBXWRYU_vHIeluQOVWrIQQDuIM4_oxiir_0zE6UIXZLWY49qEJCVtfr4sfty-_MPBXuOWxUHLDGaHv8cDfJnZ6xDWTVCkg7KNSOR-9VPvpqF3sJ6h5WaAyTEj7NALDuJdNNgpT4SkcXQwhvuWUyweIsQGuRZ2j2hPthmF_-qxJnymOi4dhIaLjg995ljoIy_6kvdCPMpvZjfLlm8W--u1cPfz3j9tm8XiYok8IFEhPxjiRl2rtVu"
+                className="w-full max-w-[380px] md:max-w-[420px] md:scale-110 lg:scale-120 drop-shadow-xl rounded-2xl transition-transform duration-300"
+                src="/illustrations/Deux%20enfants%20lisant%20ensemble.webp"
               />
             </div>
 
