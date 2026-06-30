@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -104,6 +104,16 @@ export default function MagicDrawingPage() {
   const [isAddingToBook, setIsAddingToBook] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const maxChars = 200;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryPrompt = params.get("prompt");
+      if (queryPrompt) {
+        setPrompt(queryPrompt);
+      }
+    }
+  }, []);
 
   const credits = useCreditStore();
   const profileId = useProfileStore((s) => s.activeProfileId);
