@@ -450,33 +450,37 @@ export default function LandingPage() {
       {/* END: Testimonials */}
 
       {/* BEGIN: FooterCTA */}
-      <section className="px-6 pb-12">
-        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[40px] p-12 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between">
+      <section className="px-6 pb-20 pt-12">
+        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8 md:pr-[460px]">
           
-          <div className="relative z-10 text-center md:text-left mb-8 md:mb-0">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Prêt à éveiller la créativité<br/> de votre enfant ?</h2>
-            <p className="text-indigo-100 text-lg mb-8 opacity-80">Rejoignez des milliers de familles qui font déjà confiance à Petit Baobab.</p>
-            <div className="flex flex-col items-center md:items-start gap-3">
-              <button
-                onClick={handleCTA}
-                className="px-10 py-4 bg-white text-[#635BFF] font-bold rounded-[8px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer"
-              >
-                Commencer gratuitement
-              </button>
-              <p className="text-[10px] text-white/60">Aucune carte bancaire requise</p>
-            </div>
+          {/* Left Column: Title and Subtitle */}
+          <div className="relative z-10 max-w-md">
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Prêt à éveiller la créativité<br className="hidden md:inline"/> de votre enfant ?</h2>
+            <p className="text-indigo-100 text-sm opacity-80">Rejoignez des milliers de familles<br className="hidden md:inline"/> qui font déjà confiance à Petit Baobab.</p>
           </div>
 
-          <div className="relative z-10">
+          {/* Center Column: CTA button */}
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <button
+              onClick={handleCTA}
+              className="px-8 py-3.5 bg-white text-[#635BFF] font-bold rounded-[32px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer text-sm w-full md:w-auto text-center"
+            >
+              Commencer gratuitement
+            </button>
+            <p className="text-[10px] text-white/70">Aucune carte bancaire requise</p>
+          </div>
+
+          {/* Absolutely Positioned Image (2.5x scaled and overflowing) */}
+          <div className="absolute bottom-0 right-0 md:right-4 w-[280px] md:w-[400px] lg:w-[440px] translate-y-6 md:translate-y-12 z-20 pointer-events-none select-none">
             <img
               alt="Enfant qui dessine"
-              className="w-full max-w-[320px] drop-shadow-2xl rounded-lg"
+              className="w-full h-auto drop-shadow-2xl"
               src="/illustrations/enfant-Crayons%20de%20couleur.webp"
             />
           </div>
 
           {/* Background Graphic Overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent)]"></div>
+          <div className="absolute inset-0 rounded-[32px] overflow-hidden bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent)] pointer-events-none -z-10"></div>
 
         </div>
       </section>
