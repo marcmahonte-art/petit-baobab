@@ -471,7 +471,7 @@ export default function LandingPage() {
             <img
               alt="Enfant qui dessine"
               className="w-full max-w-[320px] drop-shadow-2xl rounded-lg"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM3ZTSZA_XtMXBy8k_45AYDKKoT9sHd_hz6KpGWqNXfD2CQg1shEHAOKJXLlUW9cy-ZpvCuYTUVTL3Ikg5lbtt-su9sSWoXZaUXB8MAt82G56vkWaw3JTU4bjvC4NsoGLvMV2uzWCzcnA8eYHZs9eRT_-aGBgZyIuPoxm_LdhVxmlYmV8FltuXrZQXH86GS_N40zr26bDQ2R6noBGAOyUl-6nRrrzQvnWbj9Kj0TNiKgq1feqnRPv_GJZl74loYRg_Ewq7kVoKUf37"
+              src="/illustrations/enfant-Crayons%20de%20couleur.webp"
             />
           </div>
 
