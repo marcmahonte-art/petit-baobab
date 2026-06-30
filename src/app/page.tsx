@@ -37,17 +37,13 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-[#fef5e0]/90 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
-            <div className="w-10 h-10 flex items-center justify-center">
+          <div className="flex items-center cursor-pointer" onClick={() => router.push("/")}>
+            <div className="h-[120px] flex items-center justify-center">
               <img
                 alt="Logo"
-                className="rounded-full object-cover w-10 h-10"
-                src="/illustrations/Baobab.webp"
+                className="h-[120px] w-auto object-contain"
+                src="/illustrations/logo-petit-baobab.svg"
               />
-            </div>
-            <div className="leading-tight">
-              <span className="block text-2xl font-extrabold text-[#635BFF]">Petit Baobab</span>
-              <span className="block text-[10px] text-gray-500 uppercase tracking-widest font-bold">Apprendre, créer, grandir !</span>
             </div>
           </div>
 
@@ -472,7 +468,7 @@ export default function LandingPage() {
 
           {/* Right Column (40%): Reserves space and holds the absolute overflowing image (3.3x scaled) */}
           <div className="relative md:w-[40%] self-stretch min-h-[160px] md:min-h-0">
-            <div className="absolute bottom-0 right-0 md:-right-8 lg:-right-10 w-[280px] md:w-[480px] lg:w-[560px] translate-y-8 md:translate-y-16 z-20 pointer-events-none select-none">
+            <div className="absolute bottom-0 right-0 md:-right-8 lg:-right-10 w-[280px] md:w-[480px] lg:w-[560px] translate-y-12 md:translate-y-20 z-20 pointer-events-none select-none">
               <img
                 alt="Enfant qui dessine"
                 className="w-full h-auto drop-shadow-2xl"
@@ -494,16 +490,12 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
             
             <div className="col-span-2">
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center mb-6">
                 <img
                   alt="Logo"
-                  className="w-10 h-10 rounded-full object-cover"
-                  src="/illustrations/Baobab.webp"
+                  className="h-[120px] w-auto object-contain"
+                  src="/illustrations/logo-petit-baobab.svg"
                 />
-                <div className="leading-tight">
-                  <span className="block text-2xl font-extrabold text-[#635BFF]">Petit Baobab</span>
-                  <span className="block text-[10px] text-gray-500 uppercase tracking-widest font-bold">Apprendre, créer, grandir !</span>
-                </div>
               </div>
               <p className="text-sm text-gray-500 max-w-xs mb-6">La plateforme de coloriage et d'éducation inspirée par les cultures africaines.</p>
               <div className="flex gap-4">
