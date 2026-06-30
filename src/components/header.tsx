@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useCreditStore } from "@/lib/credit-store"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
+import { useAuthStore } from "@/lib/auth-store"
 import Link from "next/link"
 
 export function Header() {
@@ -21,6 +22,8 @@ export function Header() {
   // Credits/Stars store
   const credits = useCreditStore()
   const creditInfo = credits.useCredits()
+  const { account } = useAuthStore()
+  const displayStars = account ? account.stars_balance : creditInfo.remaining
 
   // Profiles store
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
@@ -128,7 +131,7 @@ export function Header() {
           {/* Star Credit Badge Mobile */}
           <div className="flex items-center gap-1 h-9 px-2.5 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
             <Star className="w-4 h-4 text-[#FFB300] fill-[#FFB300]" />
-            <span className="text-xs font-black">{creditInfo.remaining}</span>
+            <span className="text-xs font-black">{displayStars}</span>
           </div>
 
           {/* Language Toggle Mobile */}
@@ -204,9 +207,9 @@ export function Header() {
         <div className="flex items-center gap-2 h-11 px-4 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
           <Star className="w-5 h-5 text-[#FFB300] fill-[#FFB300]" />
           <div className="flex flex-col leading-none">
-            <span className="text-[15px] font-black">{creditInfo.remaining}</span>
+            <span className="text-[15px] font-black">{displayStars}</span>
             <span className="text-[9px] font-bold text-[#7A6A5E]">
-              {creditInfo.remaining > 1 ? "Étoiles restantes" : "Étoile restante"}
+              {displayStars > 1 ? "Étoiles restantes" : "Étoile restante"}
             </span>
           </div>
         </div>

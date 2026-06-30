@@ -120,6 +120,8 @@ export default function MagicDrawingPage() {
   const profileId = useProfileStore((s) => s.activeProfileId);
   const { t } = useI18n();
   const creditInfo = credits.useCredits();
+  const { account } = useAuthStore();
+  const starsBalance = account?.stars_balance ?? 0;
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -372,7 +374,7 @@ export default function MagicDrawingPage() {
                 <Star className="w-5 h-5 text-[#FFB300] fill-[#FFB300]" />
                 <div className="flex flex-col leading-none">
                   <span className="text-[17px] font-extrabold text-[#3B2416]">
-                    125
+                    {starsBalance}
                   </span>
                   <span className="text-[10px] font-semibold text-[#7A6A5E]">
                     Mes étoiles

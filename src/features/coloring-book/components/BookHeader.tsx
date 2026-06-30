@@ -6,12 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
+import { useAuthStore } from "@/lib/auth-store"
+
 interface BookHeaderProps {
   currentChild: string
   setCurrentChild: (child: string) => void
 }
 
 export function BookHeader({ currentChild, setCurrentChild }: BookHeaderProps) {
+  const { account } = useAuthStore()
+  const starsBalance = account?.stars_balance ?? 0
+
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 px-2">
         <div>
@@ -28,7 +33,7 @@ export function BookHeader({ currentChild, setCurrentChild }: BookHeaderProps) {
           <div className="w-[130px] h-[52px] rounded-[16px] border border-[#E5E7EB] bg-white flex items-center gap-2.5 px-3.5 shadow-sm">
             <Star className="w-5 h-5 fill-current text-[#FBBF24]" />
             <div className="flex flex-col justify-center leading-none">
-              <span className="text-[15px] font-extrabold text-[#1F2937]">125</span>
+              <span className="text-[15px] font-extrabold text-[#1F2937]">{starsBalance}</span>
               <span className="text-[9px] font-bold text-[#64748B] mt-0.5">Mes étoiles</span>
             </div>
           </div>
