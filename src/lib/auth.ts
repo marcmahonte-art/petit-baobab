@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabaseClient"
 
 export const STARS_REASONS = {
   SIGNUP_BONUS: "signup_bonus",
+  DAILY_RESET: "daily_reset",
   GENERATION: "generation",
   REFUND: "refund",
   PURCHASE: "purchase",

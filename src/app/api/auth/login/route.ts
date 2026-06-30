@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabaseClient"
-import { setAuthCookies } from "@/lib/auth"
+import { setAuthCookies, adjustStars } from "@/lib/auth"
 
 export async function POST(request: Request) {
   try {
@@ -82,6 +82,29 @@ export async function POST(request: Request) {
         })
     }
 
+    let starsBalance = account.stars_balance || 0
+
+    // Automatic rolling 24-hour top up back to 5 stars for Free plans
+    if (account.plan === "free" && starsBalance < 5) {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      
+      const { data: recentResets, error: resetErr } = await supabase
+        .from("stars_transactions")
+        .select("created_at")
+        .eq("account_id", account.id)
+        .in("reason", ["signup_bonus", "daily_reset"])
+        .gte("created_at", twentyFourHoursAgo)
+        .limit(1)
+
+      if (!resetErr && (!recentResets || recentResets.length === 0)) {
+        const topupAmount = 5 - starsBalance
+        const { success, newBalance } = await adjustStars(account.id, topupAmount, "daily_reset")
+        if (success && newBalance !== undefined) {
+          starsBalance = newBalance
+        }
+      }
+    }
+
     // 3. Fetch all child_profiles for this account
     let { data: profiles, error: profError } = await supabase
       .from("child_profiles")
@@ -120,7 +143,7 @@ export async function POST(request: Request) {
       },
       account: {
         id: account.id,
-        stars_balance: account.stars_balance,
+        stars_balance: starsBalance,
         plan: account.plan,
       },
       profiles: profiles.map((p) => ({
