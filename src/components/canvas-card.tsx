@@ -1,15 +1,13 @@
 "use client"
 
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from "react"
-import * as fabric from "fabric"
 import { Maximize, Minimize } from "lucide-react"
+import { DrawingEngine } from "@/lib/drawing-engine"
 import { useColoringStore } from "@/lib/store"
 import { savaneArtPaths } from "@/lib/line-art"
-import { floodFill, hexToRgba } from "@/lib/floodFill"
-import { useProfileStore } from "@/lib/profile-store"
 import type { SaveDrawingInput, SavedDrawing } from "@/features/drawings/types"
-
-;(fabric.FabricObject as unknown as { customProperties: string[] }).customProperties = ["id", "name"]
+import { storageService } from "@/lib/storageService"
+import { useProfileStore } from "@/lib/profile-store"
 
 export interface CanvasCardRef {
   undo: () => void
@@ -33,11 +31,8 @@ const CANVAS_H = 500
 export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasElRef = useRef<HTMLCanvasElement>(null)
-  const [fabricInstance, setFabricInstance] = useState<fabric.Canvas | null>(null)
+  const engineRef = useRef<DrawingEngine | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [zoomLevel, setZoomLevel] = useState(1)
-  const outlineImgRef = useRef<fabric.Image | null>(null)
-  const isRestoringRef = useRef(false)
 
   const profileId = useProfileStore((s) => s.activeProfileId)
 
@@ -45,13 +40,8 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
     selectedTool,
     selectedColor,
     brushSize,
-    pushHistory,
-    undo: storeUndo,
-    redo: storeRedo,
     currentDrawing,
     selectedCategory,
-    clearHistory,
-    replaceHistory,
     setSelectedTool,
     setSelectedColor,
     setBrushSize,
@@ -59,465 +49,326 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
     activeSavedDrawingId,
   } = useColoringStore()
 
-  const restoreOutlineRef = useCallback((canvas: fabric.Canvas) => {
-    const objects = canvas.getObjects()
-    const outline = objects.find((object) => object.type === "image" && object.get("name") === "outline-image")
-    outlineImgRef.current = (outline as fabric.Image | undefined) || null
+  /* ---- Sync store undo/redo state with engine ---- */
+  const syncUndoRedo = useCallback(() => {
+    const engine = engineRef.current
+    if (!engine) return
+    const cu = engine.canUndo()
+    const cr = engine.canRedo()
+    const len = 1 + (cu ? 1 : 0) + (cr ? 1 : 0)
+    useColoringStore.setState({
+      historyIndex: cu ? 1 : 0,
+      canvasHistory: new Array(len).fill(""),
+    })
   }, [])
 
-  const loadJsonIntoCanvas = useCallback((canvas: fabric.Canvas, canvasJson: string, shouldReplaceHistory = true) => {
-    return canvas.loadFromJSON(canvasJson).then(() => {
-      restoreOutlineRef(canvas)
-      canvas.renderAll()
-      if (shouldReplaceHistory) replaceHistory(canvasJson)
-    })
-  }, [restoreOutlineRef, replaceHistory])
+  /* ---- Engine change handler ---- */
+  const handleEngineChange = useCallback(() => {
+    setSaved(false)
+    syncUndoRedo()
+  }, [setSaved, syncUndoRedo])
 
-  useEffect(() => {
-    let canvas: fabric.Canvas | null = null
-    let isUnmounted = false
-
-    setZoomLevel(1)
-    clearHistory()
-    outlineImgRef.current = null
-
-    import("fabric").then((fabricModule) => {
-      if (isUnmounted || !canvasElRef.current) return
-      const fb = fabricModule as unknown as typeof fabric
-
-      canvas = new fb.Canvas(canvasElRef.current, {
-        width: CANVAS_W,
-        height: CANVAS_H,
-        backgroundColor: "#FFFFFF",
-        isDrawingMode: selectedTool === "brush" || selectedTool === "eraser",
-        selection: false,
-      })
-
-      if (!canvas.freeDrawingBrush) {
-        canvas.freeDrawingBrush = new fb.PencilBrush(canvas)
-      }
-      canvas.freeDrawingBrush.color = selectedTool === "eraser" ? "#FFFFFF" : selectedColor
-      canvas.freeDrawingBrush.width = selectedTool === "eraser" ? brushSize * 2.5 : brushSize
-
-      const loadInitialContent = async () => {
-        if (!canvas) return
-        const activeId = activeSavedDrawingId
-        if (activeId) {
-          try {
-            const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
-            if (raw) {
-              const list = JSON.parse(raw) as SavedDrawing[]
-              const found = list.find((d) => d.id === activeId)
-              if (found && canvas) {
-                setSelectedTool(found.state.selectedTool)
-                setSelectedColor(found.state.selectedColor)
-                setBrushSize(found.state.brushSize)
-                loadJsonIntoCanvas(canvas, found.state.canvasJson, true)
-                setSaved(true)
-                return
-              }
-            }
-          } catch (e) {
-            console.error("Error loading saved drawing JSON on init:", e)
-          }
-        }
-
-        if (currentDrawing.isVector) {
-          const sortedPaths = [...savaneArtPaths].sort((a, b) => a.zIndex - b.zIndex)
-          sortedPaths.forEach((artPath) => {
-            const path = new fb.Path(artPath.d, {
-              id: artPath.id,
-              name: artPath.name,
-              strokeWidth: artPath.strokeWidth,
-              stroke: artPath.stroke,
-              fill: artPath.fill,
-              selectable: false,
-              evented: true,
-              hoverCursor: "pointer",
-            })
-            canvas?.add(path)
-          })
-          canvas.renderAll()
-          pushHistory(JSON.stringify(canvas.toJSON()))
-        } else {
-          let imageUrl = currentDrawing.image
-
-          if (imageUrl.endsWith(".svg")) {
-            try {
-              const res = await fetch(imageUrl)
-              let svgText = await res.text()
-              const parser = new DOMParser()
-              const doc = parser.parseFromString(svgText, "image/svg+xml")
-              const svgEl = doc.querySelector("svg")
-
-              if (svgEl) {
-                if (!svgEl.getAttribute("width") || !svgEl.getAttribute("height")) {
-                  const viewBox = svgEl.getAttribute("viewBox")
-                  if (viewBox) {
-                    const parts = viewBox.trim().split(/\s+/)
-                    if (parts.length === 4) {
-                      svgEl.setAttribute("width", parts[2])
-                      svgEl.setAttribute("height", parts[3])
-                    }
-                  } else {
-                    svgEl.setAttribute("width", String(CANVAS_W))
-                    svgEl.setAttribute("height", String(CANVAS_H))
-                  }
-                }
-                svgText = new XMLSerializer().serializeToString(doc)
-              }
-
-              imageUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`
-            } catch (err) {
-              console.error("Error preprocessing SVG:", err)
-            }
-          }
-
-          fb.Image.fromURL(imageUrl, { crossOrigin: "anonymous" }).then((img) => {
-            if (isUnmounted || !canvas) return
-
-            const element = img.getElement()
-            const imgWidth = img.width || (element ? (element as HTMLImageElement).naturalWidth : 0) || CANVAS_W
-            const imgHeight = img.height || (element ? (element as HTMLImageElement).naturalHeight : 0) || CANVAS_H
-            const scale = Math.min(CANVAS_W / imgWidth, CANVAS_H / imgHeight) * 0.9
-
-            img.set({
-              name: "outline-image",
-              originX: "center",
-              originY: "center",
-              scaleX: scale,
-              scaleY: scale,
-              left: CANVAS_W / 2,
-              top: CANVAS_H / 2,
-              selectable: false,
-              evented: false,
-            })
-
-            outlineImgRef.current = img
-            canvas.add(img)
-            canvas.renderAll()
-            pushHistory(JSON.stringify(canvas.toJSON()))
-          }).catch((err) => {
-            console.error("Error loading image:", err)
-          })
-        }
-      }
-
-      loadInitialContent()
-
-      setFabricInstance(canvas)
-
-      const handleCanvasChange = () => {
-        if (!canvas || isRestoringRef.current) return
-        pushHistory(JSON.stringify(canvas.toJSON()))
-        useColoringStore.getState().setSaved(false)
-      }
-
-      canvas.on("object:modified", handleCanvasChange)
-      canvas.on("path:created", handleCanvasChange)
-
-      canvas.on("mouse:down", (options) => {
-        if (!canvas) return
-        const tool = useColoringStore.getState().selectedTool
-        const color = useColoringStore.getState().selectedColor
-
-        if (tool !== "bucket" && tool !== "fill") return
-
-        if (canvas.isDrawingMode) {
-          canvas.isDrawingMode = false
-        }
-
-        const target = options.target
-
-        if (currentDrawing.isVector && target && target.type === "path") {
-          target.set("fill", color)
-          canvas.renderAll()
-          handleCanvasChange()
-          return
-        }
-
-        canvas.calcOffset()
-        const pointer = canvas.getScenePoint(options.e)
-        const startX = Math.round(pointer.x)
-        const startY = Math.round(pointer.y)
-
-        if (startX < 0 || startX >= CANVAS_W || startY < 0 || startY >= CANVAS_H) return
-
-        const snapCanvas = canvas.toCanvasElement(1)
-        const snapCtx = snapCanvas.getContext("2d", { willReadFrequently: true })
-        if (!snapCtx) return
-
-        const maskResult = floodFill(snapCtx, {
-          startX,
-          startY,
-          fillColor: hexToRgba(color),
-          fillTolerance: 120,
-          outlineThreshold: 40,
-          outlineMinAlpha: 80,
-        })
-
-        if (!maskResult) return
-
-        const dataUrl = maskResult.maskCanvas.toDataURL()
-        fb.Image.fromURL(dataUrl).then((maskImg) => {
-          if (isUnmounted || !canvas) return
-
-          maskImg.set({
-            left: 0,
-            top: 0,
-            originX: "left",
-            originY: "top",
-            scaleX: 1,
-            scaleY: 1,
-            selectable: false,
-            evented: false,
-          })
-
-          canvas.add(maskImg)
-          const objects = canvas.getObjects()
-          const outlineImg = outlineImgRef.current
-
-          if (outlineImg) {
-            const outlineIndex = objects.indexOf(outlineImg)
-            const maskIndex = objects.indexOf(maskImg)
-            if (outlineIndex >= 0 && maskIndex > outlineIndex) {
-              objects.splice(maskIndex, 1)
-              objects.splice(outlineIndex, 0, maskImg)
-            }
-            canvas.bringObjectToFront(outlineImg)
-          }
-
-          canvas.renderAll()
-          handleCanvasChange()
-        }).catch((err) => {
-          console.error("Failed to load fill mask image:", err)
-        })
-      })
-    })
-
-    const handleScrollOrInteraction = () => {
-      if (canvas) canvas.calcOffset()
+  /* ---- Detect new vs legacy state format ---- */
+  const isNewFormat = useCallback((json: string): boolean => {
+    try {
+      const p = JSON.parse(json)
+      return p?.version === 1
+    } catch {
+      return false
     }
-    window.addEventListener("scroll", handleScrollOrInteraction, { passive: true })
+  }, [])
+
+  /* ---- Load canvas from a saved drawing ---- */
+  const loadCanvasFromSaved = useCallback(async (engine: DrawingEngine, drawing: SavedDrawing) => {
+    if (isNewFormat(drawing.state.canvasJson)) {
+      await engine.importState(drawing.state.canvasJson)
+    } else {
+      await engine.importLegacyImage(drawing.image)
+    }
+  }, [isNewFormat])
+
+  /* ---- Main effect: create engine and load content ---- */
+  useEffect(() => {
+    if (!canvasElRef.current) return
+
+    /* Dispose previous engine */
+    if (engineRef.current) {
+      engineRef.current.destroy()
+      engineRef.current = null
+    }
+
+    const el = canvasElRef.current
+    const engine = new DrawingEngine({
+      canvas: el,
+      width: CANVAS_W,
+      height: CANVAS_H,
+      onChange: handleEngineChange,
+    })
+    engineRef.current = engine
+
+    /* Set initial tool state */
+    engine.setTool(selectedTool)
+    engine.setColor(selectedColor)
+    engine.setBrushSize(brushSize)
+    engine.setZoom(1)
+
+    /* Load initial content */
+    const loadContent = async () => {
+      useColoringStore.getState().clearHistory()
+
+      const activeId = activeSavedDrawingId
+      if (activeId) {
+        try {
+          const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
+          if (raw) {
+            const list = JSON.parse(raw) as SavedDrawing[]
+            const found = list.find((d) => d.id === activeId)
+            if (found) {
+              setSelectedTool(found.state.selectedTool)
+              setSelectedColor(found.state.selectedColor)
+              setBrushSize(found.state.brushSize)
+              engine.setTool(found.state.selectedTool)
+              engine.setColor(found.state.selectedColor)
+              engine.setBrushSize(found.state.brushSize)
+              await loadCanvasFromSaved(engine, found)
+              setSaved(true)
+              syncUndoRedo()
+              return
+            }
+          }
+        } catch (e) {
+          console.error("Error loading saved drawing on init:", e)
+        }
+      }
+
+      if (currentDrawing.isVector) {
+        engine.loadVectorTemplate(savaneArtPaths)
+      } else {
+        let imageUrl = currentDrawing.image
+
+        if (imageUrl.endsWith(".svg")) {
+          try {
+            const res = await fetch(imageUrl)
+            let svgText = await res.text()
+            const parser = new DOMParser()
+            const doc = parser.parseFromString(svgText, "image/svg+xml")
+            const svgEl = doc.querySelector("svg")
+
+            if (svgEl) {
+              if (!svgEl.getAttribute("width") || !svgEl.getAttribute("height")) {
+                const viewBox = svgEl.getAttribute("viewBox")
+                if (viewBox) {
+                  const parts = viewBox.trim().split(/\s+/)
+                  if (parts.length === 4) {
+                    svgEl.setAttribute("width", parts[2])
+                    svgEl.setAttribute("height", parts[3])
+                  }
+                } else {
+                  svgEl.setAttribute("width", String(CANVAS_W))
+                  svgEl.setAttribute("height", String(CANVAS_H))
+                }
+              }
+              svgText = new XMLSerializer().serializeToString(doc)
+            }
+
+            imageUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`
+          } catch (err) {
+            console.error("Error preprocessing SVG:", err)
+          }
+        }
+
+        await engine.loadRasterTemplate(imageUrl)
+      }
+
+      syncUndoRedo()
+    }
+
+    loadContent()
+
+    /* Resize observer */
+    const container = containerRef.current
+    const observer = new ResizeObserver(() => {
+      if (!container) return
+      const cw = container.offsetWidth
+      const ch = container.offsetHeight || 620
+      engine.setCssScale(cw, ch)
+    })
+    if (container) observer.observe(container)
 
     return () => {
-      isUnmounted = true
-      window.removeEventListener("scroll", handleScrollOrInteraction)
-      if (canvas) canvas.dispose()
+      observer.disconnect()
+      engine.destroy()
+      if (engineRef.current === engine) engineRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDrawing.id])
 
+  /* ---- Sync tool/color/brush changes to engine ---- */
   useEffect(() => {
-    if (!fabricInstance) return
-
-    const isDraw = selectedTool === "brush" || selectedTool === "eraser"
-    fabricInstance.isDrawingMode = isDraw
-
-    if (!fabricInstance.freeDrawingBrush) {
-      fabricInstance.freeDrawingBrush = new fabric.PencilBrush(fabricInstance)
-    }
-    fabricInstance.freeDrawingBrush.color = selectedTool === "eraser" ? "#FFFFFF" : selectedColor
-    fabricInstance.freeDrawingBrush.width = selectedTool === "eraser" ? brushSize * 2.5 : brushSize
-
-    if (selectedTool === "bucket" || selectedTool === "fill") {
-      fabricInstance.defaultCursor = "cell"
-    } else if (selectedTool === "eraser") {
-      fabricInstance.defaultCursor = "crosshair"
-    } else {
-      fabricInstance.defaultCursor = "default"
-    }
-  }, [selectedTool, selectedColor, brushSize, fabricInstance])
+    engineRef.current?.setTool(selectedTool)
+  }, [selectedTool])
 
   useEffect(() => {
-    if (!fabricInstance || !containerRef.current) return
+    engineRef.current?.setColor(selectedColor)
+  }, [selectedColor])
 
-    const handleResize = () => {
-      if (!containerRef.current || !fabricInstance || !fabricInstance.wrapperEl) return
-      const containerWidth = containerRef.current.offsetWidth
-      const containerHeight = containerRef.current.offsetHeight || 620
-      const scale = Math.min(containerWidth / CANVAS_W, containerHeight / CANVAS_H)
+  useEffect(() => {
+    engineRef.current?.setBrushSize(brushSize)
+  }, [brushSize])
 
-      fabricInstance.setDimensions({ width: CANVAS_W * scale, height: CANVAS_H * scale }, { cssOnly: true })
-      fabricInstance.setZoom(zoomLevel)
-      fabricInstance.calcOffset()
-      fabricInstance.renderAll()
-    }
-
-    const observer = new ResizeObserver(handleResize)
-    observer.observe(containerRef.current)
-    handleResize()
-
-    return () => observer.disconnect()
-  }, [fabricInstance, zoomLevel])
-
-  const toggleFullscreen = () => {
+  /* ---- Fullscreen toggle ---- */
+  const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return
-
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch((err) => console.error("Fullscreen error:", err))
+      containerRef.current.requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => console.error("Fullscreen error:", err))
     } else {
       document.exitFullscreen()
       setIsFullscreen(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement)
-    document.addEventListener("fullscreenchange", handleFullscreenChange)
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    const handler = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener("fullscreenchange", handler)
+    return () => document.removeEventListener("fullscreenchange", handler)
   }, [])
+
+  /* ---- Keyboard shortcuts ---- */
   const handleUndo = useCallback(() => {
-    if (!fabricInstance) return
-    isRestoringRef.current = true
-    const { canUndo, stateJson } = storeUndo()
-    if (canUndo && stateJson) {
-      loadJsonIntoCanvas(fabricInstance, stateJson, false).then(() => {
-        isRestoringRef.current = false
-      })
-    } else {
-      isRestoringRef.current = false
-    }
-  }, [fabricInstance, storeUndo, loadJsonIntoCanvas])
+    const engine = engineRef.current
+    if (!engine) return
+    engine.undo()
+    syncUndoRedo()
+  }, [syncUndoRedo])
 
   const handleRedo = useCallback(() => {
-    if (!fabricInstance) return
-    isRestoringRef.current = true
-    const { canRedo, stateJson } = storeRedo()
-    if (canRedo && stateJson) {
-      loadJsonIntoCanvas(fabricInstance, stateJson, false).then(() => {
-        isRestoringRef.current = false
-      })
-    } else {
-      isRestoringRef.current = false
-    }
-  }, [fabricInstance, storeRedo, loadJsonIntoCanvas])
+    const engine = engineRef.current
+    if (!engine) return
+    engine.redo()
+    syncUndoRedo()
+  }, [syncUndoRedo])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (
         document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA" ||
         document.activeElement?.hasAttribute("contenteditable")
-      ) {
-        return
-      }
+      ) return
 
-      const isCmdOrCtrl = e.ctrlKey || e.metaKey
-      const isShift = e.shiftKey
+      const mod = e.ctrlKey || e.metaKey
+      if (!mod) return
 
-      if (isCmdOrCtrl) {
-        if (e.key.toLowerCase() === "z") {
-          e.preventDefault()
-          if (isShift) {
-            handleRedo()
-          } else {
-            handleUndo()
-          }
-        } else if (e.key.toLowerCase() === "y") {
-          e.preventDefault()
-          handleRedo()
-        }
+      if (e.key.toLowerCase() === "z") {
+        e.preventDefault()
+        if (e.shiftKey) handleRedo()
+        else handleUndo()
+      } else if (e.key.toLowerCase() === "y") {
+        e.preventDefault()
+        handleRedo()
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [fabricInstance, handleUndo, handleRedo])
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [handleUndo, handleRedo])
 
-  const getUserObjects = (canvas: fabric.Canvas) => {
-    return canvas.getObjects().filter((object: fabric.Object & { id?: string }) => {
-      const isPredefined = savaneArtPaths.some((path) => path.id === object.id)
-      return !isPredefined && object !== outlineImgRef.current
-    })
-  }
-
-  const getUsedColors = (canvas: fabric.Canvas) => {
-    const colors = new Set<string>()
-    canvas.getObjects().forEach((object) => {
-      const fill = object.get("fill")
-      const stroke = object.get("stroke")
-      if (typeof fill === "string" && fill.startsWith("#")) colors.add(fill)
-      if (typeof stroke === "string" && stroke.startsWith("#")) colors.add(stroke)
-    })
-    return Array.from(colors)
-  }
-
+  /* ---- Imperative ref ---- */
   useImperativeHandle(ref, () => ({
     undo: handleUndo,
     redo: handleRedo,
-    zoomIn: () => setZoomLevel((z) => Math.min(z + 0.2, 3)),
-    zoomOut: () => setZoomLevel((z) => Math.max(z - 0.2, 0.6)),
+    zoomIn: () => {
+      const engine = engineRef.current
+      if (engine) engine.setZoom(engine.getZoom() + 0.2)
+    },
+    zoomOut: () => {
+      const engine = engineRef.current
+      if (engine) engine.setZoom(engine.getZoom() - 0.2)
+    },
     clearAll: () => {
-      if (!fabricInstance) return
-      const objects = fabricInstance.getObjects()
-      const objectsToRemove: fabric.Object[] = []
-
-      objects.forEach((obj: fabric.Object & { id?: string }) => {
-        const isPredefined = savaneArtPaths.some((p) => p.id === obj.id)
-        if (isPredefined) {
-          if (obj.id === "ele-eye") obj.set("fill", "#3B2416")
-          else if (obj.id === "sun-rays" || obj.id === "grass-left" || obj.id === "grass-right") obj.set("fill", "none")
-          else obj.set("fill", "#FFFFFF")
-        } else if (obj !== outlineImgRef.current) {
-          objectsToRemove.push(obj)
-        }
-      })
-
-      objectsToRemove.forEach((obj) => fabricInstance.remove(obj))
-      fabricInstance.backgroundColor = "#FFFFFF"
-      fabricInstance.renderAll()
-      pushHistory(JSON.stringify(fabricInstance.toJSON()))
+      engineRef.current?.clearAll()
       setSaved(false)
+      syncUndoRedo()
     },
     download: () => {
-      if (!fabricInstance) return
-      const dataURL = fabricInstance.toDataURL({ format: "png", quality: 1.0, multiplier: 1 })
+      const engine = engineRef.current
+      if (!engine) return
+      const dataURL = engine.toDataURL({ format: "png", quality: 1, multiplier: 1 })
       const link = document.createElement("a")
       link.download = "mon-coloriage-petit-baobab.png"
       link.href = dataURL
       link.click()
     },
     print: () => {
-      if (!fabricInstance) return
-      const dataURL = fabricInstance.toDataURL({ format: "png", multiplier: 2 })
-      const printWindow = window.open("", "_blank")
-      if (!printWindow) return
-      printWindow.document.write(`<html><head><title>Imprimer Coloriage - Petit Baobab</title><style>@page{size:A4 landscape;margin:0}@media print{body{margin:0;padding:0;background:white}img{width:100vw;height:100vh;object-fit:contain;display:block}}body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:white}img{max-width:100%;max-height:100%;object-fit:contain}</style></head><body><img src="${dataURL}" onload="window.print(); window.close();" /></body></html>`)
-      printWindow.document.close()
+      const engine = engineRef.current
+      if (!engine) return
+      const dataURL = engine.toDataURL({ format: "png", multiplier: 2 })
+      const pw = window.open("", "_blank")
+      if (!pw) return
+      pw.document.write(`<html><head><title>Imprimer Coloriage - Petit Baobab</title><style>@page{size:A4 landscape;margin:0}@media print{body{margin:0;padding:0;background:white}img{width:100vw;height:100vh;object-fit:contain;display:block}}body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:white}img{max-width:100%;max-height:100%;object-fit:contain}</style></head><body><img src="${dataURL}" onload="window.print(); window.close();" /></body></html>`)
+      pw.document.close()
     },
     saveDrawing: async () => {
-      if (!fabricInstance) return null
-      const canvasJson = JSON.stringify(fabricInstance.toJSON())
-      const image = fabricInstance.toDataURL({ format: "png", quality: 1, multiplier: 1 })
-      const thumbnail = fabricInstance.toDataURL({ format: "png", quality: 0.85, multiplier: 0.28 })
-      const filledZones = getUserObjects(fabricInstance).length
+      const engine = engineRef.current
+      if (!engine) return null
+      const canvasJson = engine.exportState()
+      const filledZones = engine.getFilledZoneCount()
+
+      const drawingId = activeSavedDrawingId || crypto.randomUUID()
+      const cleanProfileId = profileId || "anonymous"
+
+      let imageUrl = ""
+      let thumbnailUrl = ""
+
+      try {
+        const imageBlob = await engine.toBlob({ format: "png", quality: 1, multiplier: 1 })
+        const thumbBlob = await engine.toBlob({ format: "png", quality: 0.85, multiplier: 0.28 })
+
+        if (imageBlob && thumbBlob) {
+          imageUrl = await storageService.uploadDrawingImage(imageBlob, cleanProfileId, drawingId, "user")
+          thumbnailUrl = await storageService.uploadThumbnail(thumbBlob, cleanProfileId, drawingId, "user")
+        } else {
+          throw new Error("Failed to generate canvas blobs")
+        }
+      } catch (error) {
+        console.error("Failed to upload drawing to Supabase Storage, using fallback base64 DataURLs:", error)
+        imageUrl = engine.toDataURL({ format: "png", quality: 1, multiplier: 1 })
+        thumbnailUrl = engine.toDataURL({ format: "png", quality: 0.85, multiplier: 0.28 })
+      }
 
       return {
+        id: drawingId,
         name: currentDrawing.name,
         category: currentDrawing.category || selectedCategory,
-        origin: "coloriage",
-        profileId: profileId ?? "",
-        image,
-        thumbnail,
+        origin: "coloriage" as const,
+        profileId: cleanProfileId,
+        image: imageUrl,
+        thumbnail: thumbnailUrl,
         template: { ...currentDrawing, category: currentDrawing.category || selectedCategory },
         state: {
           canvasJson,
           selectedTool,
           selectedColor,
           brushSize,
-          usedColors: getUsedColors(fabricInstance),
+          usedColors: engine.getUsedColors(),
           filledZones,
         },
       }
     },
-    loadSavedDrawing: (drawing) => {
-      if (!fabricInstance) return
+    loadSavedDrawing: async (drawing) => {
+      const engine = engineRef.current
+      if (!engine) return
       setSelectedTool(drawing.state.selectedTool)
       setSelectedColor(drawing.state.selectedColor)
       setBrushSize(drawing.state.brushSize)
-      loadJsonIntoCanvas(fabricInstance, drawing.state.canvasJson, true)
+      engine.setTool(drawing.state.selectedTool)
+      engine.setColor(drawing.state.selectedColor)
+      engine.setBrushSize(drawing.state.brushSize)
+      await loadCanvasFromSaved(engine, drawing)
       setSaved(true)
+      syncUndoRedo()
     },
   }))
 
@@ -539,5 +390,3 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   )
 })
 CanvasCard.displayName = "CanvasCard"
-
-

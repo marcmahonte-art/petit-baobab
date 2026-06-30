@@ -1,5 +1,6 @@
 import type { SavedDrawing } from "@/features/drawings/types"
 import { supabase } from "@/lib/supabaseClient"
+import { storageService } from "@/lib/storageService"
 
 const STORAGE_KEY = "petit-baobab.saved-drawings.v1"
 const DB_NAME = "petit-baobab-db"
@@ -237,6 +238,22 @@ export class RemoteDrawingStorage implements DrawingStorage {
   }
 
   async delete(id: string) {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("saved_drawings")
+        .select("profile_id, origin")
+        .eq("id", id)
+        .single()
+
+      if (!fetchError && data) {
+        const profileId = data.profile_id || "anonymous"
+        const type = data.origin === "ia" ? "ai" : "user"
+        await storageService.deleteDrawingFiles(profileId, id, type)
+      }
+    } catch (err) {
+      console.warn("Failed to fetch/delete drawing files from Supabase Storage before DB delete:", err)
+    }
+
     const { error } = await supabase
       .from("saved_drawings")
       .delete()

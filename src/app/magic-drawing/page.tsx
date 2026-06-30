@@ -26,6 +26,7 @@ import { useCreditStore, getCreditCost, canGenerate, type StyleType } from "@/li
 import { useProfileStore, getActiveProfile } from "@/lib/profile-store";
 import { drawingService } from "@/features/drawings/DrawingService";
 import { useI18n } from "@/lib/i18n-provider";
+import { storageService, base64ToBlob } from "@/lib/storageService";
 
 /* ------------------------------------------------------------------ */
 /* Suggestion chips data                                               */
@@ -146,7 +147,34 @@ export default function MagicDrawingPage() {
         throw new Error(data?.error || "Impossible de créer le dessin.");
       }
 
-      setGeneratedImage(data.imageUrl);
+      const base64Image = data.imageUrl;
+      let imageUrl = base64Image;
+      let thumbnailUrl = base64Image;
+      const drawingId = `magic-${Date.now()}`;
+
+      if (profileId) {
+        try {
+          const imageBlob = base64ToBlob(base64Image);
+          imageUrl = await storageService.uploadDrawingImage(
+            imageBlob,
+            profileId,
+            drawingId,
+            "ai"
+          );
+
+          const thumbBlob = await storageService.generateThumbnail(imageBlob, 280);
+          thumbnailUrl = await storageService.uploadThumbnail(
+            thumbBlob,
+            profileId,
+            drawingId,
+            "ai"
+          );
+        } catch (uploadError) {
+          console.error("Failed to upload generated drawing to Supabase Storage, using fallback base64 URL:", uploadError);
+        }
+      }
+
+      setGeneratedImage(imageUrl);
       setHasResult(true);
 
       if (profileId) {
@@ -156,12 +184,12 @@ export default function MagicDrawingPage() {
             category: "Mes dessins",
             origin: "ia",
             profileId,
-            image: data.imageUrl,
-            thumbnail: data.imageUrl,
+            image: imageUrl,
+            thumbnail: thumbnailUrl,
             template: {
-              id: `magic-${Date.now()}`,
+              id: drawingId,
               name: prompt.slice(0, 60),
-              image: data.imageUrl,
+              image: imageUrl,
             },
             state: {
               canvasJson: "",

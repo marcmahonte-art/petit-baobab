@@ -27,6 +27,7 @@ export interface SavedDrawing {
 }
 
 export interface SaveDrawingInput {
+  id?: string
   name: string
   category: string
   origin: "coloriage" | "ia"

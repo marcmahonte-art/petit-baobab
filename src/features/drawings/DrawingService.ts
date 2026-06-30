@@ -32,14 +32,14 @@ export class DrawingService {
 
   async save(input: SaveDrawingInput, existingId?: string | null) {
     const now = new Date().toISOString()
-    let id = this.createId()
+    let id = existingId || input.id || this.createId()
     let createdAt = now
 
-    if (existingId) {
-      id = existingId
+    const searchId = existingId || input.id
+    if (searchId) {
       try {
         const list = await this.repository.list()
-        const found = list.find((item) => item.id === existingId)
+        const found = list.find((item) => item.id === searchId)
         if (found) {
           createdAt = found.createdAt
         }

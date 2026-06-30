@@ -44,6 +44,9 @@ import { drawingService } from "@/features/drawings/DrawingService"
 import { BookHeader } from "@/features/coloring-book/components/BookHeader"
 import { BookPreviewCanvas } from "@/features/coloring-book/components/BookPreviewCanvas"
 import { BookStepper } from "@/features/coloring-book/components/BookStepper"
+import { useProfileStore } from "@/lib/profile-store"
+import { storageService } from "@/lib/storageService"
+import { bookService } from "@/features/books"
 
 export function ColoringBooksPage() {
   const {
@@ -251,77 +254,202 @@ export function ColoringBooksPage() {
   })
 
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setIsPrintableBookOpen(true)
     setCurrentBookPage(0)
 
     try {
-      const pdfContent = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 595.28 841.89] /Contents 5 0 R >>
-endobj
-4 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
-endobj
-5 0 obj
-<< /Length 320 >>
-stream
-BT
-/F1 24 Tf
-50 750 Td
-(LIVRE DE COLORIAGE - PETIT BAOBAB) Tj
-/F1 16 Tf
-0 -50 Td
-(Titre : ${title || "Sans titre"}) Tj
-0 -25 Td
-(Auteur : ${author || "Anonyme"}) Tj
-0 -25 Td
-(Enfant : ${childName || "Awa"}) Tj
-0 -25 Td
-(Format : ${bookFormat} - ${orientation}) Tj
-0 -25 Td
-(Nombre de pages : ${totalPagesCount} pages (${selectedIds.length} dessins)) Tj
-0 -50 Td
-(Votre livre a ete genere avec succes !) Tj
-0 -20 Td
-(Pour l'imprimer en haute qualite avec tous les dessins,) Tj
-0 -20 Td
-(utilisez le bouton d'impression de l'apercu qui vient de s'ouvrir.) Tj
-ET
-endstream
-endobj
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000244 00000 n 
-0000000320 00000 n 
-trailer
-<< /Size 6 /Root 1 0 R >>
-startxref
-590
-%%EOF`
+      const dims: Record<string, [number, number]> = {
+        A4: [210, 297],
+        A5: [148, 210],
+        Letter: [216, 279],
+        "Carré": [210, 210],
+      }
+      const baseDims = dims[bookFormat] || [210, 297]
+      const isLandscape = orientation === "Paysage"
+      const pw = isLandscape ? baseDims[1] : baseDims[0]
+      const ph = isLandscape ? baseDims[0] : baseDims[1]
 
-      const blob = new Blob([pdfContent], { type: "application/pdf" })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
+      const { jsPDF } = await import("jspdf")
+      const doc = new jsPDF({
+        orientation: isLandscape ? "landscape" : "portrait",
+        unit: "mm",
+        format: [pw, ph],
+      })
+
+      const DPI = 300
+      const MM_PER_INCH = 25.4
+      const margin = 18
+      const headerH = 12
+      const footerH = 10
+      const imgAreaW = pw - margin * 2
+      const imgAreaH = ph - margin * 2 - headerH - footerH - 4
+      const targetCanvasW = Math.round(imgAreaW / MM_PER_INCH * DPI)
+      const targetCanvasH = Math.round(imgAreaH / MM_PER_INCH * DPI)
+
+      const renderImageAtDpi = (url: string): Promise<string | null> => {
+        return new Promise((resolve) => {
+          const img = new window.Image()
+          img.crossOrigin = "anonymous"
+          img.onload = () => {
+            const canvas = document.createElement("canvas")
+            canvas.width = targetCanvasW
+            canvas.height = targetCanvasH
+            const ctx = canvas.getContext("2d")
+            if (!ctx) { resolve(null); return }
+            ctx.fillStyle = "#FFFFFF"
+            ctx.fillRect(0, 0, targetCanvasW, targetCanvasH)
+            const iw = img.naturalWidth || targetCanvasW
+            const ih = img.naturalHeight || targetCanvasH
+            const scale = Math.min(targetCanvasW / iw, targetCanvasH / ih)
+            const dw = Math.round(iw * scale)
+            const dh = Math.round(ih * scale)
+            const dx = Math.round((targetCanvasW - dw) / 2)
+            const dy = Math.round((targetCanvasH - dh) / 2)
+            ctx.drawImage(img, dx, dy, dw, dh)
+            resolve(canvas.toDataURL("image/png"))
+          }
+          img.onerror = () => resolve(null)
+          const absUrl = url.startsWith("data:") || url.startsWith("http") ? url : `${window.location.origin}${url}`
+          img.src = absUrl
+        })
+      }
+
+      const pageImages = await Promise.all(
+        bookPages.map(async (page) => {
+          if (page.type !== "drawing" || !page.image) return null
+          return renderImageAtDpi(page.image)
+        })
+      )
+
+      for (let i = 0; i < bookPages.length; i++) {
+        if (i > 0) doc.addPage()
+
+        const page = bookPages[i]
+
+        if (page.type === "cover") {
+          const cx = pw / 2
+          doc.setFontSize(22)
+          doc.text("LIVRE DE COLORIAGE", cx, 50, { align: "center" })
+          doc.setFontSize(14)
+          doc.text(`"${title || "Mon livre"}"`, cx, 80, { align: "center" })
+          doc.setFontSize(12)
+          doc.text(`Auteur : ${author || "Anonyme"}`, cx, 110, { align: "center" })
+          doc.text(`Enfant : ${childName || "Awa"}`, cx, 130, { align: "center" })
+          doc.setFontSize(10)
+          doc.text(`${bookFormat} - ${orientation}`, cx, 155, { align: "center" })
+          doc.text(`${totalPagesCount} pages (${selectedIds.length} dessins)`, cx, 170, { align: "center" })
+        } else if (page.type === "belongs_to") {
+          const cx = pw / 2
+          doc.setFontSize(16)
+          doc.text("Ce livre appartient a", cx, 80, { align: "center" })
+          doc.setFontSize(30)
+          doc.text(childName || "Awa", cx, 125, { align: "center" })
+          doc.setFontSize(11)
+          doc.text("Prepare tes crayons et amuse-toi bien !", cx, 155, { align: "center" })
+        } else {
+          doc.setFontSize(10)
+          doc.text(page.label || "Coloriage", margin, margin + 5)
+
+          const imgData = pageImages[i]
+          if (imgData) {
+            doc.addImage(imgData, "PNG", margin, margin + headerH + 2, imgAreaW, imgAreaH)
+          } else {
+            doc.setFontSize(12)
+            doc.text("Image non disponible", pw / 2, ph / 2, { align: "center" })
+          }
+
+          doc.setFontSize(8)
+          doc.text("Petit Baobab", pw / 2, ph - margin, { align: "center" })
+        }
+      }
+
       const safeTitle = (title || "livre-coloriage").toLowerCase().replace(/[^a-z0-9]+/g, "-")
-      link.download = `${safeTitle}-petit-baobab.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      const pdfBlob = doc.output("blob")
+      
+      const profileId = useProfileStore.getState().activeProfileId || "anonymous"
+      const bookId = crypto.randomUUID()
+      
+      let pdfUrl = ""
+      let coverImageUrl = ""
+      try {
+        pdfUrl = await storageService.uploadBookPdf(pdfBlob, profileId, bookId)
+
+        // Capture cover illustration as PNG
+        try {
+          const coverContainer = document.querySelector("#book-cover-preview")
+          const svgEl = coverContainer?.querySelector("svg:not(.absolute)") as SVGElement
+          if (svgEl) {
+            const svgString = new XMLSerializer().serializeToString(svgEl)
+            const defsSvg = coverContainer?.querySelector("svg.absolute")
+            let finalSvgString = svgString
+            if (defsSvg) {
+              const defsString = new XMLSerializer().serializeToString(defsSvg)
+              finalSvgString = svgString.replace("<svg", `<svg>${defsString}`)
+            }
+            const svgBlob = new Blob([finalSvgString], { type: "image/svg+xml;charset=utf-8" })
+            const svgUrl = URL.createObjectURL(svgBlob)
+
+            const img = new window.Image()
+            const coverBlob = await new Promise<Blob | null>((resolve) => {
+              img.onload = () => {
+                const canvas = document.createElement("canvas")
+                canvas.width = 400
+                canvas.height = 400
+                const ctx = canvas.getContext("2d")
+                if (!ctx) { resolve(null); return }
+                ctx.fillStyle = "#FFFFFF"
+                ctx.fillRect(0, 0, 400, 400)
+                ctx.drawImage(img, 0, 0, 400, 400)
+                canvas.toBlob((blob) => resolve(blob), "image/png")
+              }
+              img.onerror = () => resolve(null)
+              img.src = svgUrl
+            })
+
+            URL.revokeObjectURL(svgUrl)
+            if (coverBlob) {
+              coverImageUrl = await storageService.uploadBookCover(coverBlob, profileId, bookId)
+            }
+          }
+        } catch (coverErr) {
+          console.warn("Failed to generate and upload book cover PNG:", coverErr)
+        }
+        
+        const pagesRef = selectedIds.map((id, idx) => ({
+          drawingId: id,
+          pageNumber: idx + 1,
+        }))
+
+        const now = new Date().toISOString()
+        await bookService.save({
+          id: bookId,
+          title: title || "Mon livre de coloriage",
+          subtitle: subtitle || "",
+          author: author || "Auteur",
+          childName: childName || "Enfant",
+          cover: selectedCover as any,
+          palette: selectedPalette as any,
+          style: drawingStyle as any,
+          frame: decorativeFrame as any,
+          format: bookFormat as any,
+          orientation: orientation as any,
+          pages: pagesRef,
+          status: "finalized",
+          pdfUrl: pdfUrl,
+          coverImageUrl: coverImageUrl,
+          profileId: profileId,
+          createdAt: now,
+          updatedAt: now,
+        })
+      } catch (uploadErr) {
+        console.error("Failed to upload book PDF to Supabase Storage:", uploadErr)
+      }
+
+      // Local download
+      doc.save(`${safeTitle}-petit-baobab.pdf`)
     } catch (err) {
-      console.error("Failed to download PDF", err)
+      console.error("Failed to generate PDF", err)
     }
   }
 

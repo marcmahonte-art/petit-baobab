@@ -26,6 +26,7 @@ export interface SavedBook {
   pages: BookPageRef[]
   status: BookStatus
   pdfUrl: string
+  coverImageUrl?: string
   profileId: string
   createdAt: string
   updatedAt: string

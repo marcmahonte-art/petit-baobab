@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { cn } from "@/lib/utils"
 
@@ -172,6 +172,7 @@ export const BookPreviewCanvas = ({
 
   return (
     <div
+      id="book-cover-preview"
       className={cn(
         "relative w-full rounded-2xl overflow-hidden shadow-md flex flex-col justify-between p-5 transition-all duration-300 font-nunito mx-auto origin-center",
         aspectClass

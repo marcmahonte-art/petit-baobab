@@ -1,3 +1,5 @@
+"use client"
+
 import { Award, Star, Shield, Palette, BookOpen } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { useProfileStore } from "@/lib/profile-store"
