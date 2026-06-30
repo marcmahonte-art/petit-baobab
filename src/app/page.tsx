@@ -42,7 +42,7 @@ export default function LandingPage() {
               <img
                 alt="Logo"
                 className="rounded-full object-cover w-10 h-10"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAussE8J8ZBIYh6OwfjqfgQBnR6gZYCpR7h7CwjOPVyvcYm7xZSdjd4TlnDmKoQMvZIfrfkGa1DS8yUZ9roeQviPluoFTmVPOFkA63JLx8WXWG4nOu0GUssrqP3k_PFchvhg12KznQDaOxCp_uwJGn8hinH_CPAQPG80pIX2ZE4mBpzHsbZfXC7IlZh3CDIF91xEV1VzJ5SXA6bDY8UI0uX9jVfd1gNL8OnvZvWKLNwZmFfaf9P-1tYsf89GSQrh3ft3bPYN5eeuwLG"
+                src="/illustrations/Baobab.webp"
               />
             </div>
             <div className="leading-tight">
@@ -472,7 +472,7 @@ export default function LandingPage() {
 
           {/* Right Column (40%): Reserves space and holds the absolute overflowing image (3.3x scaled) */}
           <div className="relative md:w-[40%] self-stretch min-h-[160px] md:min-h-0">
-            <div className="absolute bottom-0 right-0 md:-right-6 lg:-right-8 w-[280px] md:w-[440px] lg:w-[500px] translate-y-8 md:translate-y-16 z-20 pointer-events-none select-none">
+            <div className="absolute bottom-0 right-0 md:-right-8 lg:-right-10 w-[280px] md:w-[480px] lg:w-[560px] translate-y-12 md:translate-y-24 z-20 pointer-events-none select-none">
               <img
                 alt="Enfant qui dessine"
                 className="w-full h-auto drop-shadow-2xl"
@@ -498,7 +498,7 @@ export default function LandingPage() {
                 <img
                   alt="Logo"
                   className="w-10 h-10 rounded-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNS3EA7NELbhi4KQVPSq96IZDcIr5TawScrXLrxKMQxGQgKrYnC1Ke8Jj5FKH-mnF63K4bwu_-D5xv55Ayu__HtPTXpIeXRA_MkyKRKYeriFdfn_jqGBoI5OPcZVReENndZo9Jcsc3wIznGdRTzRnf56J5tJLZl05FAnE2XaNPdJv-3yG-nHRYWKIuojCeo2wshw0Dq0zfuJhLjkJDc91SPObdmzYatik7QRf1XZLL_19GfPkLnS5Z-Eedr_VjfrRDosocTw6dJKhn"
+                  src="/illustrations/Baobab.webp"
                 />
                 <div className="leading-tight">
                   <span className="block text-2xl font-extrabold text-[#635BFF]">Petit Baobab</span>
