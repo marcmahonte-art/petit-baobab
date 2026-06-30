@@ -3,38 +3,19 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: #FFF9F2;
-  --color-foreground: #3B2416;
-  --color-surface: #FFFFFF;
-  --color-border: #F0E7DA;
-  --color-muted: #7A6A5E;
-  --color-hero: #FFF5CC;
-  --color-yellow: #FFD95C;
-  --color-purple: #7D6AF8;
-  --color-green: #20C997;
+  --color-bg: #FFF9F2;
+  --color-text: #1A1A2E;
+  --color-text-muted: #6B6B7B;
+  --color-primary: #7D6AF8;
+  --color-primary-dark: #6552E8;
+  --color-secondary: #20C997;
   --color-orange: #FFB300;
+  --color-yellow: #FFD95C;
   --color-blue: #1194FF;
   --color-pink: #FF5E83;
-  --color-teal: #13C6A2;
-  --color-card: #FFFFFF;
-  --color-card-foreground: #3B2416;
-  --color-popover: #FFFFFF;
-  --color-popover-foreground: #3B2416;
-  --color-primary: #4A4EBE;
-  --color-primary-foreground: #FFFFFF;
-  --color-secondary: #FFB300;
-  --color-secondary-foreground: #3B2416;
-  --color-accent: #FFE08A;
-  --color-accent-foreground: #3B2416;
-  --color-destructive: #FF5E83;
-  --color-destructive-foreground: #FFFFFF;
-  --color-input: #EFE7DB;
-  --color-ring: #4A4EBE;
-  --color-chart-1: #FFD95C;
-  --color-chart-2: #20C997;
-  --color-chart-3: #1194FF;
-  --color-chart-4: #FF5E83;
-  --color-chart-5: #7D6AF8;
+  --color-white: #FFFFFF;
+  --color-border: #F0E7DA;
+  --color-card-bg: #FFFFFF;
 
   --radius-sm: 16px;
   --radius-md: 20px;
@@ -43,7 +24,7 @@
   --radius-hero: 32px;
   --radius-pill: 999px;
 
-  --font-sans: var(--font-poppins), "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  --font-sans: var(--font-nunito), "Nunito Sans", "Nunito", sans-serif;
 
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);

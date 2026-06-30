@@ -4,939 +4,569 @@ import { useEffect, useState } from "react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  Palette,
-  Bot,
-  Book,
-  Gamepad,
-  Award,
-  Shield,
-  Play,
-  ArrowRight,
-  Download,
-  Star,
-  Heart,
-  ChevronDown,
-  Globe,
-  Plus,
-  BookOpen,
-} from "lucide-react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export default function LandingPage() {
   const router = useRouter()
   const { lang, setLanguage } = useI18n()
-  const { user, checkSession, logout } = useAuthStore()
-  
-  const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({})
-  const [magicPrompt, setMagicPrompt] = useState("")
+  const { user, checkSession } = useAuthStore()
 
   useEffect(() => {
     checkSession()
   }, [checkSession])
 
-  const toggleFaq = (index: number) => {
-    setFaqOpen((prev) => ({ ...prev, [index]: !prev[index] }))
-  }
-
-  const handleLangToggle = () => {
-    setLanguage(lang === "fr" ? "en" : "fr")
-  }
-
-  const handleMagicAIClick = () => {
+  const handleCTA = () => {
     if (user) {
-      router.push(`/magic-drawing?prompt=${encodeURIComponent(magicPrompt || "Un lion près d'un grand baobab")}`)
+      router.push("/dashboard")
     } else {
-      router.push(`/login?next=${encodeURIComponent(`/magic-drawing?prompt=${encodeURIComponent(magicPrompt || "Un lion près d'un grand baobab")}`)}`)
+      router.push("/login?tab=signup")
     }
   }
 
-  const faqItems = [
-    {
-      q: lang === "fr" ? "Qu'est-ce que Petit Baobab ?" : "What is Petit Baobab?",
-      a: lang === "fr" 
-        ? "Petit Baobab est une plateforme éducative et créative conçue pour les enfants de 3 à 8 ans en Afrique. Elle combine coloriage, contes illustrés, jeux éducatifs et un générateur d'images IA sécurisé pour développer l'imaginaire." 
-        : "Petit Baobab is an educational and creative platform designed for children aged 3 to 8 in Africa. It combines coloring, illustrated tales, educational games, and a safe AI image generator to expand imagination."
-    },
-    {
-      q: lang === "fr" ? "Comment fonctionne l'intelligence artificielle ?" : "How does the AI generator work?",
-      a: lang === "fr" 
-        ? "L'enfant décrit l'image de son choix (ex: 'un éléphant jouant du balafon') et l'IA génère en quelques secondes un dessin au trait prêt à colorier. C'est 100% sécurisé et adapté à la culture locale." 
-        : "The child describes the image of their choice (e.g., 'an elephant playing balafon'), and the AI generates a ready-to-color outline drawing in seconds. It is 100% safe and adapted to local culture."
-    },
-    {
-      q: lang === "fr" ? "Le système d'étoiles est-il obligatoire ?" : "Is the star wallet mandatory?",
-      a: lang === "fr" 
-        ? "Non, l'inscription est 100% gratuite et donne droit à 5 étoiles de bienvenue. Les coloriages classiques et certains jeux sont accessibles librement. Les étoiles ne servent que pour les générations IA détaillées." 
-        : "No, signing up is 100% free and includes 5 welcome stars. Basic coloring pages and some games are freely accessible. Stars are only consumed for detailed AI generations."
-    },
-    {
-      q: lang === "fr" ? "Proposez-vous des abonnements pour les écoles ?" : "Do you offer subscriptions for schools?",
-      a: lang === "fr" 
-        ? "Oui ! Notre formule Écoles permet de regrouper plusieurs élèves, de suivre leurs statistiques et de générer des livrets d'activités complets en PDF pour les imprimer en grand volume." 
-        : "Yes! Our Schools plan allows grouping multiple students, tracking their progress, and generating complete activity workbooks in PDF for bulk printing."
+  const handleLogin = () => {
+    if (user) {
+      router.push("/dashboard")
+    } else {
+      router.push("/login")
     }
-  ]
-
-  // Suggested prompts for the AI demo
-  const suggestions = [
-    "Un petit lionceau sous un grand baobab",
-    "Une girafe avec des lunettes dans la savane",
-    "Un garçon jouant de la kora au village",
-    "Une tortue amicale près du fleuve Niger"
-  ]
+  }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#FFF7E7,#FFFDF8_55%)] text-[#17162E] font-poppins antialiased overflow-x-hidden select-none pb-16">
+    <div className="bg-[#FBFAEE] font-sans text-[#1F2937] antialiased overflow-x-hidden min-h-screen">
       
-      {/* --- 1. NAVBAR (Height: 92px, Sticky, backdrop blur) --- */}
-      <header className="sticky top-0 bg-white/92 backdrop-blur-md border-b border-[#ECECF3] z-50 px-8 h-[92px] flex items-center">
-        <div className="max-w-[1440px] w-full mx-auto flex items-center justify-between">
+      {/* BEGIN: MainHeader */}
+      <header className="sticky top-0 z-50 bg-[#FBFAEE]/90 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           
-          {/* Logo (Width 190px, Height 70px) */}
-          <div className="flex items-center cursor-pointer w-[190px] h-[70px] relative" onClick={() => router.push("/")}>
-            <Image
-              src="/illustrations/logo-petit-baobab.webp"
-              alt="Petit Baobab"
-              fill
-              className="object-contain"
-              priority
-            />
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img
+                alt="Logo"
+                className="rounded-full object-cover w-10 h-10"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAussE8J8ZBIYh6OwfjqfgQBnR6gZYCpR7h7CwjOPVyvcYm7xZSdjd4TlnDmKoQMvZIfrfkGa1DS8yUZ9roeQviPluoFTmVPOFkA63JLx8WXWG4nOu0GUssrqP3k_PFchvhg12KznQDaOxCp_uwJGn8hinH_CPAQPG80pIX2ZE4mBpzHsbZfXC7IlZh3CDIF91xEV1VzJ5SXA6bDY8UI0uX9jVfd1gNL8OnvZvWKLNwZmFfaf9P-1tYsf89GSQrh3ft3bPYN5eeuwLG"
+              />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-2xl font-extrabold text-[#635BFF]">Petit Baobab</span>
+              <span className="block text-[10px] text-gray-500 uppercase tracking-widest font-bold">Apprendre, créer, grandir !</span>
+            </div>
           </div>
 
-          {/* Navigation (16px, font-weight 500, hover text-purple-600, gap 40px) */}
-          <nav className="hidden xl:flex items-center gap-[40px] font-medium text-[16px] text-[#5F6475]">
-            <a href="#features" className="hover:text-[#6C4CF1] transition-colors">Accueil</a>
-            <a href="#features" className="hover:text-[#6C4CF1] transition-colors">Fonctionnalités</a>
-            <a href="#books" className="hover:text-[#6C4CF1] transition-colors">Livres</a>
-            <a href="#pricing" className="hover:text-[#6C4CF1] transition-colors">Tarifs</a>
-            <a href="#faq" className="hover:text-[#6C4CF1] transition-colors">À propos</a>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
+            <a className="hover:text-[#635BFF] transition-colors" href="#">Accueil</a>
+            <a className="hover:text-[#635BFF] transition-colors" href="#features">Fonctionnalités</a>
+            <div className="relative group cursor-pointer">
+              <span className="flex items-center gap-1 hover:text-[#635BFF] transition-colors">
+                Livres 
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
+              </span>
+            </div>
+            <a className="hover:text-[#635BFF] transition-colors" href="#pricing">Tarifs</a>
+            <a className="hover:text-[#635BFF] transition-colors" href="#testimonials">À propos</a>
           </nav>
 
-          {/* Actions */}
           <div className="flex items-center gap-4">
-            
-            {/* Lang switcher */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleLangToggle}
-                    className="px-3.5 py-1.5 text-[14px] font-medium border-2 border-[#1C1C3A] bg-white rounded-full shadow-[2px_2px_0px_0px_#1C1C3A] hover:bg-neutral-50 cursor-pointer transition-transform active:scale-95 text-[#17162E]"
-                  >
-                    {lang === "fr" ? "EN" : "FR"}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs font-semibold">{lang === "fr" ? "Switch to English" : "Passer en Français"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {user ? (
-              <>
-                <Button
-                  onClick={() => router.push("/dashboard")}
-                  className="h-[48px] px-5 bg-[#6C4CF1] hover:bg-[#5B39EB] text-white border-2 border-[#1C1C3A] rounded-full font-bold text-sm shadow-md transition-all cursor-pointer"
-                >
-                  {lang === "fr" ? "Mon Espace" : "My Space"}
-                </Button>
-                <Button
-                  onClick={async () => {
-                    await logout()
-                    router.refresh()
-                  }}
-                  variant="destructive"
-                  className="h-[48px] px-4 bg-red-500 hover:bg-red-600 text-white border-2 border-[#1C1C3A] rounded-full font-bold text-sm shadow-md transition-all cursor-pointer"
-                >
-                  {lang === "fr" ? "Quitter" : "Sign Out"}
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* Se connecter outline, height 48px, width 140px, rounded-full */}
-                <button
-                  onClick={() => router.push("/login")}
-                  className="h-[48px] w-[140px] rounded-full border border-[#ECECF3] bg-white hover:bg-[#FFFDF8] font-medium text-[16px] text-[#17162E] transition-colors cursor-pointer flex items-center justify-center"
-                >
-                  {lang === "fr" ? "Se connecter" : "Log In"}
-                </button>
-                {/* Créer un compte variant default, bg #6C4CF1, white text, height 48px, width 180px, shadow-lg, hover scale(1.03), 200ms transition */}
-                <button
-                  onClick={() => router.push("/login?tab=signup")}
-                  className="h-[48px] w-[180px] bg-[#6C4CF1] hover:bg-[#5B39EB] text-white font-medium text-[16px] rounded-full shadow-lg transition-all duration-200 hover:scale-[1.03] cursor-pointer flex items-center justify-center"
-                >
-                  {lang === "fr" ? "Créer un compte" : "Create Account"}
-                </button>
-              </>
-            )}
-
+            <button
+              onClick={handleLogin}
+              className="px-5 py-2 text-sm font-semibold hover:bg-gray-100 rounded-[8px] transition-colors cursor-pointer"
+            >
+              Se connecter
+            </button>
+            <button
+              onClick={handleCTA}
+              className="px-5 py-2 text-sm font-semibold bg-[#635BFF] text-white rounded-[8px] hover:bg-[#635BFF]/90 transition-all shadow-md shadow-[#635BFF]/20 cursor-pointer"
+            >
+              Créer un compte
+            </button>
           </div>
+
         </div>
       </header>
+      {/* END: MainHeader */}
 
-      {/* --- 2. HERO SECTION --- */}
-      <section className="max-w-[1280px] mx-auto px-6 py-[64px] grid grid-cols-1 lg:grid-cols-2 gap-[64px] items-center">
-        
-        {/* Left Column */}
-        <div className="flex flex-col gap-[24px] max-w-xl">
+      {/* BEGIN: HeroSection */}
+      <section className="relative pt-12 md:pt-20 pb-16 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFC107]/15 border-2 border-[#1C1C3A] rounded-full w-max text-[14px] font-medium shadow-sm">
-            {/* White circular container for the icon with light shadow */}
-            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#FFC107]">
-              <Star className="w-3.5 h-3.5 fill-[#FFC107]" />
-            </div>
-            <span>{lang === "fr" ? "5 ÉTOILES IA OFFERTES À L'INSCRIPTION" : "5 FREE AI STARS UPON SIGNUP"}</span>
-          </div>
-
-          <h1 className="text-[44px] md:text-[64px] font-bold text-[#1C1C3A] leading-[1.1] tracking-tight">
-            Le coloriage qui éveille la{" "}
-            <span className="text-[#6D4CFF] relative">
-              créativité
-              <span className="absolute bottom-0 left-0 w-full h-[6px] bg-[#6D4CFF]/20 rounded-full"></span>
-            </span>{" "}
-            et célèbre{" "}
-            <span className="text-[#25C26E]">l'Afrique</span>
-          </h1>
-
-          <p className="text-[18px] font-normal text-[#7A7A95] leading-relaxed">
-            Petit Baobab aide les enfants à apprendre, créer et s'amuser grâce au coloriage interactif, aux histoires, aux jeux éducatifs et à l'intelligence artificielle.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-4 mt-2">
-            {user ? (
-              <Button
-                onClick={() => router.push("/dashboard")}
-                className="h-[56px] px-8 bg-[#6D4CFF] hover:bg-[#5735E2] text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-[4px_4px_0px_0px_#1C1C3A] active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all flex items-center gap-2 cursor-pointer"
+          <div className="animate-fade-in-up">
+            <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.1] mb-6">
+              Le coloriage <br/>
+              qui éveille la <span className="text-[#635BFF]">créativité</span> <br/>
+              et célèbre <span className="text-[#22C55E]">l'Afrique</span>
+            </h1>
+            <p className="text-lg text-gray-600 mb-10 max-w-lg">
+              Des milliers de dessins africains, des histoires captivantes et des outils intelligens pour apprendre en s'amusant.
+            </p>
+            <div className="flex flex-wrap gap-4 mb-12">
+              <button
+                onClick={handleCTA}
+                className="px-8 py-4 bg-[#635BFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform shadow-lg shadow-[#635BFF]/30 cursor-pointer"
               >
-                <span>{lang === "fr" ? "Accéder à mon espace" : "Access My Space"}</span>
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={() => router.push("/login?tab=signup")}
-                  className="h-[56px] px-8 bg-[#6D4CFF] hover:bg-[#5735E2] text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-[4px_4px_0px_0px_#1C1C3A] active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <span>{lang === "fr" ? "Commencer gratuitement" : "Start Free Now"}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-                <Button
-                  onClick={() => router.push("/login")}
-                  className="h-[56px] px-8 bg-white border-2 border-[#1C1C3A] text-[#1C1C3A] font-bold text-[18px] rounded-[24px] shadow-[4px_4px_0px_0px_#1C1C3A] hover:bg-neutral-50 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all cursor-pointer"
-                >
-                  {lang === "fr" ? "Découvrir Petit Baobab" : "Discover More"}
-                </Button>
-              </>
-            )}
+                Commencer gratuitement
+              </button>
+              <button
+                onClick={() => router.push("/login")}
+                className="px-8 py-4 bg-white border border-gray-200 text-gray-800 font-bold rounded-[8px] flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <span className="w-6 h-6 bg-[#635BFF] rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                Découvrir Petit Baobab
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-6 text-sm font-semibold text-gray-700">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-[#22C55E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
+                100% sécurisé
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
+                Sans publicité
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                </svg>
+                Approuvé par les parents
+              </div>
+            </div>
           </div>
 
-          {/* Trust Badges */}
-          <div className="flex items-center gap-6 mt-4 flex-wrap text-[14px] font-medium text-[#7A7A95]">
-            <span className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#25C26E]">
-                <Shield className="w-3.5 h-3.5" />
-              </div>
-              100% sécurisé
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#25C26E]">
-                <Play className="w-3.5 h-3.5" />
-              </div>
-              Sans publicité
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#25C26E]">
-                <Heart className="w-3.5 h-3.5" />
-              </div>
-              Approuvé par les parents
-            </span>
-          </div>
-
-        </div>
-
-        {/* Right Column (Fixed Illustration, doesn't hide/change on responsive) */}
-        <div className="relative flex justify-center w-full">
-          <div className="w-[320px] sm:w-[420px] md:w-[500px] h-[320px] sm:h-[420px] md:h-[500px] rounded-[32px] border-4 border-[#1C1C3A] bg-white shadow-[8px_8px_0px_0px_#1C1C3A] flex items-center justify-center p-4 relative overflow-hidden shrink-0">
-            <Image
-              src="/illustrations/Petite%20fille%20tenant%20un%20crayon-village-girafe.webp"
-              alt="Mascot and savanna drawing"
-              fill
-              className="object-cover object-center drop-shadow-xl"
-              priority
+          <div className="relative">
+            {/* Main Hero Illustration */}
+            <img
+              alt="Enfant coloriant un livre"
+              className="relative z-10 w-full drop-shadow-2xl rounded-[16px]"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ36e7KbMp2tE2bP9GbfmsV4Dx752TShf1P32kDjzEoan-bJsyDD-6mzAiXhdWhUI9lB5bouwAgLIyTPR7Qgc4owSDiDIzBjDvDs7uuTC-xN3vM0URhxfybyPCXLDDId5lewRzDQwRI-LLk8PlcbZuQvx_7fZvKXHpbVOkeAbxYgcCLVusImemfMWb269XkoISggYXL2kjWaqXPy8t987j87BshgIij8T6tNh8z99-KkRI50CFuQbBRNgcN87nwcYI1talQUnKmIiA"
             />
+            {/* Background Elements (Simulated) */}
+            <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-50 -z-10"></div>
+            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#635BFF]/10 rounded-full blur-3xl opacity-50 -z-10"></div>
+          </div>
+
+        </div>
+      </section>
+      {/* END: HeroSection */}
+
+      {/* BEGIN: FeaturesGrid */}
+      <section id="features" className="py-16 px-6 bg-white/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            
+            {/* Feature 1 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.5-9c.83 0 1.5-.67 1.5-1.5S10.33 8 9.5 8 8 8.67 8 9.5 8.67 11 9.5 11zm5 0c.83 0 1.5-.67 1.5-1.5S15.33 8 14.5 8 13 8.67 13 9.5s.67 1.5 1.5 1.5z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2">Coloriages uniques</h3>
+              <p className="text-xs text-gray-500">Des centaines de dessins inspirés de l'Afrique.</p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 16H5V4h14v14zM17 11h-4V7h-2v4H7v2h4v4h2v-4h4v-2z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2 text-[#22C55E]">Dessin magique</h3>
+              <p className="text-xs text-gray-500">Transforme tes idées en coloriages.</p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 11.55C9.64 9.35 6.48 8 3 8v11c3.48 0 6.64 1.35 9 3.55 2.36-2.2 5.52-3.55 9-3.55V8c-3.48 0-6.64 1.35-9 3.55z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2">Livres personnalisés</h3>
+              <p className="text-xs text-gray-500">Crée ton propre livre de coloriage.</p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2">Jeux éducatifs</h3>
+              <p className="text-xs text-gray-500">Apprends en jouant avec des jeux amusants.</p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-.75L9 9V4z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2">Histoires captivantes</h3>
+              <p className="text-xs text-gray-500">Lis des histoires qui éveillent l'imagination.</p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="flex flex-col items-center text-center group">
+              <div className="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-sm mb-2">Récompenses</h3>
+              <p className="text-xs text-gray-500">Gagne des badges et progresse.</p>
+            </div>
+
           </div>
         </div>
       </section>
+      {/* END: FeaturesGrid */}
 
-      {/* --- 3. FONCTIONNALITÉS --- */}
-      <section id="features" className="max-w-[1280px] mx-auto px-6 py-[64px] border-t-2 border-neutral-100">
-        <div className="text-center mb-[64px]">
-          <h2 className="text-[32px] md:text-[48px] font-bold text-[#1C1C3A]">
-            Que propose Petit Baobab ?
-          </h2>
-          <p className="text-[18px] font-normal text-[#7A7A95] mt-2 max-w-xl mx-auto">
-            Des outils créatifs et des contenus adaptés pour stimuler l'apprentissage et l'expression artistique.
-          </p>
+      {/* BEGIN: HowItWorks */}
+      <section id="how-it-works" className="py-24 px-6">
+        <div className="max-w-5xl mx-auto text-center mb-16">
+          <h2 className="text-4xl font-extrabold mb-4">Comment ça marche ?</h2>
         </div>
-
-        {/* 6 Rounded Cards (Gap 24, Radius 24, Shadow xl) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
-          
-          {/* Card 1 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            {/* Circular white container for icon with light shadow */}
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#6D4CFF]">
-              <Palette className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Coloriages uniques</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Des centaines de dessins inspirés de l'Afrique pour colorier en ligne ou à imprimer.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 2 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#FFA726]">
-              <Bot className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Dessin magique (AI)</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Transforme tes idées en véritables coloriages uniques grâce à notre IA sécurisée.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 3 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#FFC107]">
-              <Book className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Livres personnalisés</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Crée et personnalise tes propres livrets de coloriage thématiques au format PDF A4.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 4 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#25C26E]">
-              <Gamepad className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Jeux éducatifs</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Apprends les lettres, les chiffres, les puzzles et la logique tout en t'amusant.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 5 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#FFA726]">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Histoires captivantes</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Lis des contes locaux et des récits d'Afrique de l'Ouest qui éveillent l'imagination.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 6 */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between h-[250px]"
-          >
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-md border border-neutral-100 text-[#25C26E]">
-              <Award className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-[20px] font-bold mb-1">Récompenses</h3>
-              <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-                Gagne des badges de créativité et progresse au fil des coloriages terminés.
-              </p>
-            </div>
-          </motion.div>
-
-        </div>
-      </section>
-
-      {/* --- 4. COMMENT ÇA MARCHE --- */}
-      <section id="how-it-works" className="max-w-[1280px] mx-auto px-6 py-[64px] bg-[#F8FAFC] border-2 border-neutral-100 rounded-[24px] mt-[64px]">
-        <h2 className="text-[32px] md:text-[48px] font-bold text-[#1C1C3A] text-center mb-[64px]">
-          Comment ça fonctionne ?
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[24px] relative">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
           
           {/* Step 1 */}
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#FFE08A] border-2 border-[#1C1C3A] flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#1C1C3A]">
-              1
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 w-8 h-8 bg-[#635BFF]/20 text-[#635BFF] font-bold rounded-full flex items-center justify-center text-xs">1</div>
+            <div className="h-40 flex items-center justify-center mb-6">
+              <img
+                alt="Step 1"
+                className="w-full h-full object-contain"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwDxlDv3lqot0eWdhHwv19lzlJtl94kvmspw0CTPyTa8FcbAJLTplbKIyeZ6e-EFVeMTwtxJvs5-HurZcEAgqZTtdyz1ofLPK0CqDs32steC-eDTxHZELZZep54vO7luNwKbgf0HkiDMsiPZTTenvtATfYtGzn6cC2Okfx2nqk0wyJQ2UnQUF7VElwgDhdRIHLGQpEfEDzPyP08nDBBIVBSXRPCowxp5-pZpxiVi6UypdKBQiI9ZwWEzScOxw62KvEhaPq-KODyJ65"
+              />
             </div>
-            <div className="w-24 h-24 relative overflow-hidden bg-white border-2 border-neutral-200 rounded-[20px]">
-              <Image src="/illustrations/animals/girafe.svg" alt="Girafe template" fill className="p-3 object-contain" />
+            <h3 className="font-bold text-lg mb-2">Choisis</h3>
+            <p className="text-sm text-gray-500">Parmi des centaines de dessins.</p>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 hidden md:block">
+              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
             </div>
-            <h4 className="font-bold text-[18px]">{lang === "fr" ? "Choisis" : "Select"}</h4>
-            <p className="text-xs text-[#7A7A95] font-semibold leading-relaxed max-w-[200px]">
-              {lang === "fr" ? "Parmi des centaines de dessins inspirés de l'Afrique." : "From hundreds of African-themed drawings."}
-            </p>
           </div>
 
           {/* Step 2 */}
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#DDF26B] border-2 border-[#1C1C3A] flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#1C1C3A]">
-              2
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 w-8 h-8 bg-[#22C55E]/20 text-[#22C55E] font-bold rounded-full flex items-center justify-center text-xs">2</div>
+            <div className="h-40 flex items-center justify-center mb-6">
+              <img
+                alt="Step 2"
+                className="w-full h-full object-contain"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB322QZIQzfFaLUpOGQSCA_AiD9cPb0xqYZ0F3BG7JP7qYGmd9cOgG9KG79NZY6JET18O14XfTWtQF2u9_CwPFmluREWgSsFACzEA2KOJKc3RN76LWUtkJ0GVwpedeCwmM_Ukast-QTMOoA0skXA5HXOvTyXDBqRhEIm6dgiHkKP_wH0Mq6kdfQvvDE9IbfBH_wOMtpTvOKaIvXmFYr2ZBgxkeRzYgFU6Ko7vp3uVyq_mOEF2SkjKWqbDSSlvWD8MNTnVpKUIvs0Dqu"
+              />
             </div>
-            <div className="w-24 h-24 relative overflow-hidden bg-white border-2 border-neutral-200 rounded-[20px]">
-              <Image src="/illustrations/book.webp" alt="Coloring Book template" fill className="p-3 object-contain" />
+            <h3 className="font-bold text-lg mb-2 text-[#22C55E]">Personnalise</h3>
+            <p className="text-sm text-gray-500">Ton livre avec tes couleurs et ton style.</p>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 hidden md:block">
+              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
             </div>
-            <h4 className="font-bold text-[18px]">{lang === "fr" ? "Personnalise" : "Customize"}</h4>
-            <p className="text-xs text-[#7A7A95] font-semibold leading-relaxed max-w-[200px]">
-              {lang === "fr" ? "Crée ton propre livre avec tes illustrations favorites." : "Create your own booklet with your favorite drawings."}
-            </p>
           </div>
 
           {/* Step 3 */}
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#FFC4A8] border-2 border-[#1C1C3A] flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#1C1C3A]">
-              3
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 w-8 h-8 bg-orange-100 text-orange-600 font-bold rounded-full flex items-center justify-center text-xs">3</div>
+            <div className="h-40 flex items-center justify-center mb-6">
+              <img
+                alt="Step 3"
+                className="w-full h-full object-contain"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCshkdiyfNVfUOxdfjvKgdh166Xf8GaFhFEMFFHepeAVdN0fWQYtzHo3bvJMfg6ozBgx3rrNERLSGd18WRkTgg4EDLW5XhtRxoNJgy4CKyKMGowPrms316fFVphLwsKBpafI-r1RwR-vdO304ejhefH_VS2XSzC11OeMMsUqr_ZMzCWWHjEwsa6U8AwHuUBbPstq-5KRJHYK-_1291QZi_lTPxHebSsYi_J0KBtKIXYtDerAlnRobyAnlWBJQjMaxoEBmp0zn54VZjx"
+              />
             </div>
-            <div className="w-24 h-24 relative overflow-hidden bg-white border-2 border-neutral-200 rounded-[20px] flex items-center justify-center">
-              {/* White circular container for the icon */}
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#6D4CFF]">
-                <Bot className="w-5 h-5" />
-              </div>
+            <h3 className="font-bold text-lg mb-2 text-orange-600">Aperçois</h3>
+            <p className="text-sm text-gray-500">Ton livre avant de le télécharger.</p>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 hidden md:block">
+              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
             </div>
-            <h4 className="font-bold text-[18px]">{lang === "fr" ? "Aperçois" : "Preview"}</h4>
-            <p className="text-xs text-[#7A7A95] font-semibold leading-relaxed max-w-[200px]">
-              {lang === "fr" ? "Colorie en ligne ou utilise l'IA pour générer ton idée." : "Color online or use AI to draw your imagination."}
-            </p>
           </div>
 
           {/* Step 4 */}
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#E0F2FE] border-2 border-[#1C1C3A] flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#1C1C3A]">
-              4
-            </div>
-            <div className="w-24 h-24 relative overflow-hidden bg-white border-2 border-neutral-200 rounded-[20px] flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#25C26E]">
-                <Download className="w-5 h-5" />
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="absolute top-4 left-4 w-8 h-8 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center text-xs">4</div>
+            <div className="h-40 flex items-center justify-center mb-6">
+              <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                </svg>
               </div>
             </div>
-            <h4 className="font-bold text-[18px]">{lang === "fr" ? "Télécharge" : "Download"}</h4>
-            <p className="text-xs text-[#7A7A95] font-semibold leading-relaxed max-w-[200px]">
-              {lang === "fr" ? "Télécharge en PDF A4 ou imprime pour colorier sur papier." : "Download in A4 PDF or print to color physically."}
-            </p>
+            <h3 className="font-bold text-lg mb-2">Télécharge</h3>
+            <p className="text-sm text-gray-500">Ton livre ou demande une impression.</p>
           </div>
 
         </div>
       </section>
+      {/* END: HowItWorks */}
 
-      {/* --- 5. LIVRES PERSONNALISÉS --- */}
-      <section id="books" className="max-w-[1280px] mx-auto px-6 py-[64px] grid grid-cols-1 lg:grid-cols-2 gap-[64px] items-center">
-        
-        {/* Left Column (Fixed Illustration, doesn't change/hide on mobile) */}
-        <div className="flex justify-center w-full">
-          <div className="w-[300px] sm:w-[400px] md:w-[480px] h-[240px] sm:h-[320px] md:h-[400px] relative rounded-[24px] overflow-hidden border-4 border-[#1C1C3A] shadow-[6px_6px_0px_0px_#1C1C3A] bg-[#FFE7A0] shrink-0">
-            <Image
-              src="/illustrations/Deux%20enfants%20lisant%20ensemble.webp"
-              alt="Two happy children reading"
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="flex flex-col gap-[24px]">
-          <div className="inline-flex items-center gap-2 text-[#6D4CFF] font-extrabold text-[14px]">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-neutral-100 text-[#6D4CFF]">
-              <Book className="w-4 h-4" />
-            </div>
-            <span>CRÉATEUR DE LIVRES</span>
-          </div>
-
-          <h2 className="text-[32px] md:text-[48px] font-bold text-[#1C1C3A] leading-tight">
-            Crée ton propre livre de coloriage
-          </h2>
-
-          <p className="text-[18px] font-normal text-[#7A7A95] leading-relaxed">
-            Choisis parmi des thèmes burkinabès et ouest-africains. Assemble les plus beaux dessins de tes enfants, ajoute leur nom et crée en 1 clic un livre de coloriage PDF unique et personnalisé prêt pour l'impression.
-          </p>
-
-          <Button
-            onClick={() => router.push("/login")}
-            className="h-[56px] w-max px-8 bg-[#6D4CFF] hover:bg-[#5735E2] text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-[3px_3px_0px_0px_#1C1C3A] active:translate-y-0.5 active:shadow-[1px_1px_0px_0px_#1C1C3A] transition-all cursor-pointer"
-          >
-            Créer mon livre
-          </Button>
-
-          {/* Book covers preview list */}
-          <div className="flex gap-4 mt-8 flex-wrap">
-            <div className="px-4 py-2 border-2 border-[#1C1C3A] bg-white rounded-[24px] shadow-sm text-xs font-bold flex items-center gap-2">
-              Les animaux de la savane
-            </div>
-            <div className="px-4 py-2 border-2 border-[#1C1C3A] bg-white rounded-[24px] shadow-sm text-xs font-bold flex items-center gap-2">
-              Les instruments africains
-            </div>
-            <div className="px-4 py-2 border-2 border-[#1C1C3A] bg-white rounded-[24px] shadow-sm text-xs font-bold flex items-center gap-2">
-              Mon livre de coloriage
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* --- EXTRA: GENERATE WITH AI --- */}
-      <section id="ai-generator" className="max-w-[1200px] mx-auto px-6 py-[64px]">
-        <div className="bg-gradient-to-tr from-[#6D4CFF] to-[#FFA726] rounded-[24px] border-4 border-[#1C1C3A] p-8 md:p-12 shadow-[8px_8px_0px_0px_#1C1C3A] relative overflow-hidden">
-          
-          <div className="absolute top-6 left-6 text-white/20"><Bot className="w-16 h-16" /></div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+      {/* BEGIN: CreateBookBanner */}
+      <section id="pricing" className="py-12 px-6">
+        <div className="max-w-7xl mx-auto bg-amber-50 rounded-[40px] p-8 md:p-12 overflow-hidden border border-amber-100 shadow-xl shadow-amber-900/5">
+          <div className="flex flex-col md:flex-row items-center gap-12">
             
-            {/* Form */}
-            <div className="flex flex-col gap-6 text-white">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full w-max text-xs font-extrabold backdrop-blur-sm border border-white/20">
-                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#6D4CFF] shrink-0">
-                  <Bot className="w-3 h-3" />
-                </div>
-                <span>COLORIAGE MAGIQUE IA</span>
-              </div>
-
-              <h2 className="text-[32px] md:text-[48px] font-bold leading-tight text-white">
-                Génère tes coloriages avec l'IA
-              </h2>
-
-              <p className="text-sm font-semibold text-white/80 leading-relaxed">
-                L'enfant écrit sa description (ex: 'Un bébé hippopotame qui joue du djembé dans le marigot') et notre intelligence artificielle crée instantanément le dessin au trait.
-              </p>
-
-              {/* Input block */}
-              <div className="flex flex-col gap-3">
-                <div className="flex h-[56px] border-2 border-[#1C1C3A] bg-white rounded-[24px] overflow-hidden shadow-inner p-1 items-center">
-                  <input
-                    type="text"
-                    value={magicPrompt}
-                    onChange={(e) => setMagicPrompt(e.target.value)}
-                    placeholder={lang === "fr" ? "Ex: Un éléphant jouant du balafon..." : "E.g., An elephant playing the balafon..."}
-                    className="flex-1 bg-transparent border-none text-[#1C1C3A] focus:outline-none font-bold text-sm px-4"
-                  />
-                  <Button
-                    onClick={handleMagicAIClick}
-                    className="h-full px-5 bg-[#FFC107] hover:bg-[#E3AF2B] text-[#1C1C3A] border-2 border-[#1C1C3A] rounded-[18px] font-black text-xs transition-colors cursor-pointer"
-                  >
-                    {lang === "fr" ? "Créer" : "Create"}
-                  </Button>
-                </div>
-
-                {/* Suggestions */}
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.map((s, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setMagicPrompt(s)}
-                      className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-extrabold text-[10px] cursor-pointer border border-white/10 transition-colors"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Preview drawing */}
-            <div className="flex justify-center">
-              <div className="w-[280px] md:w-[320px] h-[280px] md:h-[320px] bg-white border-4 border-[#1C1C3A] rounded-[24px] shadow-[6px_6px_0px_0px_#1C1C3A] overflow-hidden p-3 relative flex items-center justify-center shrink-0">
-                <Image
-                  src="/illustrations/coloring-baobab.png"
-                  alt="Baobab drawing preview"
-                  width={280}
-                  height={280}
-                  className="object-contain w-full h-full object-center"
-                />
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* --- 6. TÉMOIGNAGES --- */}
-      <section className="max-w-[1280px] mx-auto px-6 py-[64px]">
-        <div className="text-center mb-[64px]">
-          <h2 className="text-[32px] md:text-[48px] font-bold text-[#1C1C3A]">
-            Ils adorent Petit Baobab
-          </h2>
-          <p className="text-[18px] font-normal text-[#7A7A95] mt-2 max-w-xl mx-auto">
-            Découvrez les retours des parents, des enseignants et des éducateurs qui utilisent notre studio créatif.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px]">
-          
-          {/* Testimonial 1 */}
-          <Card className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-12 h-12 border-2 border-[#1C1C3A]">
-                <AvatarImage src="https://api.dicebear.com/9.x/avataaars/svg?seed=aminata" />
-                <AvatarFallback>AM</AvatarFallback>
-              </Avatar>
-              <div>
-                <h4 className="font-bold text-[18px] text-[#1C1C3A]">Aminata, maman</h4>
-                <div className="flex text-[#FFC107] text-sm mt-0.5">
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                </div>
-              </div>
-            </div>
-            <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-              "Mon fils de 5 ans adore créer ses propres dessins avec l'IA. Les contours sont impeccables et faciles à colorier. C'est magique !"
-            </p>
-          </Card>
-
-          {/* Testimonial 2 */}
-          <Card className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-12 h-12 border-2 border-[#1C1C3A]">
-                <AvatarImage src="https://api.dicebear.com/9.x/avataaars/svg?seed=yacouba" />
-                <AvatarFallback>YA</AvatarFallback>
-              </Avatar>
-              <div>
-                <h4 className="font-bold text-[18px] text-[#1C1C3A]">Yacouba, enseignant</h4>
-                <div className="flex text-[#FFC107] text-sm mt-0.5">
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                </div>
-              </div>
-            </div>
-            <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-              "C'est un excellent outil pour ma classe préscolaire à Ouagadougou. J'imprime les livrets en format A4 et les enfants s'éveillent !"
-            </p>
-          </Card>
-
-          {/* Testimonial 3 */}
-          <Card className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-6 shadow-xl flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-12 h-12 border-2 border-[#1C1C3A]">
-                <AvatarImage src="https://api.dicebear.com/9.x/avataaars/svg?seed=fatou" />
-                <AvatarFallback>FA</AvatarFallback>
-              </Avatar>
-              <div>
-                <h4 className="font-bold text-[18px] text-[#1C1C3A]">Fatou, directrice d'école</h4>
-                <div className="flex text-[#FFC107] text-sm mt-0.5">
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                  <Star className="w-4 h-4 fill-current" />
-                </div>
-              </div>
-            </div>
-            <p className="text-[14px] font-medium text-[#7A7A95] leading-relaxed">
-              "L'identité visuelle africaine valorise notre culture. Les enfants s'identifient aux mascottes. Je recommande vivement."
-            </p>
-          </Card>
-
-        </div>
-      </section>
-
-      {/* --- PRICING SECTION --- */}
-      <section id="pricing" className="max-w-[1280px] mx-auto px-6 py-[64px] border-t-2 border-neutral-100">
-        <div className="text-center mb-[64px]">
-          <h2 className="text-[32px] md:text-[48px] font-bold text-[#1C1C3A]">
-            Nos Tarifs Simples
-          </h2>
-          <p className="text-[18px] font-normal text-[#7A7A95] mt-2 max-w-xl mx-auto">
-            Sans engagement. Annulez à tout moment. Paiement par Mobile Money (Orange Money/Moov Money) disponible.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[24px] items-stretch max-w-5xl mx-auto">
-          
-          {/* Plan Free */}
-          <div className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-8 shadow-sm flex flex-col justify-between">
-            <div>
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Gratuit</h3>
-              <div className="text-[38px] font-black mt-3">0 FCFA</div>
-              <ul className="text-[14px] font-medium text-[#7A7A95] flex flex-col gap-3 mt-8">
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  5 étoiles offertes
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  Coloriages classiques
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  Filigrane sur les PDF
-                </li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/login?tab=signup")} className="w-full h-[56px] border-2 border-[#1C1C3A] rounded-[24px] font-bold text-sm mt-8 bg-neutral-50 hover:bg-neutral-100 text-[#1C1C3A] cursor-pointer">
-              {lang === "fr" ? "Commencer" : "Start Free"}
-            </Button>
-          </div>
-
-          {/* Plan Premium (Highlighted) */}
-          <div className="bg-white border-4 border-[#6D4CFF] rounded-[24px] p-8 shadow-xl flex flex-col justify-between relative scale-105">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#6D4CFF] text-white px-3 py-0.5 rounded-full text-[9px] font-black tracking-wider uppercase">
-              {lang === "fr" ? "Recommandé" : "Best Value"}
-            </div>
-            <div>
-              <h3 className="text-xs font-black text-[#6D4CFF] uppercase tracking-widest">Premium</h3>
-              <div className="text-[38px] font-black mt-3">3 500 FCFA <span className="text-xs font-bold text-slate-400">/ mois</span></div>
-              <ul className="text-[14px] font-medium text-[#7A7A95] flex flex-col gap-3 mt-8">
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#6D4CFF] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#6D4CFF]" />
-                  </div>
-                  Étoiles IA illimitées
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#6D4CFF] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#6D4CFF]" />
-                  </div>
-                  Livres personnalisés illimités
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#6D4CFF] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#6D4CFF]" />
-                  </div>
-                  Téléchargements HD sans filigrane
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#6D4CFF] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#6D4CFF]" />
-                  </div>
-                  Jusqu'à 3 profils enfants
-                </li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/login")} className="w-full h-[56px] border-2 border-[#1C1C3A] rounded-[24px] font-bold text-sm mt-8 bg-[#6D4CFF] text-white hover:bg-[#5735E2] cursor-pointer">
-              {lang === "fr" ? "S'abonner" : "Subscribe"}
-            </Button>
-          </div>
-
-          {/* Plan School */}
-          <div className="bg-white border-2 border-[#1C1C3A] rounded-[24px] p-8 shadow-sm flex flex-col justify-between">
-            <div>
-              <h3 className="text-xs font-black text-[#25C26E] uppercase tracking-widest font-poppins">Écoles</h3>
-              <div className="text-[38px] font-black mt-3">20 000 FCFA <span className="text-xs font-bold text-slate-400">/ mois</span></div>
-              <ul className="text-[14px] font-medium text-[#7A7A95] flex flex-col gap-3 mt-8">
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  Étoiles illimitées pour la classe
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  Tableau de bord enseignant
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm text-[#25C26E] shrink-0 border border-neutral-100">
-                    <Star className="w-3 h-3 fill-[#25C26E]" />
-                  </div>
-                  Impression en volume optimisée
-                </li>
-              </ul>
-            </div>
-            <Button onClick={() => router.push("/school")} className="w-full h-[56px] border-2 border-[#1C1C3A] rounded-[24px] font-bold text-sm mt-8 bg-[#E0F2FE] hover:bg-[#E0F2FE]/90 text-[#1C1C3A] cursor-pointer">
-              {lang === "fr" ? "Découvrir l'Espace École" : "Discover Schools"}
-            </Button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* --- FAQ SECTION --- */}
-      <section id="faq" className="max-w-4xl mx-auto px-6 py-[64px]">
-        <h2 className="text-[32px] font-bold text-[#1C1C3A] text-center mb-8">FAQ</h2>
-
-        <div className="flex flex-col gap-4">
-          {faqItems.map((item, idx) => (
-            <div key={idx} className="bg-white border-2 border-[#1C1C3A] rounded-[24px] overflow-hidden shadow-sm">
-              <button
-                onClick={() => toggleFaq(idx)}
-                className="w-full px-6 py-4 font-bold text-left flex items-center justify-between hover:bg-neutral-50 cursor-pointer text-sm md:text-base text-[#1C1C3A]"
-              >
-                <span>{item.q}</span>
-                <ChevronDown className={`w-5 h-5 text-[#7A6A5E] transition-transform ${faqOpen[idx] ? "rotate-180" : ""}`} />
-              </button>
-              <AnimatePresence>
-                {faqOpen[idx] && (
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="px-6 pb-4 pt-1 text-xs text-[#7A7A95] font-semibold leading-relaxed border-t border-neutral-100 bg-[#FFFDF8]">
-                      {item.a}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* --- 7. CTA SECTION --- */}
-      <section className="max-w-[1200px] mx-auto px-6 py-[64px]">
-        <div className="bg-gradient-to-tr from-[#6D4CFF] to-[#FFA726] rounded-[24px] border-4 border-[#1C1C3A] p-8 md:p-12 shadow-[8px_8px_0px_0px_#1C1C3A] relative overflow-hidden flex flex-col-reverse lg:grid lg:grid-cols-2 gap-8 items-center">
-          
-          {/* Left Column */}
-          <div className="flex flex-col gap-6 text-white relative z-10">
-            <h2 className="text-[32px] md:text-[48px] font-bold text-white leading-tight">
-              Prêt à éveiller la créativité de votre enfant ?
-            </h2>
-            <p className="text-sm font-bold text-white/90">
-              Rejoignez des milliers de familles qui font déjà confiance à Petit Baobab au Burkina Faso et en Afrique de l'Ouest.
-            </p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button onClick={() => router.push("/login?tab=signup")} className="h-[56px] px-8 bg-[#FFC107] hover:bg-[#E3AF2B] text-[#1C1C3A] border-2 border-[#1C1C3A] rounded-[24px] font-bold text-sm shadow-[4px_4px_0px_0px_#1C1C3A] active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all cursor-pointer">
-                Créer gratuitement
-              </Button>
-              <Button onClick={() => {
-                const element = document.getElementById("pricing")
-                element?.scrollIntoView({ behavior: "smooth" })
-              }} className="h-[56px] px-8 bg-white border-2 border-[#1C1C3A] text-[#1C1C3A] rounded-[24px] font-bold text-sm shadow-[4px_4px_0px_0px_#1C1C3A] hover:bg-neutral-50 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all cursor-pointer">
-                Voir les tarifs
-              </Button>
-            </div>
-            <span className="text-xs font-semibold text-white/80">Aucune carte bancaire requise</span>
-          </div>
-
-          {/* Right Column (Fixed child illustration) */}
-          <div className="flex justify-center relative z-10 shrink-0">
-            <div className="w-[280px] md:w-[320px] h-[280px] md:h-[320px] relative overflow-hidden bg-white border-4 border-[#1C1C3A] rounded-[24px] shadow-[6px_6px_0px_0px_#1C1C3A] shrink-0">
-              <Image
-                src="/illustrations/enfant-Crayons%20de%20couleur.webp"
-                alt="Child showing coloring page"
-                fill
-                className="object-cover"
+            <div className="md:w-1/3 flex justify-center">
+              <img
+                alt="Enfants lisant"
+                className="w-full max-w-[280px] rounded-lg"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm9Alp4BE8J_VVhPs_Yz2aXTKxSBXWRYU_vHIeluQOVWrIQQDuIM4_oxiir_0zE6UIXZLWY49qEJCVtfr4sfty-_MPBXuOWxUHLDGaHv8cDfJnZ6xDWTVCkg7KNSOR-9VPvpqF3sJ6h5WaAyTEj7NALDuJdNNgpT4SkcXQwhvuWUyweIsQGuRZ2j2hPthmF_-qxJnymOi4dhIaLjg995ljoIy_6kvdCPMpvZjfLlm8W--u1cPfz3j9tm8XiYok8IFEhPxjiRl2rtVu"
               />
             </div>
-          </div>
 
+            <div className="md:w-1/3 text-center md:text-left">
+              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
+                <span className="text-2xl">⭐</span>
+                <h2 className="text-3xl font-extrabold">Crée ton propre livre de coloriage</h2>
+              </div>
+              <p className="text-gray-600 mb-8">Un livre unique, à ton image. Parfait pour s'amuser, apprendre et offrir !</p>
+              <button
+                onClick={handleCTA}
+                className="px-8 py-3 bg-[#635BFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform cursor-pointer"
+              >
+                Créer mon livre
+              </button>
+            </div>
+
+            <div className="md:w-1/3 flex gap-4 overflow-x-auto pb-4">
+              {/* Book Previews */}
+              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-[#635BFF]">
+                <img
+                  alt="Book 1"
+                  className="rounded-lg mb-2 w-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz-d3Ri4geNZofFP6e9OKPAF0fMHnV6glgRS_w5_CssxIxWtgoopW85EJM5n7wsBpqLb-hwADQ86aBuIhy0cnlm07T3FKPKN4oMQk99IFjDBS8RKxJaPBRvGWpC8a4sIlr2U73Xbbu-t6jLJuAbcFGUzGYbTG4IoFxbNBjuZ9UBPZpn_gbD_6_JLjcUnPyBPbA6mvQ8Ah0iCCXbGuNTnnoJLz1UgZdeakrjRVdL58ghyrMpk0MOZpb0k5BTOQUaLDLQcASPI1mHuTb"
+                />
+                <p className="text-[10px] font-bold text-center">Les animaux de la savane</p>
+              </div>
+
+              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-[#22C55E]">
+                <img
+                  alt="Book 2"
+                  className="rounded-lg mb-2 w-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEQi1HUZHqMH80U9570YVwwiUpeYvwzpV-w_Gc0qDkxpckvt6Zeb7QdQehm0ASWU-L9ngBCbRvgqa__4i8GZcq_AJQFsEIbr-OLrpzrHVFi88-7Mgn08sp3e-Ta9jTepl8T6G01dPa5Z8Jukw5ouMrNZCmCWe6MnRtOrziKaRb9yh4w-IBFzRK0dfWoHe32dkRyCyNjivWtz0PsYr9ILxtUotTBN5Liemhc3KEgOC7KkO7zDjrmTmca1IsUXmuRnrMjVcBuKRIkE5o"
+                />
+                <p className="text-[10px] font-bold text-center">Mon livre de coloriage</p>
+              </div>
+
+              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-orange-500">
+                <img
+                  alt="Book 3"
+                  className="rounded-lg mb-2 w-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2QUiAl9Ww8H12Sq-85KuVBBlwX4wk4o_tlST-un2gMcwEUxwDuV8YZcKQhP8KBCK5Axk9lpLlPu1iru_HkA4B7Vu7sH7A6AD5HpHySfcseZmVAfkektmkTwYrnEDD0NhllZG55j3ZtC0j6n4lLhOmHdoNdDELWRStD7mb0IVEGpFd-kzEGIfcvabdZYftC4oG8jXEycRXV7RudDnBDd_nRw_wtfUZ7e8ctbHuvpOhcXGkweQVBC1SVMOmWTHoCUJw5t2OMNXFQYN0"
+                />
+                <p className="text-[10px] font-bold text-center">Les instruments africains</p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
+      {/* END: CreateBookBanner */}
 
-      {/* --- 8. FOOTER --- */}
-      <footer className="border-t-2 border-neutral-100 max-w-[1280px] mx-auto px-6 pt-16 pb-8 mt-12 flex flex-col gap-12 relative">
-        
-        {/* Decorative landscape of Baobabs at footer right */}
-        <div className="absolute bottom-6 right-6 w-32 h-32 opacity-25 md:opacity-40 select-none pointer-events-none z-0">
-          <Image
-            src="/illustrations/Baobab.webp"
-            alt="Baobab decoration"
-            width={128}
-            height={128}
-            className="object-contain w-full h-full"
-          />
+      {/* BEGIN: Testimonials */}
+      <section id="testimonials" className="py-24 px-6 bg-white/30">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-extrabold text-center mb-16">Ils adorent Petit Baobab</h2>
+          <div className="relative px-12">
+            
+            {/* Navigation Arrows */}
+            <button className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 cursor-pointer">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </button>
+            <button className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 cursor-pointer">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </button>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              
+              {/* Card 1 */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    alt="Aminata"
+                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMshMF73B2AVXDBCo2U7qw6G-cXiJeM1AyQeKASzc9xAyD91GVGG7agzLQbOftSy4Wnh7JTBnl2n_tgn-fUAjSPe6tYsUxO7Q7s9tn8Xx4uzdU3GdQOMoeC5mZPoeABTLzORAMwgstzxwU-GLAIXVL4dDLxs6UtIbhyGtAKWBTdWmpRB2M2n83UXGaFARfNrpc_yXBFjc1BBl_BNIW9ueTLulV2lj5aeUdIt5n8FJMxhT5weyg541bg8-pnR0JgVSyCrwXssBSAVyT"
+                  />
+                  <div>
+                    <h4 className="font-bold text-sm">Aminata, maman</h4>
+                    <div className="flex text-amber-400 text-xs">★★★★★</div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">"Mon fils adore créer ses propres livres. Les dessins sont magnifiques et éducatifs."</p>
+              </div>
+
+              {/* Card 2 */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    alt="Yacouba"
+                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzcHUD2pDdYxT7rOS5H-3Xt11s5zxwUAnlAigVKuPhejRxxCbuCfG1CMzmJLF4D3Ib04XRghAeKfyzDGuyAbfZ2KttTjrFZgUfz088zx9tP-DC_KoV7olzz36mHoWfNt63pBSI0nbINoQQn8VZtVm3uPnfk8y0kx3TNyiMjtv3P3i162esyhDes3MSPvT7NQ90orygLlniC69ah9mqOWICE50nPlHCFMiTLiWR0sH-dEnTXXp-Yo-E575mXQiWgzd1UW4VzSyCe8wN"
+                  />
+                  <div>
+                    <h4 className="font-bold text-sm">Yacouba, enseignant</h4>
+                    <div className="flex text-amber-400 text-xs">★★★★★</div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">"Parfait pour mes élèves ! Les histoires et activités sont très enrichissantes."</p>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    alt="Fatou"
+                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCk9dEUgVbzCwSDhGyQRrcQvHseeU-88AmXxRyHdCk-vouLWaXCMCdreS36bTc3wdDRhpawoFn6nsw67kkzodRftXTWwMyONcsHZ5jI62X0ALmMmsJG7Y0nofk5z6b8AnHlHODLcSWvAVu67guLnOC8raDdO1xuDHcUH7H40edVFI9A7p1gna1rCocPaXXjN8HMYftmRiG3osAkOKBXY0P7DodWkLE-9rtDso2ednR-f0cV-lITLHjC49hbmuTXHdBKvBcmd3Q0QPH"
+                  />
+                  <div>
+                    <h4 className="font-bold text-sm">Fatou, maman</h4>
+                    <div className="flex text-amber-400 text-xs">★★★★★</div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">"Enfin une application africaine qui valorise notre culture."</p>
+              </div>
+
+            </div>
+          </div>
         </div>
+      </section>
+      {/* END: Testimonials */}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 relative z-10">
+      {/* BEGIN: FooterCTA */}
+      <section className="px-6 pb-12">
+        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[40px] p-12 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between">
           
-          {/* Logo & Description */}
-          <div className="col-span-2 flex flex-col gap-4">
-            <Image
-              src="/illustrations/logo-petit-baobab.webp"
-              alt="Petit Baobab"
-              width={160}
-              height={50}
-              className="w-auto h-[45px] object-contain"
-            />
-            <p className="text-xs font-bold text-[#7A7A95] leading-relaxed max-w-sm">
-              Apprendre, créer, grandir ! Le premier studio de coloriage interactif et éducatif conçu pour les enfants d'Afrique de l'Ouest.
-            </p>
-            {/* Social Icons */}
-            <div className="flex gap-3 text-slate-400 mt-2">
-              <a href="#" className="hover:text-[#6D4CFF] transition-colors font-extrabold text-xs">FB</a>
-              <a href="#" className="hover:text-[#6D4CFF] transition-colors font-extrabold text-xs">IG</a>
-              <a href="#" className="hover:text-[#6D4CFF] transition-colors font-extrabold text-xs">YT</a>
-              <a href="#" className="hover:text-[#6D4CFF] transition-colors font-extrabold text-xs">TK</a>
+          <div className="relative z-10 text-center md:text-left mb-8 md:mb-0">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Prêt à éveiller la créativité<br/> de votre enfant ?</h2>
+            <p className="text-indigo-100 text-lg mb-8 opacity-80">Rejoignez des milliers de familles qui font déjà confiance à Petit Baobab.</p>
+            <div className="flex flex-col items-center md:items-start gap-3">
+              <button
+                onClick={handleCTA}
+                className="px-10 py-4 bg-white text-[#635BFF] font-bold rounded-[8px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer"
+              >
+                Commencer gratuitement
+              </button>
+              <p className="text-[10px] text-white/60">Aucune carte bancaire requise</p>
             </div>
           </div>
 
-          {/* Product links */}
-          <div className="flex flex-col gap-3 text-xs font-bold text-[#7A7A95]">
-            <h4 className="text-[13px] font-black text-[#1C1C3A] uppercase tracking-wider mb-2">Produit</h4>
-            <a href="#features" className="hover:text-[#6D4CFF] transition-colors">Coloriages</a>
-            <a href="#books" className="hover:text-[#6D4CFF] transition-colors">Livres</a>
-            <a href="#games" className="hover:text-[#6D4CFF] transition-colors">Jeux éducatifs</a>
-            <a href="#stories" className="hover:text-[#6D4CFF] transition-colors">Histoires</a>
+          <div className="relative z-10">
+            <img
+              alt="Enfant qui dessine"
+              className="w-full max-w-[320px] drop-shadow-2xl rounded-lg"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM3ZTSZA_XtMXBy8k_45AYDKKoT9sHd_hz6KpGWqNXfD2CQg1shEHAOKJXLlUW9cy-ZpvCuYTUVTL3Ikg5lbtt-su9sSWoXZaUXB8MAt82G56vkWaw3JTU4bjvC4NsoGLvMV2uzWCzcnA8eYHZs9eRT_-aGBgZyIuPoxm_LdhVxmlYmV8FltuXrZQXH86GS_N40zr26bDQ2R6noBGAOyUl-6nRrrzQvnWbj9Kj0TNiKgq1feqnRPv_GJZl74loYRg_Ewq7kVoKUf37"
+            />
           </div>
 
-          {/* Company links */}
-          <div className="flex flex-col gap-3 text-xs font-bold text-[#7A7A95]">
-            <h4 className="text-[13px] font-black text-[#1C1C3A] uppercase tracking-wider mb-2">Entreprise</h4>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">À propos</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Notre mission</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Blog</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Contact</a>
-          </div>
-
-          {/* Resources links */}
-          <div className="flex flex-col gap-3 text-xs font-bold text-[#7A7A95]">
-            <h4 className="text-[13px] font-black text-[#1C1C3A] uppercase tracking-wider mb-2">Ressources</h4>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Aide</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Guide parents</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-[#6D4CFF] transition-colors">Conditions</a>
-          </div>
+          {/* Background Graphic Overlay */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent)]"></div>
 
         </div>
+      </section>
+      {/* END: FooterCTA */}
 
-        <div className="border-t border-neutral-100 pt-6 text-center text-[10px] font-extrabold text-[#7A7A95] relative z-10">
-          © {new Date().getFullYear()} Petit Baobab. Tous droits réservés. Ouagadougou, Burkina Faso.
+      {/* BEGIN: MainFooter */}
+      <footer className="bg-[#FBFAEE] pt-20 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
+            
+            <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-6">
+                <img
+                  alt="Logo"
+                  className="w-10 h-10 rounded-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNS3EA7NELbhi4KQVPSq96IZDcIr5TawScrXLrxKMQxGQgKrYnC1Ke8Jj5FKH-mnF63K4bwu_-D5xv55Ayu__HtPTXpIeXRA_MkyKRKYeriFdfn_jqGBoI5OPcZVReENndZo9Jcsc3wIznGdRTzRnf56J5tJLZl05FAnE2XaNPdJv-3yG-nHRYWKIuojCeo2wshw0Dq0zfuJhLjkJDc91SPObdmzYatik7QRf1XZLL_19GfPkLnS5Z-Eedr_VjfrRDosocTw6dJKhn"
+                />
+                <div className="leading-tight">
+                  <span className="block text-2xl font-extrabold text-[#635BFF]">Petit Baobab</span>
+                  <span className="block text-[10px] text-gray-500 uppercase tracking-widest font-bold">Apprendre, créer, grandir !</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 max-w-xs mb-6">La plateforme de coloriage et d'éducation inspirée par les cultures africaines.</p>
+              <div className="flex gap-4">
+                <a className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[#635BFF] transition-colors border border-gray-100" href="#">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                <a className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[#635BFF] transition-colors border border-gray-100" href="#">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                  </svg>
+                </a>
+                <a className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-[#635BFF] transition-colors border border-gray-100" href="#">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.441 16.892c-2.102.144-6.784.144-8.883 0-2.276-.156-2.541-1.27-2.558-4.892.017-3.629.285-4.736 2.558-4.892 2.099-.144 6.782-.144 8.883 0 2.277.156 2.541 1.27 2.559 4.892-.018 3.629-.285 4.736-2.559 4.892zm-6.441-7.234l4.917 2.342-4.917 2.342v-4.684z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-sm mb-6">Produit</h4>
+              <ul className="space-y-4 text-sm text-gray-500">
+                <li><a className="hover:text-[#635BFF]" href="#">Coloriages</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Livres</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Jeux éducatifs</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Histoires</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-sm mb-6">Entreprise</h4>
+              <ul className="space-y-4 text-sm text-gray-500">
+                <li><a className="hover:text-[#635BFF]" href="#">À propos</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Notre mission</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Blog</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Contact</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-sm mb-6">Ressources</h4>
+              <ul className="space-y-4 text-sm text-gray-500">
+                <li><a className="hover:text-[#635BFF]" href="#">Aide</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Guide parents</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Confidentialité</a></li>
+                <li><a className="hover:text-[#635BFF]" href="#">Conditions</a></li>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* Footer Landscape Illustration */}
+          <div className="relative w-full h-32 md:h-48 overflow-hidden">
+            <img
+              alt="Paysage"
+              className="w-full absolute bottom-0"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuARCIXYwowR7Ge3YB_ILIeikyQMHP0Kdc9faX_BVboGGXb7UMmmcaYjINejFvb4HYeJXlfpWExbWyI9py9jXhY1bspe_9jAV5raV3wajegUq0FR3Dd7bDurbwh09SO7SFinxBDl6dpJm269Gx2uVXMMYTH4xDF9KKG_360LaTlEQpcwlT7_l40IDYUHMfpv7_GidWLTIEZ2Q_Q7ZXz3JQR9VEDqd5TH_D5_C0dV3UN-YJYl5UK9SmhF5eVg3UNxbWbianndX4kUaETj"
+            />
+          </div>
+
+          <div className="py-8 border-t border-gray-100 text-center">
+            <p className="text-xs text-gray-400">© 2025 Petit Baobab. Tous droits réservés.</p>
+          </div>
+
         </div>
       </footer>
+      {/* END: MainFooter */}
 
     </div>
   )
