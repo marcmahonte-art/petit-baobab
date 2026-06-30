@@ -501,7 +501,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-2 flex flex-col justify-start">
               <img
                 alt="Logo Petit Baobab"
-                className="h-20 w-auto object-contain self-start mb-4"
+                className="h-[320px] w-auto object-contain self-start mb-4"
                 src="/illustrations/logo-petit-baobab.svg"
               />
             </div>
