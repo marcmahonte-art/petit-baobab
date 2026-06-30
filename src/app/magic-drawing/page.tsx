@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import { useCreditStore, getCreditCost, canGenerate, type StyleType } from "@/lib/credit-store";
 import { useProfileStore, getActiveProfile } from "@/lib/profile-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { drawingService } from "@/features/drawings/DrawingService";
 import { useI18n } from "@/lib/i18n-provider";
 import { storageService, base64ToBlob } from "@/lib/storageService";
@@ -147,6 +148,7 @@ export default function MagicDrawingPage() {
         body: JSON.stringify({
           idea: prompt,
           style: selectedStyle,
+          profileId: profileId || "anonymous",
         }),
       });
 
@@ -154,17 +156,23 @@ export default function MagicDrawingPage() {
 
       if (!response.ok) {
         credits.refund(selectedStyle);
-        throw new Error(data?.error || "Impossible de créer le dessin.");
+        throw new Error(data?.message || data?.error || "Impossible de créer le dessin.");
       }
 
-      const base64Image = data.imageUrl;
-      let imageUrl = base64Image;
-      let thumbnailUrl = base64Image;
-      const drawingId = `magic-${Date.now()}`;
+      // Update real-time stars balance in store
+      if (data.newBalance !== undefined) {
+        useAuthStore.getState().setStarsBalance(data.newBalance);
+      }
 
-      if (profileId) {
+      const returnedImage = data.imageUrl;
+      let imageUrl = returnedImage;
+      let thumbnailUrl = returnedImage;
+      const drawingId = data.drawingId || `magic-${Date.now()}`;
+
+      // If returned image is a base64 string, upload it. Otherwise it is already uploaded by the backend.
+      if (profileId && returnedImage && returnedImage.startsWith("data:")) {
         try {
-          const imageBlob = base64ToBlob(base64Image);
+          const imageBlob = base64ToBlob(returnedImage);
           imageUrl = await storageService.uploadDrawingImage(
             imageBlob,
             profileId,
@@ -218,7 +226,7 @@ export default function MagicDrawingPage() {
       setGenerationError(
         error instanceof Error
           ? error.message
-          : "Impossible de créer le dessin pour le moment."
+          : "Une erreur est survenue lors de la création."
       );
       setHasResult(false);
     } finally {
@@ -380,7 +388,7 @@ export default function MagicDrawingPage() {
                     {creditInfo.remaining}
                   </span>
                   <span className="text-[10px] font-semibold text-[#7A6A5E]">
-                    Crédits
+                    Étoiles
                   </span>
                 </div>
               </div>
@@ -537,7 +545,7 @@ export default function MagicDrawingPage() {
                           {style.label}
                         </span>
                         <span className="text-[10px] font-semibold text-[#7A6A5E]">
-                          {cost} crédit{cost > 1 ? "s" : ""}
+                          {cost} étoile{cost > 1 ? "s" : ""}
                         </span>
                         {isLocked && (
                           <span className="text-[9px] font-semibold text-[#7C57FF]">
@@ -606,7 +614,7 @@ export default function MagicDrawingPage() {
                   </p>
                 )}
                 <p className="text-center text-xs font-semibold text-[#7A6A5E] mt-2">
-                  Coût : {getCreditCost(selectedStyle)} crédit{getCreditCost(selectedStyle) > 1 ? "s" : ""}
+                  Coût : {getCreditCost(selectedStyle)} étoile{getCreditCost(selectedStyle) > 1 ? "s" : ""}
                 </p>
               </div>
 

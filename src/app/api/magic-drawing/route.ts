@@ -1,4 +1,6 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabaseClient";
+import { getServerUser, adjustStars, STARS_REASONS } from "@/lib/auth";
 
 type MagicDrawingStyle =
   | "noir_blanc"
@@ -12,6 +14,13 @@ const allowedStyles: MagicDrawingStyle[] = [
   "dessin_detaille",
   "version_couleur",
 ];
+
+const styleCosts: Record<MagicDrawingStyle, number> = {
+  contour_simple: 1,
+  noir_blanc: 1,
+  dessin_detaille: 3,
+  version_couleur: 3,
+};
 
 const negativePrompt = `realistic photo, 3D render, shading,
 gray fills, dark background, scary, violence,
@@ -98,11 +107,35 @@ export async function POST(request: Request) {
     );
   }
 
+  // 1. Authenticate user
+  const user = await getServerUser();
+  if (!user) {
+    return NextResponse.json(
+      { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },
+      { status: 401 }
+    );
+  }
+
+  // 2. Fetch the linked account
+  const { data: account, error: accError } = await supabase
+    .from("accounts")
+    .select("id, stars_balance, plan")
+    .eq("user_id", user.id)
+    .single();
+
+  if (accError || !account) {
+    return NextResponse.json(
+      { error: "no_account", message: "Compte parent introuvable." },
+      { status: 404 }
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const idea = typeof body?.idea === "string" ? body.idea.trim() : "";
   const style = allowedStyles.includes(body?.style)
     ? (body.style as MagicDrawingStyle)
     : "noir_blanc";
+  const profileId = typeof body?.profileId === "string" ? body.profileId.trim() : "";
 
   if (!idea) {
     return NextResponse.json(
@@ -111,47 +144,144 @@ export async function POST(request: Request) {
     );
   }
 
-  const prompt = buildColoringPrompt(idea.slice(0, 200), style);
+  if (!profileId) {
+    return NextResponse.json(
+      { error: "Veuillez sélectionner un profil enfant actif." },
+      { status: 400 }
+    );
+  }
 
-  const response = await fetch("https://api.openai.com/v1/images/generations", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
-      prompt,
-      size: "1024x1024",
-      quality: "medium",
-      n: 1,
-    }),
-  });
+  const cost = styleCosts[style];
 
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
+  // 3. Check stars balance
+  if (account.stars_balance < cost) {
     return NextResponse.json(
       {
-        error:
-          data?.error?.message ||
-          "Impossible de créer le dessin pour le moment.",
+        error: "insufficient_stars",
+        message: "Plus assez d'étoiles pour ce dessin. Découvrez nos packs ou patientez jusqu'au renouvellement du mois prochain.",
+        plan: account.plan,
       },
-      { status: response.status }
+      { status: 403 }
     );
   }
 
-  const image = data?.data?.[0]?.b64_json;
+  // 4. Generate drawing ID & deduct stars balance
+  const drawingId = crypto.randomUUID();
+  const debitResult = await adjustStars(account.id, -cost, STARS_REASONS.GENERATION, drawingId);
 
-  if (!image) {
+  if (!debitResult.success) {
     return NextResponse.json(
-      { error: "Aucune image n'a été renvoyée." },
-      { status: 502 }
+      { error: "transaction_failed", message: debitResult.error || "La transaction d'étoiles a échoué." },
+      { status: 500 }
     );
   }
 
+  // 5. Insert drawing log with status 'en_cours'
+  const { error: insertErr } = await supabase
+    .from("drawings")
+    .insert({
+      id: drawingId,
+      profile_id: profileId,
+      image_url: "",
+      origin: "ia",
+      style: style,
+      stars_cost: cost,
+      status: "en_cours",
+    });
+
+  if (insertErr) {
+    console.error("Failed to log drawing insertion:", insertErr.message);
+  }
+
+  // 6. Request AI Generation from OpenAI
+  const prompt = buildColoringPrompt(idea.slice(0, 200), style);
+  let response;
+
+  try {
+    response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
+        prompt,
+        size: "1024x1024",
+        response_format: "b64_json",
+        n: 1,
+      }),
+    });
+  } catch (err: any) {
+    console.error("OpenAI generation fetch failed:", err);
+  }
+
+  const data = response ? await response.json().catch(() => null) : null;
+
+  if (!response?.ok || !data?.data?.[0]?.b64_json) {
+    const errorMsg = data?.error?.message || "Impossible de créer le dessin pour le moment.";
+    console.error("Generation failed. Refunding stars and logging error...", errorMsg);
+
+    // Refund stars
+    await adjustStars(account.id, cost, STARS_REASONS.REFUND, drawingId);
+
+    // Update drawing status to 'erreur'
+    await supabase
+      .from("drawings")
+      .update({ status: "erreur" })
+      .eq("id", drawingId);
+
+    return NextResponse.json(
+      { error: errorMsg },
+      { status: response ? response.status : 502 }
+    );
+  }
+
+  const base64Image = data.data[0].b64_json;
+  let finalImageUrl = `data:image/png;base64,${base64Image}`;
+
+  // 7. Upload generated image to Supabase Storage
+  try {
+    const buffer = Buffer.from(base64Image, "base64");
+    const filePath = `${profileId}/${drawingId}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("drawings")
+      .upload(filePath, buffer, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (!uploadError) {
+      const { data: urlData } = supabase.storage
+        .from("drawings")
+        .getPublicUrl(filePath);
+
+      if (urlData?.publicUrl) {
+        finalImageUrl = urlData.publicUrl;
+      }
+    } else {
+      console.error("Storage upload failed, falling back to base64 URL:", uploadError.message);
+    }
+  } catch (uploadErr) {
+    console.error("Failed to upload image during generation:", uploadErr);
+  }
+
+  // 8. Update drawing status to 'terminé'
+  await supabase
+    .from("drawings")
+    .update({
+      image_url: finalImageUrl,
+      status: "terminé",
+    })
+    .eq("id", drawingId);
+
+  // 9. Return success
   return NextResponse.json({
-    imageUrl: `data:image/png;base64,${image}`,
+    success: true,
+    imageUrl: finalImageUrl,
+    drawingId,
+    newBalance: debitResult.newBalance,
     prompt,
     style: {
       id: style,
@@ -161,5 +291,3 @@ export async function POST(request: Request) {
     },
   });
 }
-
-

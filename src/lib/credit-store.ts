@@ -7,9 +7,9 @@ export type StyleType = "noir_blanc" | "contour_simple" | "dessin_detaille" | "v
 
 export const CREDIT_COST: Record<StyleType, number> = {
   contour_simple: 1,
-  noir_blanc: 3,
+  noir_blanc: 1,
   dessin_detaille: 3,
-  version_couleur: 6,
+  version_couleur: 3,
 }
 
 export const DAILY_FREE_LIMIT = 3
@@ -52,10 +52,27 @@ export function getCreditCost(style: StyleType): number {
   return CREDIT_COST[style]
 }
 
+import { useAuthStore } from "./auth-store"
+
 export function canGenerate(style: StyleType): { allowed: boolean; reason?: string; cost: number } {
-  const state = useCreditStore.getState()
   const cost = CREDIT_COST[style]
 
+  // If parent is authenticated, check real-time stars balance in Supabase account
+  const authState = useAuthStore.getState()
+  if (authState.user && authState.account) {
+    const balance = authState.account.stars_balance
+    if (balance < cost) {
+      return { 
+        allowed: false, 
+        reason: "Plus assez d'étoiles pour ce dessin. Découvrez nos packs ou patientez jusqu'au renouvellement du mois prochain.", 
+        cost 
+      }
+    }
+    return { allowed: true, cost }
+  }
+
+  // Sandbox mode fallback
+  const state = useCreditStore.getState()
   if (state.plan === "free") {
     if (style !== "contour_simple") {
       return { allowed: false, reason: "Réservé aux abonnés", cost }
@@ -146,6 +163,11 @@ export const useCreditStore = create<CreditState>()(
             return { success: false, reason: check.reason }
           }
 
+          if (useAuthStore.getState().user) {
+            // Dans le cas connecté, la déduction est gérée côté serveur via adjustStars
+            return { success: true }
+          }
+
           const state = get()
           const cost = check.cost
 
@@ -159,6 +181,10 @@ export const useCreditStore = create<CreditState>()(
         },
 
         refund: (style) => {
+          if (useAuthStore.getState().user) {
+            // Remboursement géré côté serveur
+            return
+          }
           const cost = CREDIT_COST[style]
           const state = get()
 

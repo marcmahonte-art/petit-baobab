@@ -6,19 +6,19 @@ export function HowItWorks() {
   const steps = [
     {
       title: "Choisissez votre style",
-      desc: "Chaque style a un coût en crédits différent.",
+      desc: "Chaque style a un coût en étoiles différent.",
       icon: CheckCircle2,
       color: "text-[#16A34A]",
     },
     {
       title: "Générez votre dessin",
-      desc: "Vos crédits ou votre quota journalier sont décomptés automatiquement.",
+      desc: "Vos étoiles ou votre quota journalier sont décomptés automatiquement.",
       icon: Sparkles,
       color: "text-[#6D4AFF]",
     },
     {
       title: "Remboursement en cas d'échec",
-      desc: "Si la génération échoue, vos crédits ou quota sont automatiquement remboursés.",
+      desc: "Si la génération échoue, vos étoiles ou quota sont automatiquement remboursés.",
       icon: RotateCcw,
       color: "text-[#2563EB]",
     },

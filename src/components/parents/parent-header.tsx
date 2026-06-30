@@ -11,12 +11,19 @@ import {
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 
+import { useAuthStore } from "@/lib/auth-store"
+
 interface ParentHeaderProps {
   currentChild: string
   onChildChange: (child: string) => void
 }
 
 export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps) {
+  const { account, profiles, activeProfileId, selectProfile } = useAuthStore()
+
+  const activeProfile = profiles.find((p) => p.id === activeProfileId) || profiles[0]
+  const starsBalance = account?.stars_balance ?? 0
+
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 select-none">
       {/* Title & Subtitle */}
@@ -37,7 +44,7 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
             <Star className="w-5 h-5 fill-current" />
           </div>
           <div className="flex flex-col justify-center leading-tight">
-            <span className="text-[16px] font-extrabold text-[#334155]">125</span>
+            <span className="text-[16px] font-extrabold text-[#334155]">{starsBalance}</span>
             <span className="text-[10px] font-bold text-[#64748B]">Mes étoiles</span>
           </div>
         </div>
@@ -53,30 +60,57 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
         </motion.div>
 
         {/* Kid Selector Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-3 h-[58px] rounded-full border border-[#E5E7EB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
-              <Avatar className="w-10 h-10 border border-neutral-100">
-                <AvatarImage src="https://api.dicebear.com/9.x/avataaars/svg?seed=child" />
-                <AvatarFallback>AW</AvatarFallback>
-              </Avatar>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[16px] font-extrabold text-[#334155]">
-                  {currentChild.charAt(0).toUpperCase() + currentChild.slice(1)}
-                </span>
-                <ChevronDown className="w-4 h-4 text-[#64748B]" />
+        {profiles && profiles.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-3 h-[58px] rounded-full border border-[#E5E7EB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
+                <Avatar className="w-10 h-10 border border-neutral-100">
+                  <AvatarImage 
+                    src={`/illustrations/mascot_${activeProfile?.mascot || "awa"}.webp`}
+                    onError={(e) => {
+                      e.currentTarget.src = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${activeProfile?.name || "child"}`
+                    }}
+                  />
+                  <AvatarFallback>{activeProfile?.name?.slice(0, 2).toUpperCase() || "AW"}</AvatarFallback>
+                </Avatar>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[16px] font-extrabold text-[#334155]">
+                    {activeProfile?.name}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-[#64748B]" />
+                </div>
               </div>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[150px] rounded-2xl p-1.5">
-            <DropdownMenuItem onClick={() => onChildChange("awa")} className="rounded-xl font-bold text-sm text-[#334155]">
-              Awa (6 ans)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onChildChange("kofi")} className="rounded-xl font-bold text-sm text-[#334155]">
-              Kofi (4 ans)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[150px] rounded-2xl p-1.5">
+              {profiles.map((profile) => (
+                <DropdownMenuItem 
+                  key={profile.id}
+                  onClick={() => {
+                    selectProfile(profile.id)
+                    onChildChange(profile.name.toLowerCase())
+                  }} 
+                  className="rounded-xl font-bold text-sm text-[#334155]"
+                >
+                  {profile.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Déconnexion Button */}
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={async () => {
+              await useAuthStore.getState().logout()
+              window.location.href = "/login"
+            }}
+            variant="outline"
+            className="h-[58px] px-5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer shadow-sm bg-white"
+          >
+            <span>Déconnexion</span>
+          </Button>
+        </motion.div>
       </div>
     </header>
   )

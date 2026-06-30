@@ -65,14 +65,14 @@ export const translations: Record<string, Record<Lang, string>> = {
   'magic.favorite': { fr: 'Ajouter aux favoris', en: 'Add to Favorites' },
   'magic.variants': { fr: 'Variantes', en: 'Variants' },
   'magic.add-to-book': { fr: 'Ajouter à mon livre', en: 'Add to My Book' },
-  'magic.cost': { fr: 'Coût : {cost} crédit(s)', en: 'Cost: {cost} credit(s)' },
-  'magic.insufficient': { fr: 'Crédits insuffisants', en: 'Not enough credits' },
-  'magic.upgrade': { fr: 'Demande à tes parents de passer au plan supérieur pour plus de crédits !', en: 'Ask your parents to upgrade for more credits!' },
+  'magic.cost': { fr: 'Coût : {cost} étoile(s)', en: 'Cost: {cost} star(s)' },
+  'magic.insufficient': { fr: 'Étoiles insuffisantes', en: 'Not enough stars' },
+  'magic.upgrade': { fr: 'Demande à tes parents de passer au plan supérieur pour plus d\'étoiles !', en: 'Ask your parents to upgrade for more stars!' },
   'magic.safe': { fr: 'Contenu sûr et adapté aux enfants', en: 'Safe content for children' },
 
   // Credits
   'credits.daily': { fr: 'Gratuit du jour : {used}/{total}', en: 'Free today: {used}/{total}' },
-  'credits.monthly': { fr: 'Crédits du mois : {used}/{total}', en: 'Monthly credits: {used}/{total}' },
+  'credits.monthly': { fr: 'Étoiles du mois : {used}/{total}', en: 'Monthly stars: {used}/{total}' },
   'credits.free-plan-only': { fr: 'Plan gratuit : contour simple uniquement', en: 'Free plan: simple outline only' },
 
   // Books
@@ -121,7 +121,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   'parents.discover': { fr: 'Découverte', en: 'Discovery' },
   'parents.super-baobab': { fr: 'Super Baobab', en: 'Super Baobab' },
   'parents.school': { fr: 'École / Pro', en: 'School / Pro' },
-  'parents.credits': { fr: 'crédits', en: 'credits' },
+  'parents.credits': { fr: 'étoiles', en: 'stars' },
   'parents.per-month': { fr: 'par mois', en: 'per month' },
   'parents.popular': { fr: 'Populaire', en: 'Popular' },
 
@@ -135,7 +135,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   // Errors
   'error.generic': { fr: 'Oups ! Quelque chose n\'a pas fonctionné. Réessaie !', en: 'Oops! Something went wrong. Try again!' },
   'error.network': { fr: 'Pas de connexion. Vérifie ta connexion Internet.', en: 'No connection. Check your internet.' },
-  'error.credits': { fr: 'Pas assez de crédits. Demande à tes parents !', en: 'Not enough credits. Ask your parents!' },
+  'error.credits': { fr: 'Pas assez d\'étoiles. Demande à tes parents !', en: 'Not enough stars. Ask your parents!' },
 
   // Misc
   'misc.see-all': { fr: 'Voir tout', en: 'See All' },
