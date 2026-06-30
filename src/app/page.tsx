@@ -93,46 +93,42 @@ export default function LandingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#FFFDF8] text-[#1C1C3A] font-poppins antialiased overflow-x-hidden select-none pb-16">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#FFF7E7,#FFFDF8_55%)] text-[#17162E] font-poppins antialiased overflow-x-hidden select-none pb-16">
       
-      {/* --- 1. NAVBAR --- */}
-      <header className="sticky top-0 bg-[#FFFDF8]/90 backdrop-blur-md border-b-2 border-neutral-100 z-50 px-6 h-[90px] flex items-center">
-        <div className="max-w-[1280px] w-full mx-auto flex items-center justify-between">
+      {/* --- 1. NAVBAR (Height: 92px, Sticky, backdrop blur) --- */}
+      <header className="sticky top-0 bg-white/92 backdrop-blur-md border-b border-[#ECECF3] z-50 px-8 h-[92px] flex items-center">
+        <div className="max-w-[1440px] w-full mx-auto flex items-center justify-between">
           
-          {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
+          {/* Logo (Width 190px, Height 70px) */}
+          <div className="flex items-center cursor-pointer w-[190px] h-[70px] relative" onClick={() => router.push("/")}>
             <Image
               src="/illustrations/logo-petit-baobab.webp"
               alt="Petit Baobab"
-              width={160}
-              height={50}
-              className="w-auto h-[48px] object-contain"
+              fill
+              className="object-contain"
               priority
             />
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden xl:flex items-center gap-8 font-extrabold text-[18px] text-[#7A7A95]">
-            <a href="#features" className="hover:text-[#6D4CFF] transition-colors">{lang === "fr" ? "Fonctionnalités" : "Features"}</a>
-            <a href="#how-it-works" className="hover:text-[#6D4CFF] transition-colors">{lang === "fr" ? "Comment ça marche" : "How it works"}</a>
-            <a href="#books" className="hover:text-[#6D4CFF] transition-colors">{lang === "fr" ? "Livres" : "Books"}</a>
-            <a href="#pricing" className="hover:text-[#6D4CFF] transition-colors">{lang === "fr" ? "Tarifs" : "Pricing"}</a>
-            <button onClick={() => router.push("/school")} className="flex items-center gap-1.5 text-[#25C26E] hover:text-[#25C26E]/85 transition-colors cursor-pointer font-extrabold">
-              <Book className="w-5 h-5" />
-              <span>{lang === "fr" ? "Écoles" : "Schools"}</span>
-            </button>
+          {/* Navigation (16px, font-weight 500, hover text-purple-600, gap 40px) */}
+          <nav className="hidden xl:flex items-center gap-[40px] font-medium text-[16px] text-[#5F6475]">
+            <a href="#features" className="hover:text-[#6C4CF1] transition-colors">Accueil</a>
+            <a href="#features" className="hover:text-[#6C4CF1] transition-colors">Fonctionnalités</a>
+            <a href="#books" className="hover:text-[#6C4CF1] transition-colors">Livres</a>
+            <a href="#pricing" className="hover:text-[#6C4CF1] transition-colors">Tarifs</a>
+            <a href="#faq" className="hover:text-[#6C4CF1] transition-colors">À propos</a>
           </nav>
 
-          {/* Right Actions */}
+          {/* Actions */}
           <div className="flex items-center gap-4">
             
-            {/* Lang Toggle */}
+            {/* Lang switcher */}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleLangToggle}
-                    className="px-3.5 py-1.5 text-[14px] font-medium border-2 border-[#1C1C3A] bg-white rounded-full shadow-[2px_2px_0px_0px_#1C1C3A] hover:bg-neutral-50 cursor-pointer transition-transform active:scale-95"
+                    className="px-3.5 py-1.5 text-[14px] font-medium border-2 border-[#1C1C3A] bg-white rounded-full shadow-[2px_2px_0px_0px_#1C1C3A] hover:bg-neutral-50 cursor-pointer transition-transform active:scale-95 text-[#17162E]"
                   >
                     {lang === "fr" ? "EN" : "FR"}
                   </button>
@@ -147,7 +143,7 @@ export default function LandingPage() {
               <>
                 <Button
                   onClick={() => router.push("/dashboard")}
-                  className="h-[56px] px-6 bg-[#6D4CFF] hover:bg-[#5735E2] text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-xl transition-all cursor-pointer"
+                  className="h-[48px] px-5 bg-[#6C4CF1] hover:bg-[#5B39EB] text-white border-2 border-[#1C1C3A] rounded-full font-bold text-sm shadow-md transition-all cursor-pointer"
                 >
                   {lang === "fr" ? "Mon Espace" : "My Space"}
                 </Button>
@@ -157,25 +153,27 @@ export default function LandingPage() {
                     router.refresh()
                   }}
                   variant="destructive"
-                  className="h-[56px] px-6 bg-red-500 hover:bg-red-600 text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-xl transition-all cursor-pointer"
+                  className="h-[48px] px-4 bg-red-500 hover:bg-red-600 text-white border-2 border-[#1C1C3A] rounded-full font-bold text-sm shadow-md transition-all cursor-pointer"
                 >
                   {lang === "fr" ? "Quitter" : "Sign Out"}
                 </Button>
               </>
             ) : (
               <>
+                {/* Se connecter outline, height 48px, width 140px, rounded-full */}
                 <button
                   onClick={() => router.push("/login")}
-                  className="hidden sm:inline-block font-bold text-[18px] text-[#1C1C3A] hover:text-[#6D4CFF] transition-colors cursor-pointer"
+                  className="h-[48px] w-[140px] rounded-full border border-[#ECECF3] bg-white hover:bg-[#FFFDF8] font-medium text-[16px] text-[#17162E] transition-colors cursor-pointer flex items-center justify-center"
                 >
-                  {lang === "fr" ? "Connexion" : "Log In"}
+                  {lang === "fr" ? "Se connecter" : "Log In"}
                 </button>
-                <Button
+                {/* Créer un compte variant default, bg #6C4CF1, white text, height 48px, width 180px, shadow-lg, hover scale(1.03), 200ms transition */}
+                <button
                   onClick={() => router.push("/login?tab=signup")}
-                  className="h-[56px] px-6 bg-[#6D4CFF] hover:bg-[#5735E2] text-white border-2 border-[#1C1C3A] rounded-[24px] font-bold text-[18px] shadow-[4px_4px_0px_0px_#1C1C3A] active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_#1C1C3A] transition-all cursor-pointer"
+                  className="h-[48px] w-[180px] bg-[#6C4CF1] hover:bg-[#5B39EB] text-white font-medium text-[16px] rounded-full shadow-lg transition-all duration-200 hover:scale-[1.03] cursor-pointer flex items-center justify-center"
                 >
-                  {lang === "fr" ? "Créer gratuitement" : "Create Free"}
-                </Button>
+                  {lang === "fr" ? "Créer un compte" : "Create Account"}
+                </button>
               </>
             )}
 
