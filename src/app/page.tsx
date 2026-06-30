@@ -144,7 +144,7 @@ export default function LandingPage() {
             <img
               alt="Enfant coloriant un livre"
               className="relative z-10 w-full drop-shadow-2xl rounded-[16px]"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ36e7KbMp2tE2bP9GbfmsV4Dx752TShf1P32kDjzEoan-bJsyDD-6mzAiXhdWhUI9lB5bouwAgLIyTPR7Qgc4owSDiDIzBjDvDs7uuTC-xN3vM0URhxfybyPCXLDDId5lewRzDQwRI-LLk8PlcbZuQvx_7fZvKXHpbVOkeAbxYgcCLVusImemfMWb269XkoISggYXL2kjWaqXPy8t987j87BshgIij8T6tNh8z99-KkRI50CFuQbBRNgcN87nwcYI1talQUnKmIiA"
+              src="/illustrations/Petite%20fille%20tenant%20un%20crayon-village-girafe.webp"
             />
             {/* Background Elements (Simulated) */}
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-50 -z-10"></div>
