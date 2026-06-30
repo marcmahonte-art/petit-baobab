@@ -451,7 +451,7 @@ export default function LandingPage() {
 
       {/* BEGIN: FooterCTA */}
       <section className="px-6 pb-20 pt-12">
-        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8 md:pr-[460px]">
+        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8 md:pr-[390px]">
           
           {/* Left Column: Title and Subtitle */}
           <div className="relative z-10 max-w-md">
@@ -470,8 +470,8 @@ export default function LandingPage() {
             <p className="text-[10px] text-white/70">Aucune carte bancaire requise</p>
           </div>
 
-          {/* Absolutely Positioned Image (2.5x scaled and overflowing) */}
-          <div className="absolute bottom-0 right-0 md:right-4 w-[280px] md:w-[400px] lg:w-[440px] translate-y-6 md:translate-y-12 z-20 pointer-events-none select-none">
+          {/* Absolutely Positioned Image (1.7x scaled and overflowing) */}
+          <div className="absolute bottom-0 right-0 md:right-4 w-[220px] md:w-[320px] lg:w-[370px] translate-y-6 md:translate-y-10 z-20 pointer-events-none select-none">
             <img
               alt="Enfant qui dessine"
               className="w-full h-auto drop-shadow-2xl"
