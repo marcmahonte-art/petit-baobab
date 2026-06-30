@@ -318,10 +318,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto bg-amber-50 rounded-[40px] p-8 md:p-12 overflow-hidden border border-amber-100 shadow-xl shadow-amber-900/5">
           <div className="flex flex-col md:flex-row items-center gap-12">
             
-            <div className="md:w-1/3 flex justify-center">
+            <div className="md:w-1/3 flex justify-center md:justify-start items-end md:self-stretch -mb-4 md:-mb-12 md:-ml-12">
               <img
                 alt="Enfants lisant"
-                className="w-full max-w-[380px] md:max-w-[420px] md:scale-110 lg:scale-120 drop-shadow-xl rounded-2xl transition-transform duration-300"
+                className="w-full max-w-[340px] md:max-w-[440px] drop-shadow-xl object-contain align-bottom"
                 src="/illustrations/Deux%20enfants%20lisant%20ensemble.webp"
               />
             </div>
