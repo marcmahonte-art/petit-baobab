@@ -158,10 +158,10 @@ export default function LandingPage() {
             
             {/* Feature 1 */}
             <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-32 h-32 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <img
                   alt="Coloriages uniques"
-                  className="w-8 h-8 object-contain"
+                  className="w-24 h-24 object-contain"
                   src="/illustrations/Coloriages%20uniques.svg"
                 />
               </div>
@@ -171,10 +171,10 @@ export default function LandingPage() {
 
             {/* Feature 2 */}
             <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-32 h-32 bg-green-100 text-green-600 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <img
                   alt="Dessin magique"
-                  className="w-8 h-8 object-contain"
+                  className="w-24 h-24 object-contain"
                   src="/illustrations/Dessin%20magique.svg"
                 />
               </div>
@@ -184,10 +184,10 @@ export default function LandingPage() {
 
             {/* Feature 3 */}
             <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-32 h-32 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <img
                   alt="Livres personnalisés"
-                  className="w-8 h-8 object-contain"
+                  className="w-24 h-24 object-contain"
                   src="/illustrations/Livres%20personnalis%C3%A9s.svg"
                 />
               </div>
@@ -197,10 +197,10 @@ export default function LandingPage() {
 
             {/* Feature 4 */}
             <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-32 h-32 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <img
                   alt="Jeux éducatifs"
-                  className="w-8 h-8 object-contain"
+                  className="w-24 h-24 object-contain"
                   src="/illustrations/Jeux%20%C3%A9ducatifs.svg"
                 />
               </div>
@@ -210,10 +210,10 @@ export default function LandingPage() {
 
             {/* Feature 5 */}
             <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-32 h-32 bg-pink-100 text-pink-600 rounded-3xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <img
                   alt="Histoires captivantes"
-                  className="w-8 h-8 object-contain"
+                  className="w-24 h-24 object-contain"
                   src="/illustrations/Histoires%20captivantes.svg"
                 />
               </div>
