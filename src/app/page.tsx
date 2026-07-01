@@ -159,9 +159,11 @@ export default function LandingPage() {
             {/* Feature 1 */}
             <div className="flex flex-col items-center text-center group">
               <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2.5-9c.83 0 1.5-.67 1.5-1.5S10.33 8 9.5 8 8 8.67 8 9.5 8.67 11 9.5 11zm5 0c.83 0 1.5-.67 1.5-1.5S15.33 8 14.5 8 13 8.67 13 9.5s.67 1.5 1.5 1.5z" />
-                </svg>
+                <img
+                  alt="Coloriages uniques"
+                  className="w-8 h-8 object-contain"
+                  src="/illustrations/Coloriages%20uniques.svg"
+                />
               </div>
               <h3 className="font-bold text-sm mb-2">Coloriages uniques</h3>
               <p className="text-xs text-gray-500">Des centaines de dessins inspirés de l'Afrique.</p>
@@ -170,9 +172,11 @@ export default function LandingPage() {
             {/* Feature 2 */}
             <div className="flex flex-col items-center text-center group">
               <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 16H5V4h14v14zM17 11h-4V7h-2v4H7v2h4v4h2v-4h4v-2z" />
-                </svg>
+                <img
+                  alt="Dessin magique"
+                  className="w-8 h-8 object-contain"
+                  src="/illustrations/Dessin%20magique.svg"
+                />
               </div>
               <h3 className="font-bold text-sm mb-2 text-[#22C55E]">Dessin magique</h3>
               <p className="text-xs text-gray-500">Transforme tes idées en coloriages.</p>
@@ -181,9 +185,11 @@ export default function LandingPage() {
             {/* Feature 3 */}
             <div className="flex flex-col items-center text-center group">
               <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 11.55C9.64 9.35 6.48 8 3 8v11c3.48 0 6.64 1.35 9 3.55 2.36-2.2 5.52-3.55 9-3.55V8c-3.48 0-6.64 1.35-9 3.55z" />
-                </svg>
+                <img
+                  alt="Livres personnalisés"
+                  className="w-8 h-8 object-contain"
+                  src="/illustrations/Livres%20personnalis%C3%A9s.svg"
+                />
               </div>
               <h3 className="font-bold text-sm mb-2">Livres personnalisés</h3>
               <p className="text-xs text-gray-500">Crée ton propre livre de coloriage.</p>
@@ -192,9 +198,11 @@ export default function LandingPage() {
             {/* Feature 4 */}
             <div className="flex flex-col items-center text-center group">
               <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                </svg>
+                <img
+                  alt="Jeux éducatifs"
+                  className="w-8 h-8 object-contain"
+                  src="/illustrations/Jeux%20%C3%A9ducatifs.svg"
+                />
               </div>
               <h3 className="font-bold text-sm mb-2">Jeux éducatifs</h3>
               <p className="text-xs text-gray-500">Apprends en jouant avec des jeux amusants.</p>
@@ -203,9 +211,11 @@ export default function LandingPage() {
             {/* Feature 5 */}
             <div className="flex flex-col items-center text-center group">
               <div className="w-14 h-14 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-.75L9 9V4z" />
-                </svg>
+                <img
+                  alt="Histoires captivantes"
+                  className="w-8 h-8 object-contain"
+                  src="/illustrations/Histoires%20captivantes.svg"
+                />
               </div>
               <h3 className="font-bold text-sm mb-2">Histoires captivantes</h3>
               <p className="text-xs text-gray-500">Lis des histoires qui éveillent l'imagination.</p>
