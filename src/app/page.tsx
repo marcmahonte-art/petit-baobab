@@ -154,7 +154,7 @@ export default function LandingPage() {
       {/* BEGIN: FeaturesGrid */}
       <section id="features" className="py-16 px-6 bg-white/50">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
             
             {/* Feature 1 */}
             <div className="flex flex-col items-center text-center group">
@@ -209,17 +209,6 @@ export default function LandingPage() {
               </div>
               <h3 className="font-bold text-sm mb-2">Histoires captivantes</h3>
               <p className="text-xs text-gray-500">Lis des histoires qui éveillent l'imagination.</p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="flex flex-col items-center text-center group">
-              <div className="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-sm mb-2">Récompenses</h3>
-              <p className="text-xs text-gray-500">Gagne des badges et progresse.</p>
             </div>
 
           </div>
