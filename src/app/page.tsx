@@ -236,11 +236,11 @@ export default function LandingPage() {
           {/* Step 1 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-4 left-4 w-8 h-8 bg-[#635BFF]/20 text-[#635BFF] font-bold rounded-full flex items-center justify-center text-xs">1</div>
-            <div className="h-40 flex items-center justify-center mb-6">
+            <div className="h-56 flex items-center justify-center mb-6">
               <img
                 alt="Step 1"
                 className="w-full h-full object-contain"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwDxlDv3lqot0eWdhHwv19lzlJtl94kvmspw0CTPyTa8FcbAJLTplbKIyeZ6e-EFVeMTwtxJvs5-HurZcEAgqZTtdyz1ofLPK0CqDs32steC-eDTxHZELZZep54vO7luNwKbgf0HkiDMsiPZTTenvtATfYtGzn6cC2Okfx2nqk0wyJQ2UnQUF7VElwgDhdRIHLGQpEfEDzPyP08nDBBIVBSXRPCowxp5-pZpxiVi6UypdKBQiI9ZwWEzScOxw62KvEhaPq-KODyJ65"
+                src="/illustrations/Choisis.webp"
               />
             </div>
             <h3 className="font-bold text-lg mb-2">Choisis</h3>
@@ -255,11 +255,11 @@ export default function LandingPage() {
           {/* Step 2 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-4 left-4 w-8 h-8 bg-[#22C55E]/20 text-[#22C55E] font-bold rounded-full flex items-center justify-center text-xs">2</div>
-            <div className="h-40 flex items-center justify-center mb-6">
+            <div className="h-56 flex items-center justify-center mb-6">
               <img
                 alt="Step 2"
                 className="w-full h-full object-contain"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB322QZIQzfFaLUpOGQSCA_AiD9cPb0xqYZ0F3BG7JP7qYGmd9cOgG9KG79NZY6JET18O14XfTWtQF2u9_CwPFmluREWgSsFACzEA2KOJKc3RN76LWUtkJ0GVwpedeCwmM_Ukast-QTMOoA0skXA5HXOvTyXDBqRhEIm6dgiHkKP_wH0Mq6kdfQvvDE9IbfBH_wOMtpTvOKaIvXmFYr2ZBgxkeRzYgFU6Ko7vp3uVyq_mOEF2SkjKWqbDSSlvWD8MNTnVpKUIvs0Dqu"
+                src="/illustrations/Personnalise.webp"
               />
             </div>
             <h3 className="font-bold text-lg mb-2 text-[#22C55E]">Personnalise</h3>
@@ -274,11 +274,11 @@ export default function LandingPage() {
           {/* Step 3 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-4 left-4 w-8 h-8 bg-orange-100 text-orange-600 font-bold rounded-full flex items-center justify-center text-xs">3</div>
-            <div className="h-40 flex items-center justify-center mb-6">
+            <div className="h-56 flex items-center justify-center mb-6">
               <img
                 alt="Step 3"
                 className="w-full h-full object-contain"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCshkdiyfNVfUOxdfjvKgdh166Xf8GaFhFEMFFHepeAVdN0fWQYtzHo3bvJMfg6ozBgx3rrNERLSGd18WRkTgg4EDLW5XhtRxoNJgy4CKyKMGowPrms316fFVphLwsKBpafI-r1RwR-vdO304ejhefH_VS2XSzC11OeMMsUqr_ZMzCWWHjEwsa6U8AwHuUBbPstq-5KRJHYK-_1291QZi_lTPxHebSsYi_J0KBtKIXYtDerAlnRobyAnlWBJQjMaxoEBmp0zn54VZjx"
+                src="/illustrations/Aper%C3%A7ois.webp"
               />
             </div>
             <h3 className="font-bold text-lg mb-2 text-orange-600">Aperçois</h3>
@@ -293,12 +293,12 @@ export default function LandingPage() {
           {/* Step 4 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-4 left-4 w-8 h-8 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center text-xs">4</div>
-            <div className="h-40 flex items-center justify-center mb-6">
-              <div className="w-20 h-20 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </div>
+            <div className="h-56 flex items-center justify-center mb-6">
+              <img
+                alt="Step 4"
+                className="w-full h-full object-contain"
+                src="/illustrations/T%C3%A9l%C3%A9charge.webp"
+              />
             </div>
             <h3 className="font-bold text-lg mb-2">Télécharge</h3>
             <p className="text-sm text-gray-500">Ton livre ou demande une impression.</p>
