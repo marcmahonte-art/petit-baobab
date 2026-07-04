@@ -308,7 +308,13 @@ export default function MagicDrawingPage() {
           setDownloadProgress(Math.min(Math.round((received / total) * 45), 45));
         }
 
-        blob = new Blob(chunks, { type: "image/png" });
+        const combined = new Uint8Array(received);
+        let offset = 0;
+        for (const chunk of chunks) {
+          combined.set(chunk, offset);
+          offset += chunk.length;
+        }
+        blob = new Blob([combined.buffer], { type: "image/png" });
       } else {
         blob = await response.blob();
         setDownloadProgress(45);
