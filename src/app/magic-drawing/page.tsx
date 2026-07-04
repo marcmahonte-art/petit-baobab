@@ -322,20 +322,20 @@ export default function MagicDrawingPage() {
 
       setDownloadProgress(50);
 
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image(1, 1);
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("Impossible de charger l'image."));
-        img.src = URL.createObjectURL(blob);
+      const loadedImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = document.createElement("img");
+        el.onload = () => resolve(el);
+        el.onerror = () => reject(new Error("Impossible de charger l'image."));
+        el.src = URL.createObjectURL(blob);
       });
 
       setDownloadProgress(65);
 
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = loadedImg.width;
+      canvas.height = loadedImg.height;
       const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(loadedImg, 0, 0);
 
       setDownloadProgress(80);
 
@@ -349,7 +349,7 @@ export default function MagicDrawingPage() {
             link.click();
             setTimeout(() => URL.revokeObjectURL(url), 10000);
           }
-          URL.revokeObjectURL(img.src);
+          URL.revokeObjectURL(loadedImg.src);
           setDownloadProgress(100);
           setTimeout(() => setIsDownloading(false), 1200);
         },
