@@ -1,9 +1,23 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServer } from "@/lib/supabaseServer"
 import { adjustStars, STARS_REASONS } from "@/lib/auth"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
+function getDisplayNameFromEmail(email: string): string {
+  if (!email) return "Mon Enfant"
+  const username = email.split("@")[0]
+  return username
+    .split(/[\._-]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ")
+}
 
 export async function POST(request: Request) {
   try {
+    const supabase = await getSupabaseServer()
     const body = await request.json().catch(() => null)
     if (!body) {
       return NextResponse.json(
@@ -63,6 +77,17 @@ export async function POST(request: Request) {
       )
     }
 
+    // Create an explicitly authenticated client if a session was returned
+    const accessToken = authData.session?.access_token
+    const authedClient = accessToken
+      ? createClient(supabaseUrl, supabaseAnonKey, {
+          auth: { persistSession: false },
+          global: {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          },
+        })
+      : supabase
+
     // 3. Sync Fallback (If the database trigger is not installed, we create these records manually)
     let accountId = ""
     let starsBalance = 5
@@ -70,7 +95,7 @@ export async function POST(request: Request) {
 
     try {
       // Check if trigger has already created the profile & account
-      const { data: existingAccount } = await supabase
+      const { data: existingAccount } = await authedClient
         .from("accounts")
         .select("id, stars_balance, plan")
         .eq("user_id", user.id)
@@ -83,7 +108,7 @@ export async function POST(request: Request) {
       } else {
         // Trigger didn't run, execute manually
         // Insert public profile
-        await supabase
+        await authedClient
           .from("profiles")
           .insert({
             id: user.id,
@@ -93,7 +118,7 @@ export async function POST(request: Request) {
           .select()
 
         // Insert parent account
-        const { data: newAccount, error: accErr } = await supabase
+        const { data: newAccount, error: accErr } = await authedClient
           .from("accounts")
           .insert({
             user_id: user.id,
@@ -107,14 +132,15 @@ export async function POST(request: Request) {
         accountId = newAccount.id
 
         // Insert stars transaction
-        await adjustStars(accountId, 5, STARS_REASONS.SIGNUP_BONUS)
+        await adjustStars(accountId, 5, STARS_REASONS.SIGNUP_BONUS, null, authedClient)
 
         // Insert first child profile
-        await supabase
+        const emailName = getDisplayNameFromEmail(user.email || "")
+        await authedClient
           .from("child_profiles")
           .insert({
             account_id: accountId,
-            name: "Mon Enfant",
+            name: emailName,
             mascot: "awa",
             pin_required: false,
           })

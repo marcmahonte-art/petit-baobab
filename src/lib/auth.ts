@@ -1,5 +1,9 @@
 import { cookies } from "next/headers"
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServer } from "@/lib/supabaseServer"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
 export const STARS_REASONS = {
   SIGNUP_BONUS: "signup_bonus",
@@ -23,7 +27,8 @@ export async function getServerUser() {
   if (!accessToken) return null
 
   try {
-    const { data: { user }, error } = await supabase.auth.getUser(accessToken)
+    const client = await getSupabaseServer()
+    const { data: { user }, error } = await client.auth.getUser(accessToken)
     if (error || !user) return null
     return user
   } catch (err) {
@@ -69,16 +74,19 @@ export async function clearAuthCookies() {
 /**
  * Adjusts the stars balance of an account atomically.
  * Calls the Supabase RPC function 'adjust_stars' or falls back to direct select/insert if unavailable.
+ * Accepts an optional authenticated Supabase client; if omitted, uses cookie-based auth.
  */
 export async function adjustStars(
   accountId: string,
   amount: number,
   reason: StarsReason,
-  referenceId: string | null = null
+  referenceId: string | null = null,
+  supabaseClient?: any
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
   try {
+    const client = supabaseClient || await getSupabaseServer()
     // 1. Try invoking the database function
-    const { data, error } = await supabase.rpc("adjust_stars", {
+    const { data, error } = await client.rpc("adjust_stars", {
       p_account_id: accountId,
       p_amount: amount,
       p_reason: reason,
@@ -92,7 +100,7 @@ export async function adjustStars(
     // If RPC does not exist (e.g. before migration is run), fallback to manual transaction
     if (error.code === "PGRST202" || error.message.includes("function") || error.message.includes("does not exist")) {
       console.warn("RPC 'adjust_stars' not found. Falling back to direct database operations...")
-      return await adjustStarsFallback(accountId, amount, reason, referenceId)
+      return await adjustStarsFallback(accountId, amount, reason, referenceId, client)
     }
 
     return { success: false, error: error.message }
@@ -109,10 +117,11 @@ async function adjustStarsFallback(
   accountId: string,
   amount: number,
   reason: StarsReason,
-  referenceId: string | null
+  referenceId: string | null,
+  client: any
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
   // Fetch current balance
-  const { data: account, error: fetchErr } = await supabase
+  const { data: account, error: fetchErr } = await client
     .from("accounts")
     .select("stars_balance")
     .eq("id", accountId)
@@ -130,7 +139,7 @@ async function adjustStarsFallback(
   }
 
   // Update balance
-  const { error: updateErr } = await supabase
+  const { error: updateErr } = await client
     .from("accounts")
     .update({ stars_balance: nextBalance })
     .eq("id", accountId)
@@ -140,7 +149,7 @@ async function adjustStarsFallback(
   }
 
   // Log transaction
-  const { error: txErr } = await supabase
+  const { error: txErr } = await client
     .from("stars_transactions")
     .insert({
       account_id: accountId,

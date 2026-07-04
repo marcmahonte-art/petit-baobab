@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 import { getSupabaseServer } from "@/lib/supabaseServer"
 import { setAuthCookies, adjustStars } from "@/lib/auth"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
 function getDisplayNameFromEmail(email: string): string {
   if (!email) return "Mon Enfant"
@@ -54,8 +58,16 @@ export async function POST(request: Request) {
       )
     }
 
+    // Create an explicitly authenticated client for subsequent DB operations
+    const authedClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+      global: {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      },
+    })
+
     // 2. Fetch the linked accounts record
-    let { data: account, error: accError } = await supabase
+    let { data: account, error: accError } = await authedClient
       .from("accounts")
       .select("*")
       .eq("user_id", user.id)
@@ -64,7 +76,7 @@ export async function POST(request: Request) {
     // Fallback: If account does not exist, create it (e.g. if the user was created before this system was active)
     if (accError || !account) {
       console.warn("Account not found for authenticated user, creating one now.")
-      const { data: newAccount, error: createAccErr } = await supabase
+      const { data: newAccount, error: createAccErr } = await authedClient
         .from("accounts")
         .insert({
           user_id: user.id,
@@ -83,7 +95,7 @@ export async function POST(request: Request) {
       account = newAccount
 
       // Add stars_transaction record
-      await supabase
+      await authedClient
         .from("stars_transactions")
         .insert({
           account_id: account.id,
@@ -98,7 +110,7 @@ export async function POST(request: Request) {
     if (account.plan === "free" && starsBalance < 5) {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       
-      const { data: recentResets, error: resetErr } = await supabase
+      const { data: recentResets, error: resetErr } = await authedClient
         .from("stars_transactions")
         .select("created_at")
         .eq("account_id", account.id)
@@ -108,7 +120,7 @@ export async function POST(request: Request) {
 
       if (!resetErr && (!recentResets || recentResets.length === 0)) {
         const topupAmount = 5 - starsBalance
-        const { success, newBalance } = await adjustStars(account.id, topupAmount, "daily_reset")
+        const { success, newBalance } = await adjustStars(account.id, topupAmount, "daily_reset", null, authedClient)
         if (success && newBalance !== undefined) {
           starsBalance = newBalance
         }
@@ -116,7 +128,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Fetch all child_profiles for this account
-    let { data: profiles, error: profError } = await supabase
+    let { data: profiles, error: profError } = await authedClient
       .from("child_profiles")
       .select("*")
       .eq("account_id", account.id)
@@ -131,7 +143,7 @@ export async function POST(request: Request) {
       const emailDisplayName = getDisplayNameFromEmail(email)
       for (const p of profiles) {
         if (p.name === "Mon Enfant") {
-          const { error: renameErr } = await supabase
+          const { error: renameErr } = await authedClient
             .from("child_profiles")
             .update({ name: emailDisplayName })
             .eq("id", p.id)
@@ -146,7 +158,7 @@ export async function POST(request: Request) {
     if (!profiles || profiles.length === 0) {
       const cleanName = getDisplayNameFromEmail(email)
 
-      const { data: newProfile } = await supabase
+      const { data: newProfile } = await authedClient
         .from("child_profiles")
         .insert({
           account_id: account.id,
