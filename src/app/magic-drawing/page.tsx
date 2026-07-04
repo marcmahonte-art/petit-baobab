@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -12,7 +13,6 @@ import {
   ChevronDown,
   Heart,
   Download,
-  FileText,
   BookOpen,
   Printer,
   ChevronRight,
@@ -22,8 +22,9 @@ import {
   Lock,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useCreditStore, getCreditCost, canGenerate, type StyleType } from "@/lib/credit-store";
-import { useProfileStore, getActiveProfile } from "@/lib/profile-store";
+import { useProfileStore } from "@/lib/profile-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { drawingService } from "@/features/drawings/DrawingService";
 import { useI18n } from "@/lib/i18n-provider";
@@ -82,28 +83,31 @@ const styleOptions: { id: StyleType; label: string; image: string; selected: boo
 ];
 
 /* ------------------------------------------------------------------ */
-/* Variante thumbnails (mock using existing assets)                     */
-/* ------------------------------------------------------------------ */
-const varianteImages = [
-  "/illustrations/animals/girafe.svg",
-  "/illustrations/village-case-girafe.webp",
-  "/illustrations/animals/elephant.svg",
-  "/illustrations/coloring-baobab.png",
-];
-
 /* ================================================================== */
 /* PAGE COMPONENT                                                      */
 /* ================================================================== */
 export default function MagicDrawingPage() {
   const [prompt, setPrompt] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState<StyleType>("noir_blanc");
+  const credits = useCreditStore();
+  const [selectedStyle, setSelectedStyle] = useState<StyleType>(credits.plan === "free" ? "contour_simple" : "noir_blanc");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
+  const [lastDrawingId, setLastDrawingId] = useState("");
   const [generationError, setGenerationError] = useState("");
   const [bookMessage, setBookMessage] = useState("");
   const [isAddingToBook, setIsAddingToBook] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyDrawings, setHistoryDrawings] = useState<any[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingStyle, setPendingStyle] = useState<StyleType | null>(null);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profileName, setProfileName] = useState("Awa");
+  const [profileAge, setProfileAge] = useState("6 ans");
+  const [profileMascot, setProfileMascot] = useState("awa");
   const maxChars = 200;
 
   useEffect(() => {
@@ -116,15 +120,45 @@ export default function MagicDrawingPage() {
     }
   }, []);
 
-  const credits = useCreditStore();
-  const profileId = useProfileStore((s) => s.activeProfileId);
   const { t } = useI18n();
   const creditInfo = credits.useCredits();
   const { account } = useAuthStore();
   const starsBalance = account?.stars_balance ?? 0;
+  const { profiles, activeProfileId: currentProfileId, switchProfile } = useProfileStore();
+  const router = useRouter();
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+  const getAvatarSrc = (mascot: string) => {
+    if (mascot === "lion") return "/illustrations/lion.webp";
+    if (mascot === "robot") return "/illustrations/robot.webp";
+    return "/illustrations/awa.webp";
+  };
+
+  useEffect(() => {
+    const active = profiles.find((p) => p.id === currentProfileId);
+    if (active) {
+      setProfileName(active.name);
+      setProfileMascot(active.mascot);
+    }
+  }, [currentProfileId, profiles]);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setShowProfileDropdown(false);
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, []);
+
+  const handleGenerate = async (confirmed = false) => {
+    if (!prompt.trim() || isGenerating || isOnCooldown) return;
+
+    const cost = getCreditCost(selectedStyle);
+    if (cost >= 3 && !confirmed) {
+      setPendingStyle(selectedStyle);
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    setShowConfirmDialog(false);
+    setPendingStyle(null);
 
     const check = canGenerate(selectedStyle);
     if (!check.allowed) {
@@ -150,7 +184,7 @@ export default function MagicDrawingPage() {
         body: JSON.stringify({
           idea: prompt,
           style: selectedStyle,
-          profileId: profileId || "anonymous",
+          profileId: currentProfileId || "anonymous",
         }),
       });
 
@@ -172,12 +206,12 @@ export default function MagicDrawingPage() {
       const drawingId = data.drawingId || `magic-${Date.now()}`;
 
       // If returned image is a base64 string, upload it. Otherwise it is already uploaded by the backend.
-      if (profileId && returnedImage && returnedImage.startsWith("data:")) {
+      if (currentProfileId && returnedImage && returnedImage.startsWith("data:")) {
         try {
           const imageBlob = base64ToBlob(returnedImage);
           imageUrl = await storageService.uploadDrawingImage(
             imageBlob,
-            profileId,
+            currentProfileId,
             drawingId,
             "ai"
           );
@@ -185,7 +219,7 @@ export default function MagicDrawingPage() {
           const thumbBlob = await storageService.generateThumbnail(imageBlob, 280);
           thumbnailUrl = await storageService.uploadThumbnail(
             thumbBlob,
-            profileId,
+            currentProfileId,
             drawingId,
             "ai"
           );
@@ -195,15 +229,16 @@ export default function MagicDrawingPage() {
       }
 
       setGeneratedImage(imageUrl);
+      setLastDrawingId(drawingId);
       setHasResult(true);
 
-      if (profileId) {
+      if (currentProfileId) {
         try {
           await drawingService.saveIA({
             name: prompt.slice(0, 60),
             category: "Mes dessins",
             origin: "ia",
-            profileId,
+            profileId: currentProfileId,
             image: imageUrl,
             thumbnail: thumbnailUrl,
             template: {
@@ -233,6 +268,8 @@ export default function MagicDrawingPage() {
       setHasResult(false);
     } finally {
       setIsGenerating(false);
+      setIsOnCooldown(true);
+      setTimeout(() => setIsOnCooldown(false), 2000);
     }
   };
 
@@ -314,10 +351,10 @@ export default function MagicDrawingPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: "demo-user",
           imageUrl: generatedImage,
           idea: prompt,
           style: selectedStyle,
+          drawingId: lastDrawingId,
         }),
       });
 
@@ -356,7 +393,7 @@ export default function MagicDrawingPage() {
             {/* Page Title */}
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-7 h-7 text-[#7C57FF]" />
+                <Sparkles className="w-7 h-7 text-[#6D4CFF]" />
                 <h1 className="text-2xl md:text-[28px] font-extrabold text-[#2D1846] leading-tight">
                   Dessin Magique
                 </h1>
@@ -382,34 +419,110 @@ export default function MagicDrawingPage() {
                 </div>
               </div>
 
-              {/* Credits badge */}
-              <div className="flex items-center gap-2 h-[48px] px-4 rounded-full bg-[#F3EFFF] border border-[#D4C8FF]">
-                <Sparkles className="w-5 h-5 text-[#7C57FF]" />
-                <div className="flex flex-col leading-none">
-                  <span className="text-[17px] font-extrabold text-[#3B2416]">
-                    {creditInfo.remaining}
-                  </span>
-                  <span className="text-[10px] font-semibold text-[#7A6A5E]">
-                    Étoiles
-                  </span>
-                </div>
-              </div>
-
               {/* History button */}
-              <button className="flex items-center gap-2 h-[48px] px-5 rounded-full border border-[#EFE7DB] bg-white hover:bg-neutral-50 transition-colors cursor-pointer">
+              <button
+                  onClick={async () => {
+                  const list = await drawingService.list()
+                  const iaDrawings = list.filter((d) => d.origin === "ia")
+                  if (iaDrawings.length === 0) {
+                    setGenerationError("Aucun dessin magique dans l'historique.")
+                    setTimeout(() => setGenerationError(""), 3000)
+                    return
+                  }
+                  setHistoryDrawings(iaDrawings)
+                  setIsHistoryOpen(true)
+                }}
+                className="flex items-center gap-2 h-[48px] px-5 rounded-full border border-[#EFE7DB] bg-white hover:bg-neutral-50 transition-colors cursor-pointer"
+              >
                 <Clock className="w-5 h-5 text-[#7A6A5E]" />
                 <span className="text-sm font-bold text-[#3B2416]">
                   Historique
                 </span>
               </button>
 
-              {/* Avatar */}
-              <div className="flex items-center gap-2 h-[56px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src="https://api.dicebear.com/9.x/avataaars/svg?seed=child" />
-                  <AvatarFallback>AW</AvatarFallback>
-                </Avatar>
-                <ChevronDown className="w-4 h-4 text-[#7A6A5E]" />
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowProfileDropdown(!showProfileDropdown);
+                  }}
+                  className="flex items-center gap-2 h-[56px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm"
+                >
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={getAvatarSrc(profileMascot)} />
+                    <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col text-left leading-none">
+                    <span className="text-sm font-bold text-[#3B2416]">{profileName}</span>
+                    <span className="text-[10px] font-bold text-[#7A6A5E] mt-0.5">{profileAge}</span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-[#7A6A5E] ml-1 shrink-0" />
+                </div>
+
+                {showProfileDropdown && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute right-0 top-16 z-50 w-64 bg-white rounded-2xl border border-[#EFE7DB] shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-200"
+                  >
+                    <div className="flex items-center gap-3 border-b border-[#F0E7DA] pb-3 mb-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={getAvatarSrc(profileMascot)} />
+                        <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col text-left">
+                        <span className="text-sm font-black text-[#3B2416]">{profileName}</span>
+                        <span className="text-[11px] font-bold text-[#7A6A5E]">{profileAge}</span>
+                      </div>
+                    </div>
+
+                    {profiles.length > 1 && (
+                      <div className="mb-3">
+                        <span className="text-[10px] font-black text-[#7A6A5E] uppercase tracking-wider block mb-1.5">
+                          Changer de profil
+                        </span>
+                        <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
+                          {profiles.map((p) => {
+                            if (p.id === currentProfileId) return null;
+                            return (
+                              <div
+                                key={p.id}
+                                onClick={() => {
+                                  switchProfile(p.id);
+                                  setShowProfileDropdown(false);
+                                }}
+                                className="flex items-center gap-2 p-1.5 hover:bg-[#FFF9F2] rounded-xl cursor-pointer transition-colors"
+                              >
+                                <Avatar className="w-7 h-7">
+                                  <AvatarImage src={getAvatarSrc(p.mascot)} />
+                                  <AvatarFallback>{p.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs font-bold text-[#3B2416]">{p.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-1 pt-1 border-t border-[#F0E7DA]/50">
+                      <Link
+                        href="/parametres"
+                        onClick={() => setShowProfileDropdown(false)}
+                        className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
+                      >
+                        ⚙️ Paramètres
+                      </Link>
+                      <Link
+                        href="/parents"
+                        onClick={() => setShowProfileDropdown(false)}
+                        className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
+                      >
+                        👨‍👩‍👧 Espace Parents
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -421,6 +534,7 @@ export default function MagicDrawingPage() {
                     variant="ghost"
                     size="icon"
                     className="w-10 h-10 text-[#7A6A5E]"
+                    aria-label="Menu de navigation"
                   >
                     <Menu className="w-5 h-5" />
                   </Button>
@@ -439,7 +553,7 @@ export default function MagicDrawingPage() {
               {/* ── STEP 1: Décris ton dessin ── */}
               <div className="bg-white rounded-[24px] border border-[#EFE7DB] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#7C57FF] text-white text-sm font-extrabold shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#6D4CFF] text-white text-sm font-extrabold shrink-0">
                     1
                   </span>
                   <h2 className="text-lg font-extrabold text-[#2D1846]">
@@ -449,12 +563,10 @@ export default function MagicDrawingPage() {
 
                 <div className="relative">
                   <textarea
-                    className="w-full h-[120px] p-4 border border-[#EFE7DB] rounded-[18px] bg-[#FAFAF8] text-[15px] font-medium text-[#3B2416] placeholder-[#7A6A5E]/50 focus:outline-none focus:ring-2 focus:ring-[#7C57FF]/30 focus:border-[#7C57FF] resize-none transition-all"
+                    className="w-full h-[120px] p-4 border border-[#EFE7DB] rounded-[18px] bg-[#FAFAF8] text-[15px] font-medium text-[#3B2416] placeholder-[#7A6A5E]/50 focus:outline-none focus:ring-2 focus:ring-[#6D4CFF]/30 focus:border-[#6D4CFF] resize-none transition-all"
                     placeholder="Exemple : Une petite fille en Faso Danfani jouant du balafon dans un village africain..."
                     value={prompt}
-                    onChange={(e) =>
-                      setPrompt(e.target.value.slice(0, maxChars))
-                    }
+                    onChange={(e) => setPrompt(e.target.value)}
                     maxLength={maxChars}
                   />
                   <span className="absolute bottom-3 right-4 text-xs font-semibold text-[#7A6A5E]/60">
@@ -463,28 +575,34 @@ export default function MagicDrawingPage() {
                 </div>
 
                 {/* Suggestion chips */}
-                <div className="flex items-center gap-3 mt-4 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="suggestions-scroll flex items-center gap-3 mt-4 overflow-x-auto pb-1 scrollbar-hide">
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
                       onClick={() => handleSuggestionClick(s.label)}
-                      className="flex items-center gap-2 h-[40px] px-3 rounded-full border border-[#EFE7DB] bg-[#FAFAF8] hover:bg-[#F3EFFF] hover:border-[#7C57FF]/30 transition-all cursor-pointer shrink-0 group"
+                      className="flex items-center gap-2 h-[40px] px-3 rounded-full border border-[#EFE7DB] bg-[#FAFAF8] hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/30 transition-all cursor-pointer shrink-0 group"
                     >
                       <div className="w-7 h-7 rounded-full overflow-hidden bg-[#FFF5CC] flex items-center justify-center shrink-0">
                         <Image
                           src={s.image}
-                          alt={s.label}
+                          alt=""
                           width={28}
                           height={28}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-xs font-bold text-[#3B2416] whitespace-nowrap group-hover:text-[#7C57FF] transition-colors">
+                      <span className="text-xs font-bold text-[#3B2416] whitespace-nowrap group-hover:text-[#6D4CFF] transition-colors">
                         {s.label}
                       </span>
                     </button>
                   ))}
-                  <button className="w-8 h-8 rounded-full border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] flex items-center justify-center shrink-0 cursor-pointer transition-colors">
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector(".suggestions-scroll");
+                      if (el) el.scrollBy({ left: 200, behavior: "smooth" });
+                    }}
+                    className="w-8 h-8 rounded-full border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+                  >
                     <ChevronRight className="w-4 h-4 text-[#7A6A5E]" />
                   </button>
                 </div>
@@ -493,7 +611,7 @@ export default function MagicDrawingPage() {
               {/* ── STEP 2: Choisis le style ── */}
               <div className="bg-white rounded-[24px] border border-[#EFE7DB] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center gap-3 mb-5">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#7C57FF] text-white text-sm font-extrabold shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#6D4CFF] text-white text-sm font-extrabold shrink-0">
                     2
                   </span>
                   <h2 className="text-lg font-extrabold text-[#2D1846]">
@@ -516,12 +634,12 @@ export default function MagicDrawingPage() {
                           isLocked
                             ? "border-[#EFE7DB] bg-white opacity-55 cursor-not-allowed"
                             : isSelected
-                            ? "border-[#7C57FF] bg-[#F3EFFF] shadow-[0_0_0_3px_rgba(124,87,255,0.15)] cursor-pointer"
-                            : "border-[#EFE7DB] bg-white hover:border-[#7C57FF]/30 hover:bg-[#FAFAF8] cursor-pointer"
+                            ? "border-[#6D4CFF] bg-[#F3EFFF] shadow-[0_0_0_3px_rgba(124,87,255,0.15)] cursor-pointer"
+                            : "border-[#EFE7DB] bg-white hover:border-[#6D4CFF]/30 hover:bg-[#FAFAF8] cursor-pointer"
                         }`}
                       >
                         {isSelected && !isLocked && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#7C57FF] flex items-center justify-center">
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#6D4CFF] flex items-center justify-center">
                             <Check className="w-3 h-3 text-white" />
                           </div>
                         )}
@@ -550,8 +668,8 @@ export default function MagicDrawingPage() {
                           {cost} étoile{cost > 1 ? "s" : ""}
                         </span>
                         {isLocked && (
-                          <span className="text-[9px] font-semibold text-[#7C57FF]">
-                            Réservé aux abonnés
+                          <span className="text-[9px] font-semibold text-[#6D4CFF]">
+                            Premium · {cost} étoiles
                           </span>
                         )}
                       </button>
@@ -563,7 +681,7 @@ export default function MagicDrawingPage() {
               {/* ── STEP 3: Créer le dessin ── */}
               <div className="bg-white rounded-[24px] border border-[#EFE7DB] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#7C57FF] text-white text-sm font-extrabold shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#6D4CFF] text-white text-sm font-extrabold shrink-0">
                     3
                   </span>
                   <h2 className="text-lg font-extrabold text-[#2D1846]">
@@ -572,12 +690,12 @@ export default function MagicDrawingPage() {
                 </div>
 
                 <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
+                  onClick={() => handleGenerate()}
+                  disabled={isGenerating || isOnCooldown}
                   className={`w-full h-[60px] rounded-[18px] font-extrabold text-[16px] text-white flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     isGenerating
-                      ? "bg-[#7C57FF]/60 cursor-wait"
-                      : "bg-[#7C57FF] hover:bg-[#6A45E8] hover:shadow-lg hover:shadow-[#7C57FF]/25 active:scale-[0.98]"
+                      ? "bg-[#6D4CFF]/60 cursor-wait"
+                      : "bg-[#6D4CFF] hover:bg-[#5A3EE0] hover:shadow-lg hover:shadow-[#6D4CFF]/25 active:scale-[0.98]"
                   }`}
                 >
                   {isGenerating ? (
@@ -652,12 +770,13 @@ export default function MagicDrawingPage() {
               <div className="bg-white rounded-[24px] border border-[#EFE7DB] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-extrabold text-[#2D1846] flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-[#7C57FF]" />
+                    <Sparkles className="w-5 h-5 text-[#6D4CFF]" />
                     Résultat généré
                   </h2>
                   <button
                     onClick={() => setIsFavorite(!isFavorite)}
                     className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#FFF0F3] transition-colors cursor-pointer"
+                    aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
                   >
                     <Heart
                       className={`w-5 h-5 transition-colors ${
@@ -672,17 +791,23 @@ export default function MagicDrawingPage() {
                 {/* Preview area */}
                 <div className="w-full aspect-[4/3] rounded-[18px] overflow-hidden bg-[#F9F7F4] border border-[#EFE7DB]/60 flex items-center justify-center relative">
                   {hasResult ? (
-                    <Image
-                      src={generatedImage}
-                      alt="Résultat généré"
-                      fill
-                      unoptimized
-                      className="object-contain p-2"
-                    />
+                    <button
+                      onClick={() => setShowLightbox(true)}
+                      className="w-full h-full relative cursor-pointer"
+                      aria-label="Voir en plein écran"
+                    >
+                      <Image
+                        src={generatedImage}
+                        alt="Résultat généré"
+                        fill
+                        unoptimized
+                        className="object-contain p-2"
+                      />
+                    </button>
                   ) : (
                     <div className="flex flex-col items-center gap-3 text-center p-8">
                       <div className="w-16 h-16 rounded-full bg-[#F3EFFF] flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-[#7C57FF]/40" />
+                        <Sparkles className="w-8 h-8 text-[#6D4CFF]/40" />
                       </div>
                       <p className="text-sm font-bold text-[#7A6A5E]">
                         Ton dessin apparaîtra ici
@@ -699,7 +824,7 @@ export default function MagicDrawingPage() {
                   <div className="grid grid-cols-4 gap-2 mt-4">
                     <button
                       onClick={handleDownload}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#7C57FF]/20 transition-all cursor-pointer group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/20 transition-all cursor-pointer group"
                     >
                       <div className="w-9 h-9 rounded-[10px] bg-[#E8F5E9] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Download className="w-4.5 h-4.5 text-[#25C76F]" />
@@ -710,21 +835,9 @@ export default function MagicDrawingPage() {
                     </button>
 
                     <button
-                      onClick={handleDownload}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#7C57FF]/20 transition-all cursor-pointer group"
-                    >
-                      <div className="w-9 h-9 rounded-[10px] bg-[#FFF0E6] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <FileText className="w-4.5 h-4.5 text-[#FF8C42]" />
-                      </div>
-                      <span className="text-[10px] font-bold text-[#3B2416] text-center leading-tight">
-                        Télécharger PDF
-                      </span>
-                    </button>
-
-                    <button
                       onClick={handleAddToBook}
                       disabled={isAddingToBook}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#7C57FF]/20 transition-all cursor-pointer group disabled:cursor-wait disabled:opacity-70"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/20 transition-all cursor-pointer group disabled:cursor-wait disabled:opacity-70"
                     >
                       <div className="w-9 h-9 rounded-[10px] bg-[#FFF5CC] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <BookOpen className="w-4.5 h-4.5 text-[#FFB300]" />
@@ -736,7 +849,7 @@ export default function MagicDrawingPage() {
 
                     <button
                       onClick={handlePrint}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#7C57FF]/20 transition-all cursor-pointer group"
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/20 transition-all cursor-pointer group"
                     >
                       <div className="w-9 h-9 rounded-[10px] bg-[#E8F0FF] flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Printer className="w-4.5 h-4.5 text-[#1194FF]" />
@@ -748,46 +861,126 @@ export default function MagicDrawingPage() {
                   </div>
                 )}
                 {bookMessage && (
-                  <p className="text-center text-xs font-bold text-[#25C76F] mt-3">
-                    {bookMessage}
-                  </p>
+                  <div className="flex items-center justify-center gap-3 mt-3">
+                    <p className="text-xs font-bold text-[#25C76F]">
+                      {bookMessage}
+                    </p>
+                    <Link
+                      href="/mes-livres"
+                      className="text-xs font-bold text-[#6D4CFF] underline hover:no-underline"
+                    >
+                      Voir mon livre →
+                    </Link>
+                  </div>
                 )}
               </div>
 
-              {/* ── Variantes Card ── */}
-              {hasResult && (
-                <div className="bg-white rounded-[24px] border border-[#EFE7DB] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-extrabold text-[#2D1846]">
-                      Variantes
-                    </h3>
-                    <button className="text-xs font-bold text-[#7C57FF] hover:underline cursor-pointer px-3 py-1 rounded-full border border-[#7C57FF]/20 hover:bg-[#F3EFFF] transition-all">
-                      Voir tout
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {varianteImages.map((img, i) => (
-                      <div
-                        key={i}
-                        className="aspect-square rounded-[14px] overflow-hidden border border-[#EFE7DB] hover:border-[#7C57FF]/40 cursor-pointer transition-all hover:shadow-md hover:scale-[1.03] relative bg-[#F9F7F4]"
-                      >
-                        <Image
-                          src={img}
-                          alt={`Variante ${i + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Variantes section removed — will be re-added with real generation */}
             </div>
           </div>
+
+          {/* Lightbox */}
+          {showLightbox && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+              onClick={() => setShowLightbox(false)}
+            >
+              <button
+                onClick={() => setShowLightbox(false)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center text-xl font-bold hover:bg-white/30 cursor-pointer"
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+              <div className="relative w-full max-w-3xl aspect-[4/3]">
+                <Image
+                  src={generatedImage}
+                  alt="Résultat généré"
+                  fill
+                  unoptimized
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Confirm dialog for expensive generations */}
+          {showConfirmDialog && pendingStyle && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+              <div className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-xl border border-[#EFE7DB]">
+                <h3 className="text-lg font-extrabold text-[#2D1846] text-center mb-2">
+                  Génération coûteuse
+                </h3>
+                <p className="text-sm text-[#7A6A5E] text-center mb-6">
+                  Ce style coûte <strong className="text-[#FF8C42]">{getCreditCost(pendingStyle)} étoiles</strong>. Veux-tu continuer ?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowConfirmDialog(false);
+                      setPendingStyle(null);
+                    }}
+                    className="flex-1 h-12 rounded-full border border-[#EFE7DB] text-[#7A6A5E] font-bold text-sm hover:bg-neutral-50 cursor-pointer"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => handleGenerate(true)}
+                    className="flex-1 h-12 rounded-full bg-[#FF8C42] text-white font-bold text-sm hover:bg-[#FF7A2C] cursor-pointer"
+                  >
+                    Oui, générer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
       <MobileBottomNav />
+
+      {/* History sheet */}
+      <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <SheetContent side="right" className="w-full max-w-md p-0 bg-[#FFF9F2]">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b border-[#EFE7DB]">
+              <h2 className="text-lg font-extrabold text-[#2D1846] flex items-center gap-2">
+                <Clock className="w-5 h-5 text-[#6D4CFF]" />
+                Historique
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {historyDrawings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <p className="text-sm font-bold text-[#7A6A5E]">
+                    Aucun dessin dans l'historique
+                  </p>
+                  <p className="text-xs text-[#7A6A5E]/60 mt-1">
+                    Génère tes premiers dessins magiques !
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {historyDrawings.map((drawing, i) => (
+                    <div
+                      key={drawing.id ?? i}
+                      className="aspect-square rounded-[14px] overflow-hidden border border-[#EFE7DB] bg-white hover:border-[#6D4CFF]/40 cursor-pointer transition-all hover:shadow-md"
+                    >
+                      <Image
+                        src={drawing.image || drawing.thumbnail || "/placeholder.svg"}
+                        alt={`Dessin ${i + 1}`}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -1,146 +1,135 @@
-﻿import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { NextResponse } from "next/server";
-
-type ColoringBookPage = {
-  imageUrl: string;
-  idea: string;
-  style: string;
-  createdAt: string;
-};
-
-type ColoringBook = {
-  userId: string;
-  pages: ColoringBookPage[];
-};
-
-const dataDir = path.join(process.cwd(), ".data");
-const dataFile = path.join(dataDir, "coloring-books.json");
-const uploadDir = path.join(
-  process.cwd(),
-  "public",
-  "generated",
-  "coloring-books"
-);
-
-function sanitizeSegment(value: string) {
-  return value
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9-_]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80);
-}
-
-async function readBooks(): Promise<ColoringBook[]> {
-  try {
-    const raw = await readFile(dataFile, "utf8");
-    return JSON.parse(raw) as ColoringBook[];
-  } catch {
-    return [];
-  }
-}
-
-async function writeBooks(books: ColoringBook[]) {
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(dataFile, JSON.stringify(books, null, 2), "utf8");
-}
-
-async function uploadToStorage(imageUrl: string, userId: string) {
-  await mkdir(uploadDir, { recursive: true });
-
-  const safeUserId = sanitizeSegment(userId) || "demo-user";
-  const filename = `${safeUserId}-${Date.now()}.png`;
-  const absolutePath = path.join(uploadDir, filename);
-
-  if (imageUrl.startsWith("data:image/")) {
-    const base64 = imageUrl.split(",")[1];
-
-    if (!base64) {
-      throw new Error("L'image fournie est invalide.");
-    }
-
-    await writeFile(absolutePath, Buffer.from(base64, "base64"));
-    return `/generated/coloring-books/${filename}`;
-  }
-
-  const url = new URL(imageUrl);
-
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
-    throw new Error("Seules les images http, https ou data URL sont autorisées.");
-  }
-
-  const response = await fetch(url, {
-    headers: {
-      Accept: "image/png,image/*;q=0.8,*/*;q=0.5",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Impossible de sauvegarder l'image.");
-  }
-
-  const buffer = await response.arrayBuffer();
-  await writeFile(absolutePath, Buffer.from(buffer));
-
-  return `/generated/coloring-books/${filename}`;
-}
+﻿import { NextResponse } from "next/server"
+import { getSupabaseServer } from "@/lib/supabaseServer"
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null);
-
-  const userId =
-    typeof body?.userId === "string" && body.userId.trim()
-      ? body.userId.trim()
-      : "demo-user";
-  const imageUrl = typeof body?.imageUrl === "string" ? body.imageUrl : "";
-  const idea = typeof body?.idea === "string" ? body.idea.trim() : "";
-  const style = typeof body?.style === "string" ? body.style.trim() : "";
-
-  if (!imageUrl || !idea || !style) {
-    return NextResponse.json(
-      { error: "imageUrl, idea et style sont obligatoires." },
-      { status: 400 }
-    );
-  }
-
   try {
-    const permanentUrl = await uploadToStorage(imageUrl, userId);
-    const books = await readBooks();
-    const page: ColoringBookPage = {
-      imageUrl: permanentUrl,
-      idea: idea.slice(0, 200),
-      style,
-      createdAt: new Date().toISOString(),
-    };
+    const supabase = await getSupabaseServer()
 
-    const existingBook = books.find((book) => book.userId === userId);
-
-    if (existingBook) {
-      existingBook.pages.push(page);
-    } else {
-      books.push({ userId, pages: [page] });
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
-    await writeBooks(books);
+    const body = await request.json().catch(() => null)
+    if (!body) {
+      return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 })
+    }
 
-    const currentBook = books.find((book) => book.userId === userId);
+    const { imageUrl, idea, style, drawingId: providedDrawingId } = body
+
+    if (!imageUrl || !idea || !style) {
+      return NextResponse.json(
+        { error: "imageUrl, idea et style sont obligatoires." },
+        { status: 400 }
+      )
+    }
+
+    const { data: account } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("user_id", user.id)
+      .single()
+
+    if (!account) {
+      return NextResponse.json({ error: "Compte introuvable." }, { status: 404 })
+    }
+
+    const { data: profiles } = await supabase
+      .from("child_profiles")
+      .select("id, name")
+      .eq("account_id", account.id)
+      .limit(1)
+
+    const profile = profiles?.[0]
+    if (!profile) {
+      return NextResponse.json({ error: "Aucun profil enfant." }, { status: 404 })
+    }
+
+    let finalImageUrl = imageUrl
+
+    if (imageUrl.startsWith("data:")) {
+      const base64 = imageUrl.split(",")[1]
+      if (base64) {
+        const buffer = Buffer.from(base64, "base64")
+        const drawingId = crypto.randomUUID()
+        const filePath = `ai/${profile.id}/${drawingId}.png`
+
+        const { error: uploadError } = await supabase.storage
+          .from("drawings")
+          .upload(filePath, buffer, { contentType: "image/png", upsert: true })
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage.from("drawings").getPublicUrl(filePath)
+          finalImageUrl = publicUrl
+        }
+      }
+    }
+
+    const BOOK_TITLE = "Mes dessins magiques"
+    const drawingId = providedDrawingId || `magic-${Date.now()}`
+
+    const { data: existingBooks } = await supabase
+      .from("books")
+      .select("id, pages")
+      .eq("profile_id", profile.id)
+      .eq("title", BOOK_TITLE)
+      .limit(1)
+
+    let book = existingBooks?.[0]
+    const currentPages = (book?.pages as any[]) || []
+    const pageNumber = currentPages.length + 1
+
+    const newPage = {
+      drawingId,
+      pageNumber,
+      imageUrl: finalImageUrl,
+      idea: idea.slice(0, 200),
+      style,
+    }
+
+    if (book) {
+      const { error: updateErr } = await supabase
+        .from("books")
+        .update({
+          pages: [...currentPages, newPage],
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", book.id)
+
+      if (updateErr) throw updateErr
+    } else {
+      const { data: newBook, error: createErr } = await supabase
+        .from("books")
+        .insert({
+          profile_id: profile.id,
+          title: BOOK_TITLE,
+          author: (user.email?.split("@")[0]) || "Artiste",
+          child_name: profile.name,
+          style: "Contour simple",
+          format: "A4",
+          orientation: "Portrait",
+          frame: "Aucun",
+          cover: "petit-baobab",
+          palette: "Purple",
+          pages: [newPage],
+          status: "draft",
+        })
+        .select()
+        .single()
+
+      if (createErr) throw createErr
+      book = newBook
+    }
 
     return NextResponse.json({
       success: true,
-      imageUrl: permanentUrl,
-      totalPages: currentBook?.pages.length || 1,
-    });
-  } catch (error) {
+      imageUrl: finalImageUrl,
+      totalPages: pageNumber,
+    })
+  } catch (error: any) {
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Impossible d'ajouter le dessin au livre.",
-      },
+      { error: error.message || "Impossible d'ajouter le dessin au livre." },
       { status: 500 }
-    );
+    )
   }
 }
