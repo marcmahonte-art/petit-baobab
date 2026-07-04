@@ -98,6 +98,8 @@ export default function MagicDrawingPage() {
   const [generationError, setGenerationError] = useState("");
   const [bookMessage, setBookMessage] = useState("");
   const [isAddingToBook, setIsAddingToBook] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyDrawings, setHistoryDrawings] = useState<any[]>([]);
@@ -277,13 +279,82 @@ export default function MagicDrawingPage() {
     setPrompt(text);
   };
 
-  const handleDownload = () => {
-    if (!generatedImage) return;
+  const handleDownload = async () => {
+    if (!generatedImage || isDownloading) return;
 
-    const link = document.createElement("a");
-    link.href = generatedImage;
-    link.download = "dessin-magique-petit-baobab.png";
-    link.click();
+    setIsDownloading(true);
+    setDownloadProgress(0);
+
+    try {
+      const response = await fetch(generatedImage);
+
+      if (!response.ok) throw new Error("Impossible de télécharger l'image.");
+
+      const contentLength = response.headers.get("Content-Length");
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      const reader = response.body?.getReader();
+
+      let blob: Blob;
+
+      if (reader && total > 0) {
+        const chunks: Uint8Array[] = [];
+        let received = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          received += value.length;
+          setDownloadProgress(Math.min(Math.round((received / total) * 45), 45));
+        }
+
+        blob = new Blob(chunks, { type: "image/png" });
+      } else {
+        blob = await response.blob();
+        setDownloadProgress(45);
+      }
+
+      setDownloadProgress(50);
+
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Impossible de charger l'image."));
+        img.src = URL.createObjectURL(blob);
+      });
+
+      setDownloadProgress(65);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+
+      setDownloadProgress(80);
+
+      canvas.toBlob(
+        (jpegBlob) => {
+          if (jpegBlob) {
+            const url = URL.createObjectURL(jpegBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `dessin-magique-petit-baobab.jpg`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+          }
+          URL.revokeObjectURL(img.src);
+          setDownloadProgress(100);
+          setTimeout(() => setIsDownloading(false), 1200);
+        },
+        "image/jpeg",
+        0.88
+      );
+    } catch (error) {
+      console.error("Download failed:", error);
+      setIsDownloading(false);
+      setDownloadProgress(0);
+    }
   };
 
   const handlePrint = () => {
@@ -824,14 +895,39 @@ export default function MagicDrawingPage() {
                   <div className="grid grid-cols-4 gap-2 mt-4">
                     <button
                       onClick={handleDownload}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/20 transition-all cursor-pointer group"
+                      disabled={isDownloading}
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-[14px] border border-[#EFE7DB] bg-white hover:bg-[#F3EFFF] hover:border-[#6D4CFF]/20 transition-all cursor-pointer group disabled:cursor-wait disabled:opacity-70"
                     >
-                      <div className="w-9 h-9 rounded-[10px] bg-[#E8F5E9] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Download className="w-4.5 h-4.5 text-[#25C76F]" />
-                      </div>
-                      <span className="text-[10px] font-bold text-[#3B2416] text-center leading-tight">
-                        Télécharger PNG
-                      </span>
+                      {isDownloading ? (
+                        <>
+                          <div className="w-9 h-9 rounded-[10px] bg-[#E8F5E9] flex items-center justify-center relative">
+                            <svg className="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
+                              <circle cx="18" cy="18" r="16" fill="none" stroke="#E5E7EB" strokeWidth="3" />
+                              <circle
+                                cx="18" cy="18" r="16" fill="none" stroke="#25C76F" strokeWidth="3"
+                                strokeDasharray={`${2 * Math.PI * 16}`}
+                                strokeDashoffset={`${2 * Math.PI * 16 * (1 - downloadProgress / 100)}`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <span className="absolute text-[8px] font-black text-[#25C76F]">
+                              {downloadProgress}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold text-[#3B2416] text-center leading-tight">
+                            Compression...
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-9 h-9 rounded-[10px] bg-[#E8F5E9] flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Download className="w-4.5 h-4.5 text-[#25C76F]" />
+                          </div>
+                          <span className="text-[10px] font-bold text-[#3B2416] text-center leading-tight">
+                            Télécharger JPG
+                          </span>
+                        </>
+                      )}
                     </button>
 
                     <button
