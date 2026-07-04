@@ -12,6 +12,7 @@ const navItems = [
   { icon: Palette, label: "Coloriage", href: "/coloriage" },
   { icon: Sparkles, label: "Dessin magique", href: "/magic-drawing" },
   { icon: BookOpen, label: "Livres de coloriage", href: "/livres-de-coloriage" },
+  { icon: Bookmark, label: "Mes livres", href: "/mes-livres" },
   { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },
@@ -78,9 +79,11 @@ export function Sidebar() {
               Accédez à tout le contenu et fonctionnalités illimitées.
             </p>
           </div>
-          <Button variant="premium" className="w-[120px] h-[38px] rounded-full text-xs font-bold bg-white text-[#3B2416] hover:bg-white/90 border-none shadow-sm">
-            Découvrir &gt;
-          </Button>
+          <Link href="/parents">
+            <Button variant="premium" className="w-[120px] h-[38px] rounded-full text-xs font-bold bg-white text-[#3B2416] hover:bg-white/90 border-none shadow-sm cursor-pointer">
+              Découvrir &gt;
+            </Button>
+          </Link>
         </div>
         <div className="absolute inset-0 z-0">
           <Image
