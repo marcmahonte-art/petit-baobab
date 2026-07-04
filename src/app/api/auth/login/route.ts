@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabaseClient"
+import { getSupabaseServer } from "@/lib/supabaseServer"
 import { setAuthCookies, adjustStars } from "@/lib/auth"
+
+function getDisplayNameFromEmail(email: string): string {
+  if (!email) return "Mon Enfant"
+  const username = email.split("@")[0]
+  return username
+    .split(/[\._-]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ")
+}
 
 export async function POST(request: Request) {
   try {
+    const supabase = await getSupabaseServer()
     const body = await request.json().catch(() => null)
     if (!body) {
       return NextResponse.json(
@@ -49,7 +59,7 @@ export async function POST(request: Request) {
       .from("accounts")
       .select("*")
       .eq("user_id", user.id)
-      .single()
+      .maybeSingle()
 
     // Fallback: If account does not exist, create it (e.g. if the user was created before this system was active)
     if (accError || !account) {
@@ -116,13 +126,31 @@ export async function POST(request: Request) {
       profiles = []
     }
 
+    // Dynamic fix: If an existing profile is named "Mon Enfant", rename it to the email-derived name
+    if (profiles && profiles.length > 0) {
+      const emailDisplayName = getDisplayNameFromEmail(email)
+      for (const p of profiles) {
+        if (p.name === "Mon Enfant") {
+          const { error: renameErr } = await supabase
+            .from("child_profiles")
+            .update({ name: emailDisplayName })
+            .eq("id", p.id)
+          if (!renameErr) {
+            p.name = emailDisplayName
+          }
+        }
+      }
+    }
+
     // Fallback: If no child profiles, create at least one default profile
     if (!profiles || profiles.length === 0) {
+      const cleanName = getDisplayNameFromEmail(email)
+
       const { data: newProfile } = await supabase
         .from("child_profiles")
         .insert({
           account_id: account.id,
-          name: "Mon Enfant",
+          name: cleanName || "Mon Enfant",
           mascot: "awa",
           pin_required: false,
         })
@@ -137,6 +165,8 @@ export async function POST(request: Request) {
     // 5. Return success payload
     return NextResponse.json({
       success: true,
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
       user: {
         id: user.id,
         email: user.email,
