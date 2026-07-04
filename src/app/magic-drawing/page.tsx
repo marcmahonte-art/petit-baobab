@@ -323,7 +323,7 @@ export default function MagicDrawingPage() {
       setDownloadProgress(50);
 
       const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image();
+        const img = new Image(1, 1);
         img.onload = () => resolve(img);
         img.onerror = () => reject(new Error("Impossible de charger l'image."));
         img.src = URL.createObjectURL(blob);
