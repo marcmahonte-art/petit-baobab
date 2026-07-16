@@ -40,10 +40,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           <div className="flex items-center cursor-pointer" onClick={() => router.push("/")}>
-            <div className="h-[80px] md:h-[200px] flex items-center justify-center">
+            <div className="h-[110px] md:h-[200px] flex items-center justify-center">
               <img
                 alt="Logo"
-                className="h-[80px] md:h-[200px] w-auto object-contain"
+                className="h-[110px] md:h-[200px] w-auto object-contain"
                 src="/illustrations/logo-petit-baobab.svg"
               />
             </div>
