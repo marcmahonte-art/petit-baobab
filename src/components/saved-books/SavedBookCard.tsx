@@ -29,7 +29,7 @@ export function SavedBookCard({ book, onModify, onDownload, onPrint, onDelete }:
       className="rounded-[20px] border border-[#E5E7EB]/80 bg-white shadow-sm overflow-hidden flex flex-col"
     >
       {/* Cover preview */}
-      <div className="relative h-[180px] bg-gradient-to-br from-[#F5F0FF] to-[#EEF7FF] flex items-center justify-center overflow-hidden">
+      <div className="relative h-[140px] md:h-[180px] bg-gradient-to-br from-[#F5F0FF] to-[#EEF7FF] flex items-center justify-center overflow-hidden">
         {book.coverImageUrl ? (
           <img
             src={book.coverImageUrl}
@@ -38,7 +38,7 @@ export function SavedBookCard({ book, onModify, onDownload, onPrint, onDelete }:
           />
         ) : (
           <div className="flex flex-col items-center gap-2 text-[#6D4CFF]/40">
-            <BookOpen className="w-12 h-12" />
+            <BookOpen className="w-8 h-8 md:w-12 md:h-12" />
             <span className="text-xs font-bold">{book.format}</span>
           </div>
         )}

@@ -69,7 +69,7 @@ const socialLinks: SocialLink[] = [
 
 export default function Footer() {
   return (
-    <footer className="bg-bg pt-16 pb-8 border-t border-border relative overflow-hidden">
+    <footer className="bg-bg pt-10 lg:pt-16 pb-6 lg:pb-8 border-t border-border relative overflow-hidden">
       {/* Decorative bush */}
       <div className="absolute bottom-0 right-0 w-[200px] h-[200px] z-0 opacity-90">
         <Image
@@ -82,7 +82,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 relative z-10">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
           {/* Logo column */}
           <div className="col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
@@ -153,7 +153,7 @@ export default function Footer() {
         </div>
 
         {/* Social */}
-        <div className="mt-12">
+        <div className="mt-8 lg:mt-12">
           <p className="font-bold text-[15px] text-[#1A1A2E] mb-3">Suivez-nous</p>
           <div className="flex gap-3">
             {socialLinks.map((social) => (
@@ -170,7 +170,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-border mt-12 pt-6 text-center text-[13px] text-[#6B6B7B]">
+        <div className="border-t border-border mt-8 lg:mt-12 pt-4 lg:pt-6 text-center text-[13px] text-[#6B6B7B]">
           &copy; {new Date().getFullYear()} Petit Baobab. Tous droits réservés.
         </div>
       </div>

@@ -20,10 +20,10 @@ export function RewardsCard() {
   const earnedBadges = profile?.badges ?? []
 
   return (
-    <Card className="rounded-[28px] shadow-[0_4px_12px_rgba(0,0,0,.06)] p-6 mt-4 bg-white border border-[#EFE7DB]/60 select-none">
-      <div className="flex items-center gap-2 mb-4">
-        <Award className="w-5.5 h-5.5 text-[#3B2416]" />
-        <h3 className="text-lg font-extrabold text-[#3B2416]">Récompenses récentes</h3>
+    <Card className="rounded-[22px] md:rounded-[28px] shadow-[0_4px_12px_rgba(0,0,0,.06)] p-4 md:p-6 mt-3 md:mt-4 bg-white border border-[#EFE7DB]/60 select-none">
+      <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <Award className="w-5 h-5 text-[#3B2416]" />
+        <h3 className="text-sm md:text-lg font-extrabold text-[#3B2416]">Récompenses récentes</h3>
       </div>
 
       <div className="grid grid-cols-4 gap-2 xs:gap-3 md:gap-4">

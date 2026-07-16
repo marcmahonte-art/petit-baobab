@@ -31,7 +31,7 @@ export function InformationCard() {
   ]
 
   return (
-    <div className="w-full min-h-[270px] h-full rounded-[24px] bg-[#F8FAFC] border border-[#E5E7EB]/80 p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
+    <div className="w-full min-h-[200px] md:min-h-[270px] h-full rounded-[20px] md:rounded-[24px] bg-[#F8FAFC] border border-[#E5E7EB]/80 p-4 md:p-6 shadow-md flex flex-col justify-between select-none">
       {/* List */}
       <div className="flex-1 flex flex-col justify-center gap-3.5">
         {benefits.map((ben, i) => (

@@ -52,13 +52,13 @@ const stepVariants = {
 
 export default function HowItWorks() {
   return (
-    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-20 text-center">
-      <h2 className="text-display-md font-extrabold text-[#1A1A2E] mb-12">
+    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-20 text-center">
+      <h2 className="text-display-md font-extrabold text-[#1A1A2E] mb-8 lg:mb-12">
         Comment ça marche ?
       </h2>
 
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 relative"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -78,7 +78,7 @@ export default function HowItWorks() {
             )}
 
             {/* Illustration */}
-            <div className="relative w-[180px] h-[140px] rounded-2xl overflow-hidden bg-[#FFF9F2] border border-[#F0E7DA]">
+            <div className="relative w-[130px] h-[100px] md:w-[180px] md:h-[140px] rounded-2xl overflow-hidden bg-[#FFF9F2] border border-[#F0E7DA]">
               {step.icon ? (
                 <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: step.color }}>
                   <step.icon className="w-12 h-12 text-white" />
@@ -100,7 +100,7 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <h3 className="text-[17px] font-bold text-[#1A1A2E] mt-4">
+            <h3 className="text-[14px] md:text-[17px] font-bold text-[#1A1A2E] mt-3 md:mt-4">
               {step.title}
             </h3>
             <p className="text-[14px] text-[#6B6B7B] mt-1">

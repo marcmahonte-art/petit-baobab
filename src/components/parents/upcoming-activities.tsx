@@ -25,10 +25,10 @@ export function UpcomingActivities() {
   ]
 
   return (
-    <div className="w-full min-h-[270px] h-full rounded-[24px] bg-white border border-[#E5E7EB]/80 p-6 shadow-md flex flex-col justify-between select-none">
+    <div className="w-full min-h-[200px] md:min-h-[270px] h-full rounded-[20px] md:rounded-[24px] bg-white border border-[#E5E7EB]/80 p-4 md:p-6 shadow-md flex flex-col justify-between select-none">
       {/* Title & Link */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[20px] font-extrabold text-[#334155]">
+        <h3 className="text-[16px] md:text-[20px] font-extrabold text-[#334155]">
           Activités à venir
         </h3>
         <a

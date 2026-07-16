@@ -45,14 +45,14 @@ export function DrawingToolsPanel({
               whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedTool(tool.id)}
               className={cn(
-                "w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] transition-all cursor-pointer h-[60px]",
+                "w-full flex items-center gap-3 md:gap-[16px] pl-3 md:pl-[18px] rounded-[14px] md:rounded-[18px] transition-all cursor-pointer h-[48px] md:h-[60px]",
                 isSelected
                   ? "bg-[#EFE8FF] text-[#6D4CFF] font-semibold"
                   : "bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold"
               )}
             >
-              <tool.icon className={cn("w-[28px] h-[28px]", isSelected ? "text-[#6D4CFF]" : "text-[#7A6A5E]")} />
-              <span className="text-[16px]">{tool.label}</span>
+              <tool.icon className={cn("w-[22px] h-[22px] md:w-[28px] md:h-[28px]", isSelected ? "text-[#6D4CFF]" : "text-[#7A6A5E]")} />
+              <span className="text-sm md:text-[16px]">{tool.label}</span>
             </motion.button>
           )
         })}
@@ -71,14 +71,14 @@ export function DrawingToolsPanel({
                 onClick={onUndo}
                 disabled={!canUndo}
                 className={cn(
-                  "w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] bg-transparent text-[#3B2416] font-semibold h-[60px] transition-all",
+                  "w-full flex items-center gap-3 md:gap-[16px] pl-3 md:pl-[18px] rounded-[14px] md:rounded-[18px] bg-transparent text-[#3B2416] font-semibold h-[48px] md:h-[60px] transition-all",
                   canUndo
                     ? "hover:bg-neutral-50 cursor-pointer"
                     : "opacity-40 cursor-not-allowed"
                 )}
               >
-                <Undo className="w-[28px] h-[28px] text-[#7A6A5E]" />
-                <span className="text-[16px]">Annuler</span>
+                <Undo className="w-[22px] h-[22px] md:w-[28px] md:h-[28px] text-[#7A6A5E]" />
+                <span className="text-sm md:text-[16px]">Annuler</span>
               </motion.button>
             </TooltipTrigger>
             <TooltipContent side="right" className="bg-[#2D1846] text-white border-none font-bold rounded-lg shadow-md px-3 py-1.5 text-xs">
@@ -94,14 +94,14 @@ export function DrawingToolsPanel({
                 onClick={onRedo}
                 disabled={!canRedo}
                 className={cn(
-                  "w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] bg-transparent text-[#3B2416] font-semibold h-[60px] transition-all",
+                  "w-full flex items-center gap-3 md:gap-[16px] pl-3 md:pl-[18px] rounded-[14px] md:rounded-[18px] bg-transparent text-[#3B2416] font-semibold h-[48px] md:h-[60px] transition-all",
                   canRedo
                     ? "hover:bg-neutral-50 cursor-pointer"
                     : "opacity-40 cursor-not-allowed"
                 )}
               >
-                <Redo className="w-[28px] h-[28px] text-[#7A6A5E]" />
-                <span className="text-[16px]">Refaire</span>
+                <Redo className="w-[22px] h-[22px] md:w-[28px] md:h-[28px] text-[#7A6A5E]" />
+                <span className="text-sm md:text-[16px]">Refaire</span>
               </motion.button>
             </TooltipTrigger>
             <TooltipContent side="right" className="bg-[#2D1846] text-white border-none font-bold rounded-lg shadow-md px-3 py-1.5 text-xs">
@@ -119,19 +119,19 @@ export function DrawingToolsPanel({
           whileHover={{ scale: 1.02, x: 2 }}
           whileTap={{ scale: 0.98 }}
           onClick={onZoomIn}
-          className="w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold h-[60px] cursor-pointer"
+          className="w-full flex items-center gap-3 md:gap-[16px] pl-3 md:pl-[18px] rounded-[14px] md:rounded-[18px] bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold h-[48px] md:h-[60px] cursor-pointer"
         >
-          <ZoomIn className="w-[28px] h-[28px] text-[#7A6A5E]" />
-          <span className="text-[16px]">Zoom +</span>
+          <ZoomIn className="w-[22px] h-[22px] md:w-[28px] md:h-[28px] text-[#7A6A5E]" />
+          <span className="text-sm md:text-[16px]">Zoom +</span>
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02, x: 2 }}
           whileTap={{ scale: 0.98 }}
           onClick={onZoomOut}
-          className="w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold h-[60px] cursor-pointer"
+          className="w-full flex items-center gap-3 md:gap-[16px] pl-3 md:pl-[18px] rounded-[14px] md:rounded-[18px] bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold h-[48px] md:h-[60px] cursor-pointer"
         >
-          <ZoomOut className="w-[28px] h-[28px] text-[#7A6A5E]" />
-          <span className="text-[16px]">Zoom -</span>
+          <ZoomOut className="w-[22px] h-[22px] md:w-[28px] md:h-[28px] text-[#7A6A5E]" />
+          <span className="text-sm md:text-[16px]">Zoom -</span>
         </motion.button>
       </div>
 
@@ -142,7 +142,7 @@ export function DrawingToolsPanel({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClearAll}
-        className="w-full flex items-center justify-center gap-2 h-[56px] rounded-full border-[2px] border-[#D8CCFF] text-[#6D4CFF] bg-transparent hover:bg-[#6D4CFF]/5 font-bold text-base cursor-pointer shadow-sm transition-all duration-250"
+        className="w-full flex items-center justify-center gap-2 h-[46px] md:h-[56px] rounded-full border-[2px] border-[#D8CCFF] text-[#6D4CFF] bg-transparent hover:bg-[#6D4CFF]/5 font-bold text-sm md:text-base cursor-pointer shadow-sm transition-all duration-180"
       >
         <Trash2 className="w-5 h-5 text-[#6D4CFF]" />
         <span>Effacer tout</span>

@@ -42,7 +42,7 @@ export function MyDrawingsGrid() {
   const currentCategoryDrawings = drawingsByCategory[selectedCategory] || []
 
   return (
-    <div className="flex flex-col gap-[14px] select-none w-full">
+    <div className="flex flex-col gap-2 md:gap-[14px] select-none w-full">
       {/* Header section: Height 40px, Display flex, Justify-content space-between */}
       <div 
         onClick={() => {
@@ -52,7 +52,7 @@ export function MyDrawingsGrid() {
         }}
         className="h-[40px] flex justify-between items-center w-full px-1 cursor-pointer md:cursor-default"
       >
-        <h4 className="text-lg font-extrabold text-[#3B2416] flex items-center gap-2">
+        <h4 className="text-sm md:text-lg font-extrabold text-[#3B2416] flex items-center gap-2">
           <span>Modeles</span>
           <ChevronDown className={cn("w-5 h-5 text-[#7A6A5E] md:hidden transition-transform", !isCollapsed && "rotate-180")} />
         </h4>
@@ -77,7 +77,7 @@ export function MyDrawingsGrid() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-[14px] justify-items-center pb-2">
+            <div className="grid grid-cols-2 gap-2 md:gap-[14px] justify-items-center pb-2">
               {currentCategoryDrawings.map((draw) => {
                 const isActive = currentDrawing.id === draw.id
                 return (
@@ -86,7 +86,7 @@ export function MyDrawingsGrid() {
                     whileHover={{ scale: 1.03 }}
                     onClick={() => setCurrentDrawing({ ...draw, category: selectedCategory })}
                     className={cn(
-                      "w-[120px] h-[120px] rounded-[18px] border p-2 flex items-center justify-center cursor-pointer transition-all shadow-sm relative bg-white overflow-hidden",
+                      "w-[90px] h-[90px] md:w-[120px] md:h-[120px] rounded-[14px] md:rounded-[18px] border p-1.5 md:p-2 flex items-center justify-center cursor-pointer transition-all shadow-sm relative bg-white overflow-hidden",
                       isActive
                         ? "border-[2px] border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15"
                         : "border-[#ECECEC] hover:border-[#6D4CFF]/40"

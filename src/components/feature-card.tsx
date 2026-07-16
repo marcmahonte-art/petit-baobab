@@ -15,10 +15,10 @@ export function FeatureCard({ title, illustration, topColor, bottomColor, href, 
   return (
     <Link
       href={href}
-      className="feature-card h-[180px] rounded-[24px] overflow-hidden flex flex-col"
+      className="feature-card h-[140px] md:h-[180px] rounded-[18px] md:rounded-[24px] overflow-hidden flex flex-col"
     >
       <div
-        className="h-[130px] flex items-end justify-center"
+        className="h-[90px] md:h-[130px] flex items-end justify-center"
         style={{ backgroundColor: topColor }}
       >
         <Image
@@ -31,10 +31,10 @@ export function FeatureCard({ title, illustration, topColor, bottomColor, href, 
         />
       </div>
       <div
-        className="h-[50px] flex items-center justify-center"
+        className="h-[40px] md:h-[50px] flex items-center justify-center"
         style={{ backgroundColor: bottomColor }}
       >
-        <span className="text-base font-extrabold text-white">{title}</span>
+        <span className="text-xs md:text-base font-extrabold text-white">{title}</span>
       </div>
     </Link>
   )

@@ -65,7 +65,7 @@ export default function FeatureStrip() {
   return (
     <section id="features" className="max-w-[1280px] mx-auto px-6 lg:px-10 mt-16">
       <motion.div
-        className="bg-white rounded-3xl shadow-card py-10 px-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8"
+        className="bg-white rounded-3xl shadow-card py-8 lg:py-10 px-4 lg:px-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 lg:gap-8"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -80,12 +80,12 @@ export default function FeatureStrip() {
             transition={{ duration: 0.2 }}
           >
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center transition-shadow duration-200"
+              className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-shadow duration-200"
               style={{ backgroundColor: feature.color }}
             >
-              <feature.icon className="w-6 h-6 text-white" />
+              <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <h3 className="text-[15px] font-bold text-[#1A1A2E]">
+            <h3 className="text-[13px] md:text-[15px] font-bold text-[#1A1A2E]">
               {feature.title}
             </h3>
             <p className="text-[13px] text-[#6B6B7B] leading-snug max-w-[140px]">

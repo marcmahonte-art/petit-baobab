@@ -26,8 +26,8 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-20">
-      <h2 className="text-display-md font-extrabold text-[#1A1A2E] text-center mb-12">
+    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-12 lg:py-20">
+      <h2 className="text-display-md font-extrabold text-[#1A1A2E] text-center mb-8 lg:mb-12">
         Ils adorent Petit Baobab
       </h2>
 
@@ -35,7 +35,7 @@ export default function Testimonials() {
         {testimonials.map((t) => (
           <div
             key={t.name}
-            className="bg-white rounded-2xl shadow-card p-6"
+            className="bg-white rounded-2xl shadow-card p-4 md:p-6"
           >
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="w-12 h-12 rounded-full">

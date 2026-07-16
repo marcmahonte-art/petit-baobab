@@ -37,9 +37,9 @@ export function RecentColorings() {
   }, [])
 
   return (
-    <div className="rounded-[28px] bg-white p-5 shadow-[0_4px_12px_rgba(0,0,0,.06)]">
-      <div className="h-[64px] flex items-center justify-between">
-        <h3 className="text-xl font-extrabold text-[#3B2416]">Derniers coloriages</h3>
+    <div className="rounded-[22px] md:rounded-[28px] bg-white p-3 md:p-5 shadow-[0_4px_12px_rgba(0,0,0,.06)]">
+      <div className="h-[48px] md:h-[64px] flex items-center justify-between">
+        <h3 className="text-sm md:text-xl font-extrabold text-[#3B2416]">Derniers coloriages</h3>
         {colorings.length > 0 && (
           <Link href="/coloriage" className="text-sm font-bold text-[#7A6A5E] hover:text-[#3B2416]">
             Voir tout
@@ -72,7 +72,7 @@ export function RecentColorings() {
           </p>
           <Link
             href="/coloriage"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-[14px] bg-[#6D4CFF] text-white font-extrabold text-sm hover:bg-[#5A3DD8] transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-[12px] md:rounded-[14px] bg-[#6D4CFF] text-white font-extrabold text-xs md:text-sm hover:bg-[#5A3DD8] transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             Commencer un dessin

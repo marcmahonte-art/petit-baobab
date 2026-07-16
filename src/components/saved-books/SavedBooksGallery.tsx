@@ -25,7 +25,7 @@ export function SavedBooksGallery({ books, onModify, onDownload, onPrint, onDele
 
   if (books.length === 0) {
     return (
-      <div className="rounded-[24px] border border-[#E5E7EB]/80 bg-white p-12 flex flex-col items-center justify-center gap-4 text-center">
+      <div className="rounded-[18px] md:rounded-[24px] border border-[#E5E7EB]/80 bg-white p-6 md:p-12 flex flex-col items-center justify-center gap-3 md:gap-4 text-center">
         <div className="w-16 h-16 rounded-full bg-[#6D4CFF]/10 flex items-center justify-center">
           <BookOpen className="w-8 h-8 text-[#6D4CFF]" />
         </div>
@@ -52,12 +52,12 @@ export function SavedBooksGallery({ books, onModify, onDownload, onPrint, onDele
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[24px] border border-[#E5E7EB]/80 bg-white p-12 flex flex-col items-center justify-center gap-3 text-center">
+        <div className="rounded-[18px] md:rounded-[24px] border border-[#E5E7EB]/80 bg-white p-6 md:p-12 flex flex-col items-center justify-center gap-2 md:gap-3 text-center">
           <Search className="w-8 h-8 text-[#64748B]" />
           <p className="text-sm font-bold text-[#64748B]">Aucun livre ne correspond à ta recherche</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {filtered.map((book) => (
             <SavedBookCard
               key={book.id}

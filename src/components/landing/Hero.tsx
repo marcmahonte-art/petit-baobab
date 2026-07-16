@@ -22,9 +22,9 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16 lg:py-24 relative"
+      className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-24 relative"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         {/* Left Column */}
         <div>
           <h1 className="text-[28px] sm:text-[34px] lg:text-display-lg font-extrabold leading-tight">
@@ -37,34 +37,34 @@ export default function Hero() {
             <span className="text-[#20C997]">l&apos;Afrique</span>
           </h1>
 
-          <p className="text-body-lg text-[#6B6B7B] max-w-[480px] mt-6">
+          <p className="text-sm md:text-body-lg text-[#6B6B7B] max-w-[480px] mt-4 md:mt-6">
             Des milliers de dessins africains, des histoires captivantes et des
             outils intelligents pour apprendre en s&apos;amusant.
           </p>
 
-          <div className="flex gap-4 mt-8 flex-wrap">
+          <div className="flex gap-3 md:gap-4 mt-5 md:mt-8 flex-wrap">
             {user ? (
               <Button
                 onClick={() => router.push("/dashboard")}
-                className="h-14 px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-[16px] rounded-full shadow-hover hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                className="h-12 md:h-14 px-6 md:px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-sm md:text-[16px] rounded-full shadow-hover hover:scale-[1.02] md:hover:scale-[1.03] transition-all duration-180 md:duration-200 cursor-pointer"
               >
                 <span>
                   {lang === "fr" ? "Accéder à mon espace" : "Access My Space"}
                 </span>
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
               </Button>
             ) : (
               <>
                 <Button
                   onClick={() => router.push("/signup")}
-                  className="h-14 px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-[16px] rounded-full shadow-hover hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                  className="h-12 md:h-14 px-6 md:px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-sm md:text-[16px] rounded-full shadow-hover hover:scale-[1.02] md:hover:scale-[1.03] transition-all duration-180 md:duration-200 cursor-pointer"
                 >
                   {lang === "fr" ? "Commencer gratuitement" : "Start Free"}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => router.push("/login")}
-                  className="h-14 px-8 bg-white text-[#1A1A2E] font-bold text-[16px] rounded-full border border-[#E5E0D5] hover:bg-[#FFF9F2] transition-colors cursor-pointer flex items-center gap-3"
+                  className="h-12 md:h-14 px-6 md:px-8 bg-white text-[#1A1A2E] font-bold text-sm md:text-[16px] rounded-full border border-[#E5E0D5] hover:bg-[#FFF9F2] transition-colors cursor-pointer flex items-center gap-2 md:gap-3"
                 >
                   <span className="w-7 h-7 rounded-full bg-[#7D6AF8]/10 flex items-center justify-center">
                     <Play className="w-4 h-4 fill-[#7D6AF8] text-[#7D6AF8]" />
@@ -77,7 +77,7 @@ export default function Hero() {
             )}
           </div>
 
-          <div className="flex gap-6 mt-10 flex-wrap">
+          <div className="flex gap-4 md:gap-6 mt-6 md:mt-10 flex-wrap">
             <span className="flex items-center gap-2 text-[14px] font-semibold text-[#6B6B7B]">
               <span className="w-8 h-8 rounded-full bg-[#20C997]/10 flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4 text-[#20C997]" />
@@ -100,7 +100,7 @@ export default function Hero() {
         </div>
 
         {/* Right Column - Illustration */}
-        <div className="relative h-[480px] lg:h-[560px]">
+        <div className="relative h-[320px] md:h-[480px] lg:h-[560px]">
           {/* Decorative blob background */}
           <div className="absolute inset-0 z-0">
             <div className="w-[400px] h-[400px] rounded-full bg-[#FFD95C]/20 absolute top-0 right-0 blur-3xl" />

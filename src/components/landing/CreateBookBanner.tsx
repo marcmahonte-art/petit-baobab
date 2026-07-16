@@ -14,10 +14,10 @@ export default function CreateBookBanner() {
 
   return (
     <section className="max-w-[1280px] mx-auto px-6 lg:px-10 my-16">
-      <div className="bg-[#FFD95C]/15 rounded-3xl p-10 lg:p-14 grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.2fr] gap-8 items-center overflow-hidden relative">
+      <div className="bg-[#FFD95C]/15 rounded-3xl p-6 md:p-10 lg:p-14 grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.2fr] gap-6 lg:gap-8 items-center overflow-hidden relative">
         {/* Left - children illustration */}
         <div className="relative z-10">
-          <div className="relative w-full h-[200px] rounded-2xl overflow-hidden">
+          <div className="relative w-full h-[140px] md:h-[200px] rounded-2xl overflow-hidden">
             <Image
               src="/illustrations/Deux enfants lisant ensemble.webp"
               alt="Enfants lisant"
@@ -39,7 +39,7 @@ export default function CreateBookBanner() {
               {lang === "fr" ? "NOUVEAU" : "NEW"}
             </span>
           </div>
-          <h2 className="text-headline-lg font-extrabold text-[#1A1A2E] leading-tight">
+          <h2 className="text-xl md:text-headline-lg font-extrabold text-[#1A1A2E] leading-tight">
             {lang === "fr" ? "Crée ton propre livre" : "Create your own"}{" "}
             <br />
             {lang === "fr" ? "de coloriage" : "coloring book"}

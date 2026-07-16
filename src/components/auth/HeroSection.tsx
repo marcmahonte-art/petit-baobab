@@ -25,7 +25,7 @@ export const HeroSection: React.FC = () => {
             alt="Logo Petit Baobab"
             width={500}
             height={167}
-            className="w-auto h-48 lg:h-56 object-contain max-w-full"
+            className="w-auto h-32 md:h-48 lg:h-56 object-contain max-w-full"
             priority
           />
         </div>

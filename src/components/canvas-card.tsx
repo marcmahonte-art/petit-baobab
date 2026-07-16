@@ -387,9 +387,9 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       <div className="absolute top-[20px] right-[20px] z-20 flex items-center gap-[16px]">
         <button
           onClick={toggleFullscreen}
-          className="w-[56px] h-[56px] rounded-full border border-[#EFE7DB] bg-white text-[#7A6A5E] hover:bg-neutral-50 shadow-sm flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
+          className="w-[44px] h-[44px] md:w-[56px] md:h-[56px] rounded-full border border-[#EFE7DB] bg-white text-[#7A6A5E] hover:bg-neutral-50 shadow-sm flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
         >
-          {isFullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
+          {isFullscreen ? <Minimize className="w-5 h-5 md:w-6 md:h-6" /> : <Maximize className="w-5 h-5 md:w-6 md:h-6" />}
         </button>
       </div>
 

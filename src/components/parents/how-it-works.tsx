@@ -31,10 +31,10 @@ export function HowItWorks() {
   ]
 
   return (
-    <div className="w-full min-h-[270px] h-full rounded-[24px] bg-white border border-[#E5E7EB]/80 p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
+    <div className="w-full min-h-[200px] md:min-h-[270px] h-full rounded-[20px] md:rounded-[24px] bg-white border border-[#E5E7EB]/80 p-4 md:p-6 shadow-md flex flex-col justify-between select-none">
       {/* Title */}
       <div className="flex items-center gap-1.5">
-        <h3 className="text-[20px] font-extrabold text-[#334155] flex items-center gap-1.5">
+        <h3 className="text-[16px] md:text-[20px] font-extrabold text-[#334155] flex items-center gap-1.5">
           Comment ça fonctionne ?
         </h3>
         <HelpCircle className="w-4.5 h-4.5 text-[#64748B]" />

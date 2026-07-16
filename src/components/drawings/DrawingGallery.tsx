@@ -68,7 +68,7 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
   return (
     <section className="flex h-full flex-col gap-4 text-[#3B2416]">
       <div className="pr-8">
-        <h2 className="text-2xl font-black text-[#261B4B]">Mes dessins</h2>
+        <h2 className="text-lg md:text-2xl font-black text-[#261B4B]">Mes dessins</h2>
         <p className="mt-1 text-sm font-semibold text-[#7A6A5E]">Retrouve, continue, imprime ou telecharge tes coloriages.</p>
       </div>
 
@@ -77,12 +77,12 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
           <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#7A6A5E]" />
           <Input value={search} onChange={(event) => { setSearch(event.target.value); setVisibleCount(PAGE_SIZE) }} placeholder="Rechercher un dessin" className="pl-12" />
         </label>
-        <select value={category} onChange={(event) => { setCategory(event.target.value); setVisibleCount(PAGE_SIZE) }} className="h-[54px] rounded-full border border-[#EFE7DB] bg-white px-5 text-sm font-black text-[#3B2416]">
+        <select value={category} onChange={(event) => { setCategory(event.target.value); setVisibleCount(PAGE_SIZE) }} className="h-[46px] md:h-[54px] rounded-full border border-[#EFE7DB] bg-white px-4 md:px-5 text-sm font-black text-[#3B2416]">
           {categories.map((item) => (
             <option key={item} value={item}>{item === "all" ? "Toutes categories" : item}</option>
           ))}
         </select>
-        <select value={sort} onChange={(event) => { setSort(event.target.value as DrawingSort); setVisibleCount(PAGE_SIZE) }} className="h-[54px] rounded-full border border-[#EFE7DB] bg-white px-5 text-sm font-black text-[#3B2416]">
+        <select value={sort} onChange={(event) => { setSort(event.target.value as DrawingSort); setVisibleCount(PAGE_SIZE) }} className="h-[46px] md:h-[54px] rounded-full border border-[#EFE7DB] bg-white px-4 md:px-5 text-sm font-black text-[#3B2416]">
           <option value="recent">Plus recent</option>
           <option value="oldest">Plus ancien</option>
           <option value="name">Nom</option>
