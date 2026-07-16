@@ -15,10 +15,11 @@ export const STARS_REASONS = {
   ADMIN_GRANT: "admin_grant",
 } as const
 
-export type StarsReason = typeof STARS_REASONS[keyof typeof STARS_REASONS]
+export type StarsReason = (typeof STARS_REASONS)[keyof typeof STARS_REASONS]
 
 /**
  * Retrieves the authenticated user from the HTTP-only cookies on the server side.
+ * Tries to refresh the token if the access token is expired.
  */
 export async function getServerUser() {
   const cookieStore = await cookies()
@@ -28,9 +29,31 @@ export async function getServerUser() {
 
   try {
     const client = await getSupabaseServer()
-    const { data: { user }, error } = await client.auth.getUser(accessToken)
-    if (error || !user) return null
-    return user
+    const { data, error } = await client.auth.getUser(accessToken)
+
+    if (error) {
+      // Attempt to refresh token
+      const refreshToken = cookieStore.get("sb-refresh-token")?.value
+      if (!refreshToken) return null
+
+      const refreshClient = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+
+      const { data: refreshData, error: refreshError } =
+        await refreshClient.auth.refreshSession({ refresh_token: refreshToken })
+
+      if (refreshError || !refreshData.session) {
+        return null
+      }
+
+      // Update cookies with new tokens
+      await setAuthCookies(refreshData.session.access_token, refreshData.session.refresh_token)
+
+      return refreshData.user
+    }
+
+    return data.user
   } catch (err) {
     console.error("Error retrieving server user from cookies:", err)
     return null
@@ -49,7 +72,7 @@ export async function setAuthCookies(accessToken: string, refreshToken: string) 
     httpOnly: true,
     secure,
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/",
   })
 
@@ -57,7 +80,7 @@ export async function setAuthCookies(accessToken: string, refreshToken: string) 
     httpOnly: true,
     secure,
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/",
   })
 }
@@ -73,8 +96,6 @@ export async function clearAuthCookies() {
 
 /**
  * Adjusts the stars balance of an account atomically.
- * Calls the Supabase RPC function 'adjust_stars' or falls back to direct select/insert if unavailable.
- * Accepts an optional authenticated Supabase client; if omitted, uses cookie-based auth.
  */
 export async function adjustStars(
   accountId: string,
@@ -84,8 +105,7 @@ export async function adjustStars(
   supabaseClient?: any
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
   try {
-    const client = supabaseClient || await getSupabaseServer()
-    // 1. Try invoking the database function
+    const client = supabaseClient || (await getSupabaseServer())
     const { data, error } = await client.rpc("adjust_stars", {
       p_account_id: accountId,
       p_amount: amount,
@@ -97,8 +117,11 @@ export async function adjustStars(
       return { success: true, newBalance: Number(data) }
     }
 
-    // If RPC does not exist (e.g. before migration is run), fallback to manual transaction
-    if (error.code === "PGRST202" || error.message.includes("function") || error.message.includes("does not exist")) {
+    if (
+      error.code === "PGRST202" ||
+      error.message.includes("function") ||
+      error.message.includes("does not exist")
+    ) {
       console.warn("RPC 'adjust_stars' not found. Falling back to direct database operations...")
       return await adjustStarsFallback(accountId, amount, reason, referenceId, client)
     }
@@ -110,9 +133,6 @@ export async function adjustStars(
   }
 }
 
-/**
- * Fallback direct client query if 'adjust_stars' RPC is not registered yet.
- */
 async function adjustStarsFallback(
   accountId: string,
   amount: number,
@@ -120,7 +140,6 @@ async function adjustStarsFallback(
   referenceId: string | null,
   client: any
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
-  // Fetch current balance
   const { data: account, error: fetchErr } = await client
     .from("accounts")
     .select("stars_balance")
@@ -138,7 +157,6 @@ async function adjustStarsFallback(
     return { success: false, error: "Solde d'étoiles insuffisant." }
   }
 
-  // Update balance
   const { error: updateErr } = await client
     .from("accounts")
     .update({ stars_balance: nextBalance })
@@ -148,7 +166,6 @@ async function adjustStarsFallback(
     return { success: false, error: updateErr.message }
   }
 
-  // Log transaction
   const { error: txErr } = await client
     .from("stars_transactions")
     .insert({

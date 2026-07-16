@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseSsrClient } from "@/lib/supabase-server"
 import { setAuthCookies } from "@/lib/auth"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
@@ -21,13 +22,16 @@ export async function GET(request: Request) {
     const next = searchParams.get("next") || "/parents"
 
     if (!code) {
-      console.error("OAuth callback: code is missing")
-      return NextResponse.redirect(`${origin}/login?error=code_missing`)
+      const error = searchParams.get("error")
+      const errorDescription = searchParams.get("error_description")
+      console.error("OAuth callback: code is missing", { error, errorDescription })
+      return NextResponse.redirect(
+        `${origin}/login?error=code_missing&error_description=${encodeURIComponent(errorDescription || error || "unknown")}`
+      )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: false },
-    })
+    // Use SSR client to handle PKCE code verifier cookie automatically
+    const supabase = await getSupabaseSsrClient()
 
     const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code)
 
@@ -58,7 +62,6 @@ export async function GET(request: Request) {
 
       if (accError || !account) {
         console.warn("Account not found for authenticated user in callback, creating one manually.")
-        // Ensure profile exists first
         await authedClient
           .from("profiles")
           .insert({
@@ -69,7 +72,6 @@ export async function GET(request: Request) {
           .select()
           .maybeSingle()
 
-        // Create the parent account
         const { data: newAccount, error: createAccErr } = await authedClient
           .from("accounts")
           .insert({
@@ -85,7 +87,6 @@ export async function GET(request: Request) {
         }
         account = newAccount
 
-        // Log transaction
         await authedClient
           .from("stars_transactions")
           .insert({
@@ -100,7 +101,6 @@ export async function GET(request: Request) {
       }
       accountId = account.id
 
-      // Check child profiles
       let { data: profiles, error: profError } = await authedClient
         .from("child_profiles")
         .select("id")
@@ -121,10 +121,9 @@ export async function GET(request: Request) {
       console.warn("Database fallback in OAuth callback had an error:", dbError)
     }
 
-    // Set HTTP-only cookies
+    // Set HTTP-only cookies for the custom auth layer
     await setAuthCookies(session.access_token, session.refresh_token)
 
-    // Redirect to next target page
     return NextResponse.redirect(`${origin}${next}`)
   } catch (err: any) {
     console.error("OAuth callback generic error:", err)

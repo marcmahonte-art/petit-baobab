@@ -202,10 +202,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const data = await res.json()
       if (data.authenticated && data.user) {
         if (data.accessToken && data.refreshToken) {
+          // Silently set session; ignore errors (token might be expired, will redirect to login)
           await supabase.auth.setSession({
             access_token: data.accessToken,
             refresh_token: data.refreshToken,
-          })
+          }).catch(() => {})
         }
         set({
           user: data.user,
