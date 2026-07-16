@@ -105,7 +105,7 @@ export default function LandingPage() {
       {/* END: MainHeader */}
 
       {/* BEGIN: HeroSection */}
-      <section className="relative pt-12 md:pt-20 pb-16 px-6 overflow-hidden">
+      <section className="relative pt-4 md:pt-12 pb-16 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           
           <div className="animate-fade-in-up">
@@ -501,7 +501,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-2 flex flex-col justify-start">
               <img
                 alt="Logo Petit Baobab"
-                className="h-[320px] w-auto object-contain self-start mb-4"
+                className="h-[200px] w-auto object-contain self-start mb-4"
                 src="/illustrations/logo-petit-baobab.svg"
               />
             </div>
