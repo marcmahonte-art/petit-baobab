@@ -27,9 +27,9 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           <input
             id={id}
             ref={ref}
-            className={`w-full h-14 ${
-              Icon ? "pl-12" : "px-4.5"
-            } pr-4.5 rounded-2xl border-2 bg-white text-[#1C1C3A] font-semibold text-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full h-[46px] md:h-14 ${
+              Icon ? "pl-11 md:pl-12" : "px-4"
+            } pr-4 rounded-xl md:rounded-2xl border-2 bg-white text-[#1C1C3A] font-semibold text-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
               error
                 ? "border-red-500 focus:ring-red-200"
                 : success

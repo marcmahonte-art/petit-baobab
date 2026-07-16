@@ -219,8 +219,8 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-10 h-10 text-[#7A6A5E]" aria-label="Menu de navigation">
-                <Menu className="w-5 h-5" />
+              <Button variant="ghost" size="icon" className="w-9 h-9 md:w-10 md:h-10 text-[#7A6A5E]" aria-label="Menu de navigation">
+                <Menu className="w-[18px] h-[18px] md:w-5 md:h-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-4 w-[290px]">
@@ -232,9 +232,9 @@ export function Header() {
         {/* Mobile Right: Actions */}
         <div className="flex items-center gap-2 shrink-0 relative">
           {/* Star Credit Badge Mobile */}
-          <div className="flex items-center gap-1 h-9 px-2.5 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
-            <Star className="w-4 h-4 text-[#FFB300] fill-[#FFB300]" />
-            <span className="text-xs font-black">{displayStars}</span>
+          <div className="flex items-center gap-1 h-8 md:h-9 px-2 md:px-2.5 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
+            <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFB300] fill-[#FFB300]" />
+            <span className="text-[11px] md:text-xs font-black">{displayStars}</span>
           </div>
 
           {/* Language Toggle Mobile */}
@@ -245,7 +245,7 @@ export function Header() {
             }}
             variant="ghost"
             size="icon"
-            className="w-9 h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] bg-white hover:bg-neutral-50 shrink-0 flex items-center justify-center text-[10px] font-bold"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] bg-white hover:bg-neutral-50 shrink-0 flex items-center justify-center text-[10px] font-bold"
             aria-label="Changer de langue"
           >
             <Globe className="w-4 h-4" />
@@ -262,7 +262,7 @@ export function Header() {
               }}
               variant="ghost"
               size="icon"
-              className="w-9 h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
+              className="w-8 h-8 md:w-9 md:h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
               aria-label="Notifications"
             >
               <Bell className="w-4 h-4" />
@@ -283,9 +283,9 @@ export function Header() {
                 setShowProfileDropdown(!showProfileDropdown)
                 setShowNotifications(false)
               }}
-              className="flex items-center gap-1.5 h-[40px] rounded-full border border-[#EFE7DB] pl-1.5 pr-2 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none"
+              className="flex items-center gap-1.5 h-9 md:h-10 rounded-full border border-[#EFE7DB] pl-1.5 pr-2 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none"
             >
-              <Avatar className="w-7 h-7">
+              <Avatar className="w-6 h-6 md:w-7 md:h-7">
                 <AvatarImage src={getAvatarSrc(profileMascot)} />
                 <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
@@ -300,16 +300,16 @@ export function Header() {
       <form onSubmit={handleSearchSubmit} className="relative w-full lg:w-[640px]">
         <button
           type="submit"
-          className="absolute left-6 top-1/2 -translate-y-1/2 text-[#7A6A5E] hover:text-[#3B2416] transition-colors border-none bg-transparent cursor-pointer"
+          className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-[#7A6A5E] hover:text-[#3B2416] transition-colors border-none bg-transparent cursor-pointer"
           aria-label="Rechercher"
         >
-          <Search className="w-5 h-5" />
+          <Search className="w-[18px] h-[18px] md:w-5 md:h-5" />
         </button>
         <Input
           placeholder={t("search.placeholder") || "Que veux-tu créer aujourd'hui ? (ex : un éléphant...)"}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-14 pr-6 w-full h-[54px] rounded-full border border-[#EFE7DB] bg-white text-base font-medium text-[#3B2416] placeholder-[#7A6A5E]/60 focus-visible:ring-1 focus-visible:ring-[#FFD95C]"
+          className="pl-14 pr-6 w-full h-[46px] md:h-[54px] rounded-full border border-[#EFE7DB] bg-white text-sm md:text-base font-medium text-[#3B2416] placeholder-[#7A6A5E]/60 focus-visible:ring-1 focus-visible:ring-[#FFD95C]"
         />
       </form>
 

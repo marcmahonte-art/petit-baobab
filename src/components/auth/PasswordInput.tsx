@@ -32,7 +32,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             id={id}
             ref={ref}
             type={showPassword ? "text" : "password"}
-            className={`w-full h-14 pl-12 pr-12 rounded-2xl border-2 bg-white text-[#1C1C3A] font-semibold text-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full h-[46px] md:h-14 pl-11 md:pl-12 pr-11 md:pr-12 rounded-xl md:rounded-2xl border-2 bg-white text-[#1C1C3A] font-semibold text-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
               error
                 ? "border-red-500 focus:ring-red-200"
                 : success

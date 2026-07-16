@@ -31,6 +31,11 @@
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
 
+  --spacing-page: 24px;
+  --spacing-section: 20px;
+  --spacing-card: 18px;
+  --spacing-element: 14px;
+
   /* shadcn/ui theme tokens (requis par Sheet, Button, Card, Dialog…)
      Mappés vers des variables CSS définies dans :root / .dark ci-dessous. */
   --color-background: var(--background);
@@ -159,4 +164,13 @@ body {
 }
 .nav-item.active {
   background: #FFE08A;
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-page: 16px;
+    --spacing-section: 14px;
+    --spacing-card: 12px;
+    --spacing-element: 10px;
+  }
 }

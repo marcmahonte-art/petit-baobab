@@ -56,7 +56,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({
       whileHover={!disabled ? { scale: 1.01 } : undefined}
       whileTap={!disabled ? { scale: 0.99 } : undefined}
       disabled={disabled}
-      className={`w-full h-14 bg-white border-2 border-[#E8E8EF] hover:border-gray-300 text-[#1C1C3A] font-bold text-sm rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer ${
+      className={`w-full h-11 md:h-14 bg-white border-2 border-[#E8E8EF] hover:border-gray-300 text-[#1C1C3A] font-bold text-sm rounded-xl md:rounded-2xl flex items-center justify-center gap-2 md:gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer ${
         className || ""
       }`}
       {...props}

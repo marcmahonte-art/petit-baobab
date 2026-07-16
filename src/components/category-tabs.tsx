@@ -53,21 +53,21 @@ export function CategoryTabs() {
             whileTap={{ scale: 0.98 }}
             onClick={() => setSelectedCategory(item.id)}
             className={cn(
-              "h-[70px] rounded-[18px] px-[18px] flex items-center justify-between transition-all cursor-pointer shadow-sm border",
+              "h-[56px] md:h-[70px] rounded-[14px] md:rounded-[18px] px-3 md:px-[18px] flex items-center justify-between transition-all cursor-pointer shadow-sm border",
               isActive
                 ? "bg-[#FFF7DD] border-[#FFE08A] text-[#3B2416] font-bold"
                 : "bg-white border-[#EFE7DB] text-[#7A6A5E] hover:bg-neutral-50"
             )}
           >
             <div className="flex items-center gap-[16px]">
-              <div className="w-[40px] h-[40px] rounded-full bg-[#FFF9F2] flex items-center justify-center shrink-0">
-                <item.icon className="w-5 h-5 text-[#7D6AF8]" />
+              <div className="w-[34px] h-[34px] md:w-[40px] md:h-[40px] rounded-full bg-[#FFF9F2] flex items-center justify-center shrink-0">
+                <item.icon className="w-4 h-4 md:w-5 md:h-5 text-[#7D6AF8]" />
               </div>
-              <span className="text-[18px] font-semibold text-[#3B2416]">
+              <span className="text-[15px] md:text-[18px] font-semibold text-[#3B2416]">
                 {item.label}
               </span>
             </div>
-            <ChevronRight className={cn("w-5 h-5", isActive ? "text-[#3B2416]" : "text-[#7A6A5E]")} />
+            <ChevronRight className={cn("w-4 h-4 md:w-5 md:h-5", isActive ? "text-[#3B2416]" : "text-[#7A6A5E]")} />
           </motion.div>
         )
       })}
@@ -94,16 +94,16 @@ export function CategoryTabs() {
       {/* Accordion Content */}
       <div className={cn("w-full transition-all duration-200", isCollapsed && "hidden md:block")}>
       <Tabs defaultValue="categories" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 rounded-[18px] p-1 bg-[#EFE7DB]/60 h-[52px] border border-[#EFE7DB]/40">
+        <TabsList className="w-full grid grid-cols-2 rounded-[14px] md:rounded-[18px] p-1 bg-[#EFE7DB]/60 h-[44px] md:h-[52px] border border-[#EFE7DB]/40">
           <TabsTrigger 
             value="categories" 
-            className="rounded-[14px] font-extrabold text-[15px] cursor-pointer h-full transition-all duration-250 data-[state=active]:bg-gradient-to-b data-[state=active]:from-[#8B6CFF] data-[state=active]:to-[#6E4EF5] data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="rounded-[10px] md:rounded-[14px] font-extrabold text-[13px] md:text-[15px] cursor-pointer h-full transition-all duration-250 data-[state=active]:bg-gradient-to-b data-[state=active]:from-[#8B6CFF] data-[state=active]:to-[#6E4EF5] data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             Catégories
           </TabsTrigger>
           <TabsTrigger 
             value="themes" 
-            className="rounded-[14px] font-extrabold text-[15px] cursor-pointer h-full transition-all duration-250 data-[state=active]:bg-gradient-to-b data-[state=active]:from-[#8B6CFF] data-[state=active]:to-[#6E4EF5] data-[state=active]:text-white data-[state=active]:shadow-sm"
+            className="rounded-[10px] md:rounded-[14px] font-extrabold text-[13px] md:text-[15px] cursor-pointer h-full transition-all duration-250 data-[state=active]:bg-gradient-to-b data-[state=active]:from-[#8B6CFF] data-[state=active]:to-[#6E4EF5] data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             Thèmes
           </TabsTrigger>

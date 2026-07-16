@@ -61,7 +61,7 @@ export function PricingCard({
       transition={{ duration: 0.4, delay: index * 0.1 }}
       whileHover={{ y: -8, transition: { duration: 0.25 } }}
       className={cn(
-        "relative w-full max-w-[360px] min-h-[520px] md:min-h-[550px] rounded-[28px] border bg-white p-6 sm:p-8 flex flex-col justify-between shadow-md transition-shadow hover:shadow-xl select-none",
+        "relative w-full max-w-[360px] min-h-[480px] md:min-h-[550px] rounded-[22px] md:rounded-[28px] border bg-white p-4 sm:p-6 md:p-8 flex flex-col justify-between shadow-md transition-shadow hover:shadow-xl select-none",
         isPopular ? "border-[2px] border-[#2563EB] ring-4 ring-[#2563EB]/5" : activeColors.borderLight
       )}
     >
@@ -74,7 +74,7 @@ export function PricingCard({
 
       {/* Header */}
       <div className="flex flex-col items-center text-center">
-        <h4 className={cn("text-[20px] sm:text-[24px] font-extrabold mb-1", activeColors.text)}>
+        <h4 className={cn("text-[18px] sm:text-[20px] md:text-[24px] font-extrabold mb-0.5 md:mb-1", activeColors.text)}>
           {name}
         </h4>
         <p className="text-xs font-semibold text-[#64748B] mb-4">
@@ -84,10 +84,10 @@ export function PricingCard({
         </p>
 
         <div className="flex flex-col items-center gap-1.5 mb-5">
-          <span className="text-[30px] sm:text-[36px] font-extrabold text-[#334155] tracking-tight">
+          <span className="text-[26px] sm:text-[30px] md:text-[36px] font-extrabold text-[#334155] tracking-tight">
             {price}
           </span>
-          <span className="text-[12px] font-semibold text-[#64748B]">
+          <span className="text-[11px] md:text-[12px] font-semibold text-[#64748B]">
             {period}
           </span>
         </div>
@@ -106,12 +106,12 @@ export function PricingCard({
       </div>
 
       {/* Features List */}
-      <div className="flex-1 flex flex-col justify-center my-6">
+        <div className="flex-1 flex flex-col justify-center my-4 md:my-6">
         <ul className="flex flex-col gap-3">
           {features.map((feature, i) => (
             <li key={i} className="flex items-start gap-2.5 text-left">
               <Check className={cn("w-4 h-4 shrink-0 mt-0.5", activeColors.text)} />
-              <span className="text-[13px] font-bold text-[#64748B] leading-tight">
+              <span className="text-[12px] md:text-[13px] font-bold text-[#64748B] leading-tight">
                 {feature}
               </span>
             </li>

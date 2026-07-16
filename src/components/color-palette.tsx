@@ -40,13 +40,13 @@ export function ColorPalette() {
             onClick={() => setSelectedColor(color.value)}
             title={color.name}
             className={cn(
-              "w-[48px] h-[48px] rounded-full relative cursor-pointer flex items-center justify-center transition-all shadow-sm focus:outline-none shrink-0 border border-black/10",
-              isSelected && "border-[4px] border-[#F5C400] scale-105"
+              "w-[40px] h-[40px] md:w-[48px] md:h-[48px] rounded-full relative cursor-pointer flex items-center justify-center transition-all shadow-sm focus:outline-none shrink-0 border border-black/10",
+              isSelected && "border-[3px] md:border-[4px] border-[#F5C400] scale-105"
             )}
             style={{ background: color.value }}
           >
             {isSelected && (
-              <Check className="w-5 h-5 text-white stroke-[3.5px] drop-shadow-sm" />
+              <Check className="w-4 h-4 md:w-5 md:h-5 text-white stroke-[3px] md:stroke-[3.5px] drop-shadow-sm" />
             )}
           </motion.button>
         )

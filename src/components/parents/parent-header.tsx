@@ -33,13 +33,13 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
   const starsBalance = account?.stars_balance ?? 0
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 select-none">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 py-4 md:py-6 select-none">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[36px] font-extrabold text-[#2D1846] leading-tight">
+        <h1 className="text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-extrabold text-[#2D1846] leading-tight">
           Espace parents
         </h1>
-        <p className="text-base font-medium text-[#7A6A5E] mt-1">
+        <p className="text-sm md:text-base font-medium text-[#7A6A5E] mt-0.5 md:mt-1">
           Gérez les comptes, les plans et suivez les activités de vos enfants.
         </p>
       </div>
@@ -47,13 +47,13 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
       {/* Actions */}
       <div className="flex items-center gap-4 flex-wrap">
         {/* Star Badge */}
-        <div className="w-[140px] h-[58px] rounded-[16px] border border-[#EFE7DB] bg-white flex items-center gap-3 px-3 shadow-sm">
-          <div className="w-9 h-9 rounded-full bg-[#FFB300]/10 flex items-center justify-center text-[#FFB300] shrink-0">
-            <Star className="w-5 h-5 fill-current" />
+        <div className="w-[120px] md:w-[140px] h-[46px] md:h-[58px] rounded-[12px] md:rounded-[16px] border border-[#EFE7DB] bg-white flex items-center gap-2 md:gap-3 px-2 md:px-3 shadow-sm">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#FFB300]/10 flex items-center justify-center text-[#FFB300] shrink-0">
+            <Star className="w-4 h-4 md:w-5 md:h-5 fill-current" />
           </div>
           <div className="flex flex-col justify-center leading-tight">
-            <span className="text-[16px] font-extrabold text-[#3B2416]">{starsBalance}</span>
-            <span className="text-[10px] font-bold text-[#7A6A5E]">Mes étoiles</span>
+            <span className="text-[14px] md:text-[16px] font-extrabold text-[#3B2416]">{starsBalance}</span>
+            <span className="text-[9px] md:text-[10px] font-bold text-[#7A6A5E]">Mes étoiles</span>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
             onClick={() => router.push("/mes-livres")}
-            className="w-[160px] h-[56px] rounded-[18px] bg-[#6D4CFF] text-white hover:bg-[#6D4CFF]/90 font-bold text-[16px] flex items-center justify-center gap-2 shadow-md border-none cursor-pointer"
+            className="w-[140px] md:w-[160px] h-[46px] md:h-[56px] rounded-[14px] md:rounded-[18px] bg-[#6D4CFF] text-white hover:bg-[#6D4CFF]/90 font-bold text-[14px] md:text-[16px] flex items-center justify-center gap-1.5 md:gap-2 shadow-md border-none cursor-pointer"
           >
             <BookOpen className="w-5 h-5" />
             <span>Mes livres</span>
@@ -72,8 +72,8 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
         {profiles && profiles.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 h-[58px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
-                <Avatar className="w-10 h-10 border border-neutral-100">
+              <div className="flex items-center gap-2 md:gap-3 h-[46px] md:h-[58px] rounded-full border border-[#EFE7DB] pl-1.5 md:pl-2 pr-3 md:pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
+                <Avatar className="w-8 h-8 md:w-10 md:h-10 border border-neutral-100">
                   <AvatarImage 
                     src={getAvatarSrc(activeProfile?.mascot || "awa")}
                     onError={(e) => {
@@ -83,10 +83,10 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
                   <AvatarFallback>{activeProfile?.name?.slice(0, 2).toUpperCase() || "AW"}</AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[16px] font-extrabold text-[#3B2416]">
+                  <span className="text-[14px] md:text-[16px] font-extrabold text-[#3B2416]">
                     {activeProfile?.name}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-[#7A6A5E]" />
+                  <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#7A6A5E]" />
                 </div>
               </div>
             </DropdownMenuTrigger>
