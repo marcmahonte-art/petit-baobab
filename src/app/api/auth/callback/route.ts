@@ -30,9 +30,7 @@ export async function GET(request: Request) {
       )
     }
 
-    // Use SSR client to handle PKCE code verifier cookie automatically
     const supabase = await getSupabaseSsrClient()
-
     const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (authError || !authData.session || !authData.user) {
@@ -43,88 +41,84 @@ export async function GET(request: Request) {
     const session = authData.session
     const user = authData.user
 
-    // Explicitly authenticated client for subsequent DB operations
     const authedClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
-      global: {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      },
+      global: { headers: { Authorization: `Bearer ${session.access_token}` } },
     })
 
-    // Fallback sync: Check/create account & default child profile, just in case the trigger didn't run.
-    let accountId = ""
+    // Check if user already has a profile (existing user)
+    const { data: existingProfile } = await authedClient
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle()
+
+    // Check if account exists
+    let { data: existingAccount } = await authedClient
+      .from("accounts")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    if (existingProfile && existingAccount) {
+      // === EXISTING USER: proceed normally ===
+      await setAuthCookies(session.access_token, session.refresh_token)
+      return NextResponse.redirect(`${origin}${next}`)
+    }
+
+    // === NEW USER: create account, send verification email ===
     try {
-      let { data: account, error: accError } = await authedClient
-        .from("accounts")
-        .select("id, stars_balance, plan")
-        .eq("user_id", user.id)
+      // Create profile
+      await authedClient
+        .from("profiles")
+        .insert({ id: user.id, email: user.email ?? null, locale: "fr" })
+        .select()
         .maybeSingle()
 
-      if (accError || !account) {
-        console.warn("Account not found for authenticated user in callback, creating one manually.")
-        await authedClient
-          .from("profiles")
-          .insert({
-            id: user.id,
-            email: user.email ?? null,
-            locale: "fr",
-          })
-          .select()
-          .maybeSingle()
+      // Create account
+      const { data: newAccount, error: createAccErr } = await authedClient
+        .from("accounts")
+        .insert({ user_id: user.id, stars_balance: 5, plan: "free" })
+        .select()
+        .single()
 
-        const { data: newAccount, error: createAccErr } = await authedClient
-          .from("accounts")
-          .insert({
-            user_id: user.id,
-            stars_balance: 5,
-            plan: "free",
-          })
-          .select()
-          .single()
-
-        if (createAccErr || !newAccount) {
-          throw createAccErr || new Error("Failed to create parent account")
-        }
-        account = newAccount
-
-        await authedClient
-          .from("stars_transactions")
-          .insert({
-            account_id: newAccount.id,
-            amount: 5,
-            reason: "signup_bonus",
-          })
+      if (createAccErr || !newAccount) {
+        throw createAccErr || new Error("Failed to create parent account")
       }
 
-      if (!account) {
-        throw new Error("Parent account not resolved.")
-      }
-      accountId = account.id
+      // Stars bonus
+      await authedClient
+        .from("stars_transactions")
+        .insert({ account_id: newAccount.id, amount: 5, reason: "signup_bonus" })
 
-      let { data: profiles, error: profError } = await authedClient
+      // Child profile
+      const cleanName = getDisplayNameFromEmail(user.email || "")
+      await authedClient
         .from("child_profiles")
-        .select("id")
-        .eq("account_id", accountId)
-
-      if (profError || !profiles || profiles.length === 0) {
-        const cleanName = getDisplayNameFromEmail(user.email || "")
-        await authedClient
-          .from("child_profiles")
-          .insert({
-            account_id: accountId,
-            name: cleanName,
-            mascot: "awa",
-            pin_required: false,
-          })
-      }
+        .insert({ account_id: newAccount.id, name: cleanName, mascot: "awa", pin_required: false })
     } catch (dbError) {
       console.warn("Database fallback in OAuth callback had an error:", dbError)
     }
 
-    // Set HTTP-only cookies for the custom auth layer
-    await setAuthCookies(session.access_token, session.refresh_token)
+    // Sign out of the SSR session (we don't want to set cookies yet)
+    await supabase.auth.signOut()
 
-    return NextResponse.redirect(`${origin}${next}`)
+    // Send a magic link to the user's email for verification
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: user.email!,
+      options: {
+        emailRedirectTo: `${origin}/api/auth/complete-signup`,
+      },
+    })
+
+    if (otpError) {
+      console.error("Failed to send verification email:", otpError)
+    }
+
+    // Redirect to check-email page
+    const checkEmailUrl = new URL(`${origin}/auth/check-email`)
+    checkEmailUrl.searchParams.set("email", user.email || "")
+    return NextResponse.redirect(checkEmailUrl.toString())
   } catch (err: any) {
     console.error("OAuth callback generic error:", err)
     const { origin } = new URL(request.url)
