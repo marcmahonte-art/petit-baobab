@@ -24,21 +24,18 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <div className="w-full xl:w-[58%] xl:ml-[42%] min-h-screen flex flex-col justify-between p-6 md:p-12 relative z-20 bg-white">
         
         {/* Top Header of Right Column */}
-        <header className="w-full flex items-center justify-between xl:justify-end gap-6 mb-12">
-          {/* Logo visible only on mobile/tablet header */}
-          <div className="block xl:hidden">
-            <Link href="/">
-              <Image
-                src="/illustrations/logo-petit-baobab.svg"
-                alt="Logo Petit Baobab"
-                width={160}
-                height={53}
-                className="w-auto h-12 object-contain"
-              />
-            </Link>
-          </div>
+        <header className="w-full flex items-center justify-between gap-6 mb-12">
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/illustrations/logo-petit-baobab.svg"
+              alt="Logo Petit Baobab"
+              width={240}
+              height={80}
+              className="w-auto h-10 md:h-12 lg:h-14 object-contain"
+            />
+          </Link>
 
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-4 ml-auto shrink-0">
             <LanguageSwitcher />
           </div>
         </header>
