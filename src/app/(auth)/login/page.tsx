@@ -16,6 +16,7 @@ import { ForgotPasswordLink } from "@/components/auth/ForgotPasswordLink"
 import { PrimaryButton } from "@/components/auth/PrimaryButton"
 import { SocialButton } from "@/components/auth/SocialButton"
 import { Divider } from "@/components/auth/Divider"
+import { NeedHelpLink } from "@/components/auth/NeedHelpLink"
 
 function LoginFormContent() {
   const router = useRouter()
@@ -210,13 +211,15 @@ function LoginFormContent() {
 
       <div className="mt-8 text-center text-sm font-semibold text-[#64748B]">
         <span>{lang === "fr" ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</span>
-        <button
-          onClick={() => router.push(`/signup${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}
-          className="text-[#6D4CFF] hover:text-[#5A3EE0] font-extrabold hover:underline cursor-pointer"
-        >
-          {lang === "fr" ? "S'inscrire" : "Sign Up"}
-        </button>
-      </div>
+          <button
+            onClick={() => router.push(`/signup${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}
+            className="text-[#6D4CFF] hover:text-[#5A3EE0] font-extrabold hover:underline cursor-pointer"
+          >
+            {lang === "fr" ? "S'inscrire" : "Sign Up"}
+          </button>
+        </div>
+
+        <NeedHelpLink />
     </motion.div>
   )
 }

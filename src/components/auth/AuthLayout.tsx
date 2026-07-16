@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { HelpCircle } from "lucide-react";
 import { HeroSection } from "./HeroSection";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useI18n } from "@/lib/i18n-provider";
@@ -41,13 +40,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 
           <div className="flex items-center gap-4 ml-auto">
             <LanguageSwitcher />
-            <Link
-              href="#"
-              className="flex items-center gap-1.5 text-sm font-bold text-[#64748B] hover:text-[#1C1C3A] transition-colors"
-            >
-              <span>{lang === "fr" ? "Besoin d'aide ?" : "Need help?"}</span>
-              <HelpCircle className="w-4 h-4 text-gray-400" />
-            </Link>
           </div>
         </header>
 

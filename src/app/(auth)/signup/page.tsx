@@ -14,6 +14,7 @@ import { PasswordInput } from "@/components/auth/PasswordInput"
 import { PrimaryButton } from "@/components/auth/PrimaryButton"
 import { Divider } from "@/components/auth/Divider"
 import { SocialButton } from "@/components/auth/SocialButton"
+import { NeedHelpLink } from "@/components/auth/NeedHelpLink"
 
 function SignupFormContent() {
   const router = useRouter()
@@ -285,8 +286,10 @@ function SignupFormContent() {
           className="text-[#6D4CFF] hover:text-[#5A3EE0] font-extrabold hover:underline cursor-pointer"
         >
           {lang === "fr" ? "Se connecter" : "Sign In"}
-        </button>
-      </div>
+          </button>
+        </div>
+
+        <NeedHelpLink />
     </motion.div>
   )
 }
