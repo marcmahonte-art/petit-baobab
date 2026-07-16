@@ -24,17 +24,16 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-[280px] relative flex flex-col h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
+    <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
       <div>
         {/* Logo Section */}
-        <div className="h-[110px] flex items-center px-1">
+        <div className="h-[96px] flex items-center px-1">
           <Image
             src="/illustrations/logo-petit-baobab.webp"
             alt="Petit Baobab"
-            width={240}
-            height={80}
-            className="w-auto h-[80px] object-contain"
-            style={{ width: "auto", height: "80px" }}
+            width={168}
+            height={56}
+            className="w-auto h-[56px] object-contain"
             priority
           />
         </div>
@@ -52,7 +51,7 @@ export function Sidebar() {
                   isActive && "active bg-[#FFE08A]"
                 )}
               >
-                <item.icon className={cn("w-5.5 h-5.5", isActive ? "text-[#3B2416]" : "text-[#7A6A5E]")} />
+                <item.icon className={cn("w-5 h-5", isActive ? "text-[#3B2416]" : "text-[#7A6A5E]")} />
                 <span
                   className={cn(
                     "text-[15px] font-bold",

@@ -34,7 +34,7 @@ export default function FinalCtaBanner() {
               onClick={() =>
                 user
                   ? router.push("/dashboard")
-                  : router.push("/login?tab=signup")
+                  : router.push("/signup")
               }
               className="h-[52px] px-7 bg-white text-[#7D6AF8] font-bold rounded-full hover:bg-white/90 transition-colors cursor-pointer"
             >

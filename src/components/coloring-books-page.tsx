@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   BookOpen,
   ChevronDown,
@@ -27,10 +27,33 @@ import {
   Zap,
   Flame,
   Package,
-  TreePine
+  Ruler,
+  Compass,
+  FileText,
+  HardDrive,
+  PawPrint,
+  Leaf,
+  Flag,
+  Pencil,
+  Save,
+  Contrast,
+  Minus,
+  Palette,
+  Ban,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { useBookPdf } from "@/features/coloring-book/hooks/useBookPdf"
+import { getDrawingSvg } from "@/lib/pdf/drawingSvgCache"
+import { toColoringBook } from "@/features/coloring-book/lib/bookModel"
+import { BookPrint } from "@/features/coloring-book/components/BookPrint"
+import { BookIndex } from "@/features/coloring-book/components/BookIndex"
+import { PrintButton } from "@/features/coloring-book/components/PrintButton"
+import { DownloadButton } from "@/features/coloring-book/components/DownloadButton"
+import { BookProvider } from "@/features/coloring-book/context/BookContext"
+import type { ColoringBook } from "@/features/coloring-book/types/ColoringBook"
+import "@/features/coloring-book/print/print.css"
+import * as Progress from "@radix-ui/react-progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -47,8 +70,11 @@ import { BookStepper } from "@/features/coloring-book/components/BookStepper"
 import { useProfileStore } from "@/lib/profile-store"
 import { storageService } from "@/lib/storageService"
 import { bookService } from "@/features/books"
+import type { CoverTemplate, CoverPalette, BookStyle, BookFrame, BookFormat, BookOrientation } from "@/features/books/types"
 
 export function ColoringBooksPage() {
+  const bookIdRef = useRef<string | null>(null)
+
   const {
     activeStep,
     setActiveStep,
@@ -100,8 +126,6 @@ export function ColoringBooksPage() {
     setCutMarks,
     bindingMargin,
     setBindingMargin,
-    currentChild,
-    setCurrentChild,
     isPreviewOpen,
     setIsPreviewOpen,
     zoomScale,
@@ -123,9 +147,18 @@ export function ColoringBooksPage() {
     validate,
   } = useBookWizard()
 
+  const activeProfileId = useProfileStore((s) => s.activeProfileId)
   const viewerContainerRef = useRef<HTMLDivElement>(null)
   const generationTimerRef = useRef<number | null>(null)
-  const [isPrintableBookOpen, setIsPrintableBookOpen] = useState(false)
+  const [step2Tab, setStep2Tab] = useState<"couverture" | "style" | "format" | "options">("couverture")
+
+  const { status: genStatus, error: genError, generate } = useBookPdf()
+
+  // Modèle de domaine unique consommé par l'impression et le PDF.
+  const book: ColoringBook = useMemo(
+    () => toColoringBook(useBookStore.getState()),
+    [bookPages, title, subtitle, author, childName, selectedCover, selectedPalette, drawingStyle, decorativeFrame, bookFormat, orientation, pageNumbers, addTitlePage, belongsTo, optimizeInk, rectoOnly, cutMarks, bindingMargin, bleed],
+  )
 
   const [savedDrawings, setSavedDrawings] = useState<SavedDrawing[]>([])
 
@@ -157,23 +190,21 @@ export function ColoringBooksPage() {
       image: draw.isColored ? draw.image : draw.template.image,
       category: draw.category,
       isPersonal: draw.isColored,
+      svg: draw.isColored ? getDrawingSvg(draw.id) : undefined,
     })),
   ]
 
-  // Switch to Child values when child changes
+  // Auto-fill book info from active profile (only when no book has been loaded)
   useEffect(() => {
-    if (currentChild === "awa") {
-      setChildName("Awa")
-      setAuthor("Maman & Awa")
-      setTitle("Animaux de Awa")
-    } else if (currentChild === "kofi") {
-      setChildName("Kofi")
-      setAuthor("Papa & Kofi")
-      setTitle("Aventures de Kofi")
+    if (title && title !== "Coloriages de ") return
+    const profile = useProfileStore.getState().profiles.find((p) => p.id === useProfileStore.getState().activeProfileId)
+    if (profile) {
+      setChildName(profile.name)
+      setAuthor(`Maman & ${profile.name}`)
+      setTitle(`Coloriages de ${profile.name}`)
     }
-  // The setters are store actions; this effect intentionally tracks the selected child only.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild])
+  }, [activeProfileId])
 
   useEffect(() => {
     return () => {
@@ -225,6 +256,7 @@ export function ColoringBooksPage() {
       if (!validate()) return
       setActiveStep(next)
       if (next === 4) {
+        saveBookToLibrary()
         handleStartGeneration()
       }
     }
@@ -252,220 +284,60 @@ export function ColoringBooksPage() {
     const matchesCategory = selectedCat === "all" || drawing.category === selectedCat
     return matchesSearch && matchesCategory
   })
-
-
-  const handleDownloadPdf = async () => {
-    setIsPrintableBookOpen(true)
-    setCurrentBookPage(0)
-
-    try {
-      const dims: Record<string, [number, number]> = {
-        A4: [210, 297],
-        A5: [148, 210],
-        Letter: [216, 279],
-        "Carré": [210, 210],
-      }
-      const baseDims = dims[bookFormat] || [210, 297]
-      const isLandscape = orientation === "Paysage"
-      const pw = isLandscape ? baseDims[1] : baseDims[0]
-      const ph = isLandscape ? baseDims[0] : baseDims[1]
-
-      const { jsPDF } = await import("jspdf")
-      const doc = new jsPDF({
-        orientation: isLandscape ? "landscape" : "portrait",
-        unit: "mm",
-        format: [pw, ph],
-      })
-
-      const DPI = 300
-      const MM_PER_INCH = 25.4
-      const margin = 18
-      const headerH = 12
-      const footerH = 10
-      const imgAreaW = pw - margin * 2
-      const imgAreaH = ph - margin * 2 - headerH - footerH - 4
-      const targetCanvasW = Math.round(imgAreaW / MM_PER_INCH * DPI)
-      const targetCanvasH = Math.round(imgAreaH / MM_PER_INCH * DPI)
-
-      const renderImageAtDpi = (url: string): Promise<string | null> => {
-        return new Promise((resolve) => {
-          const img = new window.Image()
-          img.crossOrigin = "anonymous"
-          img.onload = () => {
-            const canvas = document.createElement("canvas")
-            canvas.width = targetCanvasW
-            canvas.height = targetCanvasH
-            const ctx = canvas.getContext("2d")
-            if (!ctx) { resolve(null); return }
-            ctx.fillStyle = "#FFFFFF"
-            ctx.fillRect(0, 0, targetCanvasW, targetCanvasH)
-            const iw = img.naturalWidth || targetCanvasW
-            const ih = img.naturalHeight || targetCanvasH
-            const scale = Math.min(targetCanvasW / iw, targetCanvasH / ih)
-            const dw = Math.round(iw * scale)
-            const dh = Math.round(ih * scale)
-            const dx = Math.round((targetCanvasW - dw) / 2)
-            const dy = Math.round((targetCanvasH - dh) / 2)
-            ctx.drawImage(img, dx, dy, dw, dh)
-            resolve(canvas.toDataURL("image/png"))
-          }
-          img.onerror = () => resolve(null)
-          const absUrl = url.startsWith("data:") || url.startsWith("http") ? url : `${window.location.origin}${url}`
-          img.src = absUrl
-        })
-      }
-
-      const pageImages = await Promise.all(
-        bookPages.map(async (page) => {
-          if (page.type !== "drawing" || !page.image) return null
-          return renderImageAtDpi(page.image)
-        })
-      )
-
-      for (let i = 0; i < bookPages.length; i++) {
-        if (i > 0) doc.addPage()
-
-        const page = bookPages[i]
-
-        if (page.type === "cover") {
-          const cx = pw / 2
-          doc.setFontSize(22)
-          doc.text("LIVRE DE COLORIAGE", cx, 50, { align: "center" })
-          doc.setFontSize(14)
-          doc.text(`"${title || "Mon livre"}"`, cx, 80, { align: "center" })
-          doc.setFontSize(12)
-          doc.text(`Auteur : ${author || "Anonyme"}`, cx, 110, { align: "center" })
-          doc.text(`Enfant : ${childName || "Awa"}`, cx, 130, { align: "center" })
-          doc.setFontSize(10)
-          doc.text(`${bookFormat} - ${orientation}`, cx, 155, { align: "center" })
-          doc.text(`${totalPagesCount} pages (${selectedIds.length} dessins)`, cx, 170, { align: "center" })
-        } else if (page.type === "belongs_to") {
-          const cx = pw / 2
-          doc.setFontSize(16)
-          doc.text("Ce livre appartient a", cx, 80, { align: "center" })
-          doc.setFontSize(30)
-          doc.text(childName || "Awa", cx, 125, { align: "center" })
-          doc.setFontSize(11)
-          doc.text("Prepare tes crayons et amuse-toi bien !", cx, 155, { align: "center" })
-        } else {
-          doc.setFontSize(10)
-          doc.text(page.label || "Coloriage", margin, margin + 5)
-
-          const imgData = pageImages[i]
-          if (imgData) {
-            doc.addImage(imgData, "PNG", margin, margin + headerH + 2, imgAreaW, imgAreaH)
-          } else {
-            doc.setFontSize(12)
-            doc.text("Image non disponible", pw / 2, ph / 2, { align: "center" })
-          }
-
-          doc.setFontSize(8)
-          doc.text("Petit Baobab", pw / 2, ph - margin, { align: "center" })
-        }
-      }
-
-      const safeTitle = (title || "livre-coloriage").toLowerCase().replace(/[^a-z0-9]+/g, "-")
-      const pdfBlob = doc.output("blob")
-      
-      const profileId = useProfileStore.getState().activeProfileId || "anonymous"
-      const bookId = crypto.randomUUID()
-      
-      let pdfUrl = ""
-      let coverImageUrl = ""
-      try {
-        pdfUrl = await storageService.uploadBookPdf(pdfBlob, profileId, bookId)
-
-        // Capture cover illustration as PNG
-        try {
-          const coverContainer = document.querySelector("#book-cover-preview")
-          const svgEl = coverContainer?.querySelector("svg:not(.absolute)") as SVGElement
-          if (svgEl) {
-            const svgString = new XMLSerializer().serializeToString(svgEl)
-            const defsSvg = coverContainer?.querySelector("svg.absolute")
-            let finalSvgString = svgString
-            if (defsSvg) {
-              const defsString = new XMLSerializer().serializeToString(defsSvg)
-              finalSvgString = svgString.replace("<svg", `<svg>${defsString}`)
-            }
-            const svgBlob = new Blob([finalSvgString], { type: "image/svg+xml;charset=utf-8" })
-            const svgUrl = URL.createObjectURL(svgBlob)
-
-            const img = new window.Image()
-            const coverBlob = await new Promise<Blob | null>((resolve) => {
-              img.onload = () => {
-                const canvas = document.createElement("canvas")
-                canvas.width = 400
-                canvas.height = 400
-                const ctx = canvas.getContext("2d")
-                if (!ctx) { resolve(null); return }
-                ctx.fillStyle = "#FFFFFF"
-                ctx.fillRect(0, 0, 400, 400)
-                ctx.drawImage(img, 0, 0, 400, 400)
-                canvas.toBlob((blob) => resolve(blob), "image/png")
-              }
-              img.onerror = () => resolve(null)
-              img.src = svgUrl
-            })
-
-            URL.revokeObjectURL(svgUrl)
-            if (coverBlob) {
-              coverImageUrl = await storageService.uploadBookCover(coverBlob, profileId, bookId)
-            }
-          }
-        } catch (coverErr) {
-          console.warn("Failed to generate and upload book cover PNG:", coverErr)
-        }
-        
-        const pagesRef = selectedIds.map((id, idx) => ({
-          drawingId: id,
-          pageNumber: idx + 1,
-        }))
-
-        const now = new Date().toISOString()
-        await bookService.save({
-          id: bookId,
-          title: title || "Mon livre de coloriage",
-          subtitle: subtitle || "",
-          author: author || "Auteur",
-          childName: childName || "Enfant",
-          cover: selectedCover as any,
-          palette: selectedPalette as any,
-          style: drawingStyle as any,
-          frame: decorativeFrame as any,
-          format: bookFormat as any,
-          orientation: orientation as any,
-          pages: pagesRef,
-          status: "finalized",
-          pdfUrl: pdfUrl,
-          coverImageUrl: coverImageUrl,
-          profileId: profileId,
-          createdAt: now,
-          updatedAt: now,
-        })
-      } catch (uploadErr) {
-        console.error("Failed to upload book PDF to Supabase Storage:", uploadErr)
-      }
-
-      // Local download
-      doc.save(`${safeTitle}-petit-baobab.pdf`)
-    } catch (err) {
-      console.error("Failed to generate PDF", err)
-    }
+  const handleDownloadPdf = () => {
+    void generate(book)
   }
 
-  const handlePrintPdf = () => {
-    window.print()
-  }
+
   // Save configurations simulation
   const handleSaveConfigs = () => {
+    saveBookToLibrary()
     import("canvas-confetti").then((module) => {
       const confetti = module.default
       confetti({
         particleCount: 50,
         spread: 40,
-        colors: ["#7D6AF8", "#20C997", "#FFD95C"]
+        colors: ["#6D4CFF", "#20C997", "#FFD95C"]
       })
     })
+  }
+
+  // Save book to library as draft
+  const saveBookToLibrary = async () => {
+    try {
+      const profileId = useProfileStore.getState().activeProfileId || "anonymous"
+      const bookId = bookIdRef.current || crypto.randomUUID()
+      bookIdRef.current = bookId
+
+      const pagesRef = selectedIds.map((id, idx) => ({
+        drawingId: id,
+        pageNumber: idx + 1,
+      }))
+
+      const now = new Date().toISOString()
+      await bookService.save({
+        id: bookId,
+        title: title || "Mon livre de coloriage",
+        subtitle: subtitle || "",
+        author: author || "Auteur",
+        childName: childName || "Enfant",
+        cover: selectedCover as CoverTemplate,
+        palette: selectedPalette as CoverPalette,
+        style: drawingStyle as BookStyle,
+        frame: decorativeFrame as BookFrame,
+        format: bookFormat as BookFormat,
+        orientation: orientation as BookOrientation,
+        pages: pagesRef,
+        status: "draft",
+        pdfUrl: "",
+        coverImageUrl: "",
+        profileId: profileId,
+        createdAt: now,
+        updatedAt: now,
+      })
+    } catch (err) {
+      console.error("Failed to save book to library:", err)
+    }
   }
 
   // Reset to fitting scale
@@ -473,10 +345,25 @@ export function ColoringBooksPage() {
     setZoomScale(1.0)
   }
 
+  // Auto-trigger download or print from query param (?action=download | ?action=print)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const action = params.get("action")
+    if (action === "print") {
+      const timer = setTimeout(() => window.print(), 500)
+      return () => clearTimeout(timer)
+    }
+    if (action === "download") {
+      const timer = setTimeout(handleDownloadPdf, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
   return (
-    <div className="w-full flex flex-col gap-6 select-none font-sans text-[#1F2937] bg-[#FFFDF7] p-2 sm:p-4 rounded-[32px] min-h-screen">
+    <BookProvider>
+    <div className="no-print w-full flex flex-col gap-6 select-none font-sans text-[#1F2937] bg-[#FFFDF7] p-2 sm:p-4 rounded-[32px] min-h-screen">
       
-      <BookHeader currentChild={currentChild} setCurrentChild={setCurrentChild} />
+      <BookHeader />
 
       <BookStepper
         activeStep={activeStep}
@@ -534,7 +421,7 @@ export function ColoringBooksPage() {
                               : "bg-white border-[#E5E7EB] text-[#64748B] hover:bg-neutral-50"
                           )}
                         >
-                          <span>{cat.icon}</span>
+                          <cat.icon className="w-4 h-4" />
                           <span>{cat.label}</span>
                         </button>
                       ))}
@@ -656,7 +543,14 @@ export function ColoringBooksPage() {
                       ))}
                     </AnimatePresence>
 
-                    <div className="w-[80px] h-[100px] rounded-xl border-2 border-dashed border-[#E5E7EB] hover:border-[#6D4CFF]/50 flex flex-col items-center justify-center gap-1 bg-[#FAFAFC]/40 cursor-pointer shrink-0 transition-colors">
+                    <div
+                      onClick={() => {
+                        const searchInput = document.querySelector<HTMLInputElement>('[placeholder="Rechercher un dessin"]')
+                        searchInput?.focus()
+                        searchInput?.scrollIntoView({ behavior: "smooth", block: "center" })
+                      }}
+                      className="w-[80px] h-[100px] rounded-xl border-2 border-dashed border-[#E5E7EB] hover:border-[#6D4CFF]/50 flex flex-col items-center justify-center gap-1 bg-[#FAFAFC]/40 cursor-pointer shrink-0 transition-colors"
+                    >
                       <Plus className="w-5 h-5 text-[#64748B]" />
                       <span className="text-[10px] font-bold text-[#64748B]">Ajouter plus</span>
                     </div>
@@ -664,7 +558,10 @@ export function ColoringBooksPage() {
 
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} className="mt-4">
                     <Button 
-                      onClick={() => setActiveStep(2)}
+                      onClick={() => {
+                        if (!validate()) return
+                        setActiveStep(2)
+                      }}
                       disabled={selectedIds.length === 0}
                       className="w-full h-[52px] rounded-[18px] bg-[#22C55E] text-white hover:bg-[#22C55E]/90 font-bold text-sm flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer disabled:opacity-50"
                     >
@@ -697,7 +594,10 @@ export function ColoringBooksPage() {
 
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="w-full">
                     <Button 
-                      onClick={() => setActiveStep(2)}
+                      onClick={() => {
+                        if (!validate()) return
+                        setActiveStep(2)
+                      }}
                       variant="outline" 
                       className="w-full h-11 rounded-[16px] border border-[#6D4CFF]/20 text-[#6D4CFF] font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#6D4CFF]/5 bg-transparent cursor-pointer"
                     >
@@ -707,41 +607,6 @@ export function ColoringBooksPage() {
                   </motion.div>
                 </Card>
 
-                {/* Quick book options for Step 1 */}
-                <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-6 bg-white shadow-sm flex flex-col gap-4">
-                  <h3 className="text-[16px] font-extrabold text-[#1F2937]">
-                    Options rapides
-                  </h3>
-
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Format</label>
-                      <select
-                        value={bookFormat}
-                        onChange={(e) => setBookFormat(e.target.value)}
-                        className="w-full h-11 px-3 rounded-[12px] border border-[#E5E7EB] bg-[#FAFAFC] text-xs font-bold text-[#1F2937] focus:outline-none focus:ring-1 focus:ring-[#6D4CFF] cursor-pointer"
-                      >
-                        <option value="A4">A4 (21 x 29.7 cm)</option>
-                        <option value="A5">A5 (14.8 x 21 cm)</option>
-                        <option value="Letter">US Letter (21.6 x 27.9 cm)</option>
-                        <option value="Carré">Carré (21 x 21 cm)</option>
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Orientation</label>
-                      <select
-                        value={orientation}
-                        onChange={(e) => setOrientation(e.target.value)}
-                        className="w-full h-11 px-3 rounded-[12px] border border-[#E5E7EB] bg-[#FAFAFC] text-xs font-bold text-[#1F2937] focus:outline-none focus:ring-1 focus:ring-[#6D4CFF] cursor-pointer"
-                      >
-                        <option value="Portrait">Portrait</option>
-                        <option value="Paysage">Paysage</option>
-                        <option value="Carré">Carré</option>
-                      </select>
-                    </div>
-                  </div>
-                </Card>
               </div>
 
               {/* ================= STEP 1: COLONNE DROITE ================= */}
@@ -787,7 +652,10 @@ export function ColoringBooksPage() {
                     <div className="flex flex-col gap-3 mt-2">
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
                         <Button 
-                          onClick={() => setActiveStep(2)}
+                          onClick={() => {
+                            if (!validate()) return
+                            setActiveStep(2)
+                          }}
                           disabled={selectedIds.length === 0}
                           className="w-full h-11 rounded-[16px] bg-[#22C55E] text-white hover:bg-[#22C55E]/90 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md border-none cursor-pointer disabled:opacity-50"
                         >
@@ -826,10 +694,8 @@ export function ColoringBooksPage() {
               transition={{ duration: 0.2 }}
               className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8 items-start"
             >
-              {/* ================= STEP 2: COLONNE GAUCHE (FORMULAIRE) ================= */}
-              <div className="flex flex-col gap-8">
-                
-                {/* Mobile Preview Accordion (Collapsible) */}
+              <div className="flex flex-col gap-6">
+                {/* Mobile Preview Accordion */}
                 <div className="lg:hidden w-full">
                   <Card className="rounded-[24px] border border-[#E5E7EB] bg-white shadow-md overflow-hidden">
                     <button
@@ -837,12 +703,11 @@ export function ColoringBooksPage() {
                       className="w-full flex items-center justify-between p-5 bg-neutral-50/50 hover:bg-neutral-50 transition-colors font-extrabold text-sm text-[#1F2937] focus:outline-none"
                     >
                       <span className="flex items-center gap-2">
-                        <Eye className="w-5 h-5 text-[#7D6AF8]" />
-                        <span><Search className="w-3.5 h-3.5 inline-block mr-1" /> Voir l&apos;aperçu en direct ({selectedIds.length} dessins)</span>
+                        <Eye className="w-5 h-5 text-[#6D4CFF]" />
+                        <span>Aperçu en direct ({selectedIds.length} dessins)</span>
                       </span>
                       {isPreviewOpen ? <ChevronUp className="w-5 h-5 text-[#64748B]" /> : <ChevronDown className="w-5 h-5 text-[#64748B]" />}
                     </button>
-
                     <AnimatePresence>
                       {isPreviewOpen && (
                         <motion.div
@@ -862,12 +727,11 @@ export function ColoringBooksPage() {
                             decorativeFrame={decorativeFrame}
                             orientation={orientation}
                           />
-
                           <div className="grid grid-cols-2 gap-3 text-xs font-semibold bg-white p-4 rounded-xl border border-neutral-100">
-                            <div><BookOpen className="w-3.5 h-3.5 inline-block mr-1" /> Pages: <span className="font-extrabold text-[#7D6AF8]">{totalPagesCount} pages</span></div>
+                            <div><BookOpen className="w-3.5 h-3.5 inline-block mr-1" /> Pages: <span className="font-extrabold text-[#6D4CFF]">{totalPagesCount} pages</span></div>
                             <div><Package className="w-3.5 h-3.5 inline-block mr-1" /> Poids: <span className="font-extrabold text-[#20C997]">{calculatedPdfWeight} MB</span></div>
-                            <div>📐 Format: <span className="font-extrabold text-[#FFB300]">{bookFormat}</span></div>
-                            <div>🧭 Orientation: <span className="font-extrabold text-[#1194FF]">{orientation}</span></div>
+                            <div><Ruler className="w-3.5 h-3.5 inline-block mr-1" /> Format: <span className="font-extrabold text-[#FFB300]">{bookFormat}</span></div>
+                            <div><Compass className="w-3.5 h-3.5 inline-block mr-1" /> Orientation: <span className="font-extrabold text-[#1194FF]">{orientation}</span></div>
                           </div>
                         </motion.div>
                       )}
@@ -875,492 +739,444 @@ export function ColoringBooksPage() {
                   </Card>
                 </div>
 
-                {/* SECTION 1: Informations */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">1</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Informations du livre</h3>
-                  </div>
+                {/* Pill tabs */}
+                <div className="flex gap-1.5 bg-white p-1.5 rounded-[20px] border border-[#E5E7EB]/80 shadow-sm overflow-x-auto no-scrollbar">
+                  {[
+                    { id: "couverture", label: "Couverture", icon: BookOpen },
+                    { id: "style", label: "Style", icon: Eye },
+                    { id: "format", label: "Format", icon: Package },
+                    { id: "options", label: "Options", icon: Plus },
+                  ].map((tab) => {
+                    const Icon = tab.icon
+                    const active = step2Tab === tab.id
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setStep2Tab(tab.id as typeof step2Tab)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer",
+                          active
+                            ? "bg-[#6D4CFF] text-white shadow-md"
+                            : "text-[#64748B] hover:text-[#1F2937] hover:bg-[#F3EFFF]"
+                        )}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    )
+                  })}
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider flex items-center gap-1">
-                        Titre du livre <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        maxLength={50}
-                        placeholder="Ex : Les animaux de la savane"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="h-[52px] rounded-[16px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#7D6AF8]"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Sous-titre</label>
-                      <Input
-                        maxLength={50}
-                        placeholder="Ex : Mon super livre de coloriage"
-                        value={subtitle}
-                        onChange={(e) => setSubtitle(e.target.value)}
-                        className="h-[52px] rounded-[16px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#7D6AF8]"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Auteur</label>
-                      <Input
-                        placeholder="Ex : Maman & Awa"
-                        value={author}
-                        onChange={(e) => setAuthor(e.target.value)}
-                        className="h-[52px] rounded-[16px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#7D6AF8]"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Nom de l&apos;enfant</label>
-                      <Input
-                        placeholder="Ex : Awa"
-                        value={childName}
-                        onChange={(e) => setChildName(e.target.value)}
-                        className="h-[52px] rounded-[16px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#7D6AF8]"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* SECTION 2: Choisir une couverture */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">2</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Choisir une couverture</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
-                      { id: "petit-baobab", name: "Petit Baobab", color: "from-[#FFE5B4] to-[#FFF9E5]" },
-                      { id: "savane", name: "Savane", color: "from-[#FFEAA7] to-[#FFF5CC]" },
-                      { id: "ecole", name: "🏫 École", color: "from-[#D2EAFF] to-[#E6F4FF]" },
-                      { id: "afrique", name: "Afrique", color: "from-[#FCDDEC] to-[#FFF0F7]" },
-                      { id: "coloree", name: "Colorée", color: "from-[#D5F5E3] to-[#E8F8F5]" },
-                      { id: "ia", name: "Générée par IA", color: "from-[#E8DAEF] to-[#F4ECF7]" },
-                    ].map((cov) => {
-                      const isSelected = selectedCover === cov.id
-                      return (
-                        <motion.button
-                          key={cov.id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedCover(cov.id)}
-                          className={cn(
-                            "h-[120px] rounded-[18px] border p-3 flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-200 bg-white relative overflow-hidden",
-                            isSelected 
-                              ? "border-[2px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/15" 
-                              : "border-[#E5E7EB] hover:border-[#7D6AF8]/40"
-                          )}
-                        >
-                          <div className={cn("w-full h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-xl", cov.color)}>
-                            {cov.name.split(" ")[0]}
+                {/* Tab content */}
+                <AnimatePresence mode="wait">
+                  {/* ---- COUVERTURE TAB ---- */}
+                  {step2Tab === "couverture" && (
+                    <motion.div
+                      key="tab-couverture"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex flex-col gap-5"
+                    >
+                      {/* Book info - compact card */}
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider flex items-center gap-1">
+                              Titre <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                              maxLength={50}
+                              placeholder="Ex: Les animaux de la savane"
+                              value={title}
+                              onChange={(e) => setTitle(e.target.value)}
+                              className="h-[44px] rounded-[14px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#6D4CFF]"
+                            />
                           </div>
-                          <span className="text-xs font-black text-[#1F2937] leading-none mt-2">
-                            {cov.name.split(" ").slice(1).join(" ")}
-                          </span>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 3: Palette */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">3</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Palette de couleurs</h3>
-                  </div>
-
-                  <div className="flex items-center gap-4 flex-wrap">
-                    {[
-                      { name: "Purple", color: "bg-[#7D6AF8]" },
-                      { name: "Green", color: "bg-[#20C997]" },
-                      { name: "Yellow", color: "bg-[#FFD95C]" },
-                      { name: "Orange", color: "bg-[#FFB300]" },
-                      { name: "Blue", color: "bg-[#1194FF]" },
-                      { name: "Pink", color: "bg-[#FF5E83]" },
-                      { name: "Turquoise", color: "bg-[#13C6A2]" },
-                      { name: "Multicolore", color: "bg-gradient-to-br from-[#FF5E83] via-[#FFD95C] via-[#20C997] to-[#7D6AF8]" },
-                    ].map((pal) => {
-                      const isSelected = selectedPalette === pal.name
-                      return (
-                        <motion.button
-                          key={pal.name}
-                          whileHover={{ scale: 1.08 }}
-                          whileTap={{ scale: 0.92 }}
-                          onClick={() => setSelectedPalette(pal.name)}
-                          className={cn(
-                            "w-10 h-10 rounded-full cursor-pointer relative transition-all duration-150 shadow-sm border border-neutral-200/50",
-                            pal.color,
-                            isSelected ? "ring-4 ring-[#7D6AF8] ring-offset-2 scale-105" : "hover:ring-2 hover:ring-[#7D6AF8]/50"
-                          )}
-                          title={pal.name}
-                        >
-                          {isSelected && (
-                            <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-black drop-shadow">
-                              ✓
-                            </span>
-                          )}
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 4: Style du dessin */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">4</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Style du dessin</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      { name: "Contour simple", desc: "Trait propre", emoji: "✎" },
-                      { name: "Noir & Blanc détaillé", desc: "Ombrages", emoji: "◐" },
-                      { name: "Contours épais", desc: "Pour les petits", emoji: "▬" },
-                      { name: "Version couleur", desc: "Livre coloré", emoji: "◉" },
-                    ].map((style) => {
-                      const isSelected = drawingStyle === style.name
-                      return (
-                        <motion.button
-                          key={style.name}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setDrawingStyle(style.name)}
-                          className={cn(
-                            "aspect-square rounded-[18px] border p-3 flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-200 bg-white",
-                            isSelected
-                              ? "border-[2px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/15"
-                              : "border-[#E5E7EB] hover:border-[#7D6AF8]/40"
-                          )}
-                        >
-                          <span className="text-2xl mt-1">{style.emoji}</span>
-                          <div className="flex flex-col gap-0.5 leading-none">
-                            <span className="text-[11px] font-black text-[#1F2937]">{style.name}</span>
-                            <span className="text-[9px] font-semibold text-[#64748B]">{style.desc}</span>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider">Enfant</label>
+                            <Input
+                              placeholder="Ex: Awa"
+                              value={childName}
+                              onChange={(e) => setChildName(e.target.value)}
+                              className="h-[44px] rounded-[14px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#6D4CFF]"
+                            />
                           </div>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 5: Épaisseur des contours */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">5</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Épaisseur des contours</h3>
-                  </div>
-
-                  <div className="flex flex-col gap-4 mt-2">
-                    <div className="flex justify-between items-center text-xs font-black text-[#64748B]">
-                      <span>Fin</span>
-                      <span className="text-sm font-extrabold text-[#7D6AF8] bg-[#7D6AF8]/10 px-2.5 py-1 rounded-full">
-                        Valeur : {contourThickness}%
-                      </span>
-                      <span>Épais</span>
-                    </div>
-
-                    <Slider
-                      value={[contourThickness]}
-                      onValueChange={(val) => setContourThickness(val[0])}
-                      max={100}
-                      step={1}
-                      className="cursor-pointer py-2"
-                    />
-                  </div>
-                </motion.div>
-
-                {/* SECTION 6: Format */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">6</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Format du livre</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      { id: "A4", name: "A4", dim: "21.0 x 29.7 cm", size: "Grand standard" },
-                      { id: "A5", name: "A5", dim: "14.8 x 21.0 cm", size: "Compact" },
-                      { id: "Letter", name: "US Letter", dim: "21.6 x 27.9 cm", size: "Format US" },
-                      { id: "Carré", name: "Carré", dim: "21.0 x 21.0 cm", size: "Créatif" },
-                    ].map((f) => {
-                      const isSelected = bookFormat === f.id
-                      return (
-                        <motion.button
-                          key={f.id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setBookFormat(f.id)}
-                          className={cn(
-                            "p-4 rounded-[18px] border text-center flex flex-col justify-between items-center cursor-pointer transition-all duration-200 bg-white",
-                            isSelected
-                              ? "border-[2px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/15"
-                              : "border-[#E5E7EB] hover:border-[#7D6AF8]/40"
-                          )}
-                        >
-                          <span className="text-[14px] font-black text-[#1F2937]">{f.name}</span>
-                          <div className="flex flex-col gap-0.5 leading-none mt-2">
-                            <span className="text-[10px] font-extrabold text-[#7A6A5E]">{f.dim}</span>
-                            <span className="text-[8px] font-bold text-[#64748B] mt-0.5">{f.size}</span>
-                          </div>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 7: Orientation */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">7</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Orientation</h3>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { id: "Portrait", name: "Portrait", desc: "Vertical" },
-                      { id: "Paysage", name: "Paysage", desc: "Horizontal" },
-                      { id: "Carré", name: "Carré", desc: "1:1 Symétrique" },
-                    ].map((o) => {
-                      const isSelected = orientation === o.id
-                      return (
-                        <motion.button
-                          key={o.id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setOrientation(o.id)}
-                          className={cn(
-                            "p-4 rounded-[18px] border text-center flex flex-col justify-between items-center cursor-pointer transition-all duration-200 bg-white",
-                            isSelected
-                              ? "border-[2px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/15"
-                              : "border-[#E5E7EB] hover:border-[#7D6AF8]/40"
-                          )}
-                        >
-                          <span className="text-xs font-black text-[#1F2937]">{o.name}</span>
-                          <span className="text-[9px] font-bold text-[#64748B] mt-1">{o.desc}</span>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 8: Cadre décoratif */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">8</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Cadre décoratif</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
-                      { id: "Faso Dan Fani", name: "🇧🇫 Faso Dan Fani", desc: "Bordure tissée" },
-                      { id: "Bogolan", name: "🇲🇱 Bogolan", desc: "Motifs en terre" },
-                      { id: "Nature", name: "🌿 Nature", desc: "Feuilles et lianes" },
-                      { id: "Savane", name: "Savane", desc: "Silhouettes sauvages" },
-                      { id: "Animaux", name: "🐾 Animaux", desc: "Empreintes de pattes" },
-                      { id: "Aucun", name: "⬜ Aucun", desc: "Sans cadre" },
-                    ].map((frame) => {
-                      const isSelected = decorativeFrame === frame.id
-                      return (
-                        <motion.button
-                          key={frame.id}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setDecorativeFrame(frame.id)}
-                          className={cn(
-                            "h-[90px] rounded-[18px] border p-3 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 bg-white",
-                            isSelected
-                              ? "border-[2px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/15"
-                              : "border-[#E5E7EB] hover:border-[#7D6AF8]/40"
-                          )}
-                        >
-                          <span className="text-xs font-black text-[#1F2937] leading-tight">{frame.name}</span>
-                          <span className="text-[9px] font-bold text-[#64748B] mt-1">{frame.desc}</span>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                {/* SECTION 9: Options */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">9</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Options additionnelles</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { state: pageNumbers, setter: setPageNumbers, title: "Numéroter les pages", desc: "Affiche le numéro en bas" },
-                      { state: addTitlePage, setter: setAddTitlePage, title: "Ajouter une page de garde", desc: "Page de couverture personnalisée" },
-                      { state: belongsTo, setter: setBelongsTo, title: 'Ajouter "Ce livre appartient à"', desc: "Page d'identification enfant" },
-                      { state: educationalText, setter: setEducationalText, title: "Ajouter un texte éducatif", desc: "Petites phrases pour apprendre" },
-                      { state: funFact, setter: setFunFact, title: "Ajouter un fait amusant", desc: "Anecdotes rigolotes sur le dessin" },
-                      { state: questions, setter: setQuestions, title: "Ajouter des questions", desc: "Mini-jeux et questions de fin" },
-                    ].map((opt, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-neutral-50 bg-[#FAFAFC]/65 shadow-sm">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-xs font-black text-[#1F2937]">{opt.title}</span>
-                          <span className="text-[9px] font-semibold text-[#64748B] mt-0.5">{opt.desc}</span>
                         </div>
-                        <button
-                          onClick={() => opt.setter(!opt.state)}
-                          className={cn(
-                            "w-[44px] h-[24px] rounded-full transition-colors relative shrink-0 focus:outline-none border border-[#E5E7EB] cursor-pointer",
-                            opt.state ? "bg-[#22C55E]" : "bg-neutral-200"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "absolute top-0.5 w-[18px] h-[18px] rounded-full bg-white transition-all shadow-sm",
-                              opt.state ? "left-[22px]" : "left-0.5"
-                            )}
-                          />
-                        </button>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
 
-                {/* SECTION 10: Impression */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45 }}
-                  className="bg-white rounded-[24px] border border-[#E5E7EB]/80 p-6 sm:p-8 shadow-xl/5 flex flex-col gap-5"
-                >
-                  <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <span className="w-8 h-8 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] flex items-center justify-center font-black text-sm">10</span>
-                    <h3 className="text-lg font-extrabold text-[#1F2937]">Options d&apos;impression</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { state: optimizeInk, setter: setOptimizeInk, title: "Optimiser l'encre", desc: "Lignes plus fines pour économiser" },
-                      { state: rectoOnly, setter: setRectoOnly, title: "Recto uniquement", desc: "Page blanche au verso pour feutres" },
-                      { state: cutMarks, setter: setCutMarks, title: "Repères de coupe", desc: "Lignes d'aide pour couper le papier" },
-                      { state: bindingMargin, setter: setBindingMargin, title: "Marge de reliure", desc: "Espace décalé à gauche pour agrafer" },
-                    ].map((opt, idx) => (
-                      <div key={idx} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-neutral-50 bg-[#FAFAFC]/65 shadow-sm">
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-xs font-black text-[#1F2937]">{opt.title}</span>
-                          <span className="text-[9px] font-semibold text-[#64748B] mt-0.5">{opt.desc}</span>
+                      {/* Cover templates - horizontal scroll */}
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Couverture</h4>
+                        <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+                          {[
+                            { id: "petit-baobab", name: "Petit Baobab", bg: "bg-[#FFF4DD]" },
+                            { id: "savane", name: "Savane", bg: "bg-[#FFF6E0]" },
+                            { id: "ecole", name: "École", bg: "bg-[#EAF3FF]" },
+                            { id: "afrique", name: "Afrique", bg: "bg-[#FDEAF3]" },
+                            { id: "coloree", name: "Colorée", bg: "bg-[#E6F8F0]" },
+                            { id: "ia", name: "Générée par IA", bg: "bg-[#F4ECF7]" },
+                          ].map((cov) => (
+                            <button
+                              key={cov.id}
+                              onClick={() => setSelectedCover(cov.id)}
+                              className={cn(
+                                "flex-shrink-0 w-[100px] rounded-[14px] border-2 p-3 flex flex-col items-center gap-2 cursor-pointer transition-all",
+                                selectedCover === cov.id
+                                  ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
+                                  : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
+                              )}
+                            >
+                              <div className={cn("w-full h-[52px] rounded-[10px] flex items-center justify-center overflow-hidden", cov.bg)}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`/illustrations/covers/cover-${cov.id}.svg`}
+                                  alt={cov.name}
+                                  className="w-full h-full object-contain p-1"
+                                />
+                              </div>
+                              <span className="text-[9px] font-bold text-[#1F2937] text-center leading-tight">{cov.name}</span>
+                            </button>
+                          ))}
                         </div>
-                        <button
-                          onClick={() => opt.setter(!opt.state)}
-                          className={cn(
-                            "w-[44px] h-[24px] rounded-full transition-colors relative shrink-0 focus:outline-none border border-[#E5E7EB] cursor-pointer",
-                            opt.state ? "bg-[#22C55E]" : "bg-neutral-200"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "absolute top-0.5 w-[18px] h-[18px] rounded-full bg-white transition-all shadow-sm",
-                              opt.state ? "left-[22px]" : "left-0.5"
-                            )}
-                          />
-                        </button>
                       </div>
-                    ))}
-                  </div>
-                </motion.div>
 
-                {/* ACTION BUTTONS (BOTTOM) */}
-                <div className="flex items-center justify-between gap-4 py-4 mt-2">
+                      {/* Palette */}
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Palette</h4>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {[
+                            { name: "Purple", color: "bg-[#6D4CFF]" },
+                            { name: "Green", color: "bg-[#20C997]" },
+                            { name: "Yellow", color: "bg-[#FFD95C]" },
+                            { name: "Orange", color: "bg-[#FFB300]" },
+                            { name: "Blue", color: "bg-[#1194FF]" },
+                            { name: "Pink", color: "bg-[#FF5E83]" },
+                            { name: "Turquoise", color: "bg-[#13C6A2]" },
+                            { name: "Multicolore", color: "bg-gradient-to-br from-[#FF5E83] via-[#FFD95C] via-[#20C997] to-[#6D4CFF]" },
+                          ].map((pal) => (
+                            <button
+                              key={pal.name}
+                              onClick={() => setSelectedPalette(pal.name)}
+                              className={cn(
+                                "w-8 h-8 rounded-full cursor-pointer transition-all border border-neutral-200/50",
+                                pal.color,
+                                selectedPalette === pal.name
+                                  ? "ring-3 ring-[#6D4CFF] ring-offset-2 scale-110"
+                                  : "hover:ring-2 hover:ring-[#6D4CFF]/50"
+                              )}
+                              title={pal.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Subtitle + Author inline (compact) */}
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider">Sous-titre</label>
+                            <Input
+                              maxLength={50}
+                              placeholder="Ex: Mon super livre"
+                              value={subtitle}
+                              onChange={(e) => setSubtitle(e.target.value)}
+                              className="h-[44px] rounded-[14px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#6D4CFF]"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider">Auteur</label>
+                            <Input
+                              placeholder="Ex: Maman & Awa"
+                              value={author}
+                              onChange={(e) => setAuthor(e.target.value)}
+                              className="h-[44px] rounded-[14px] border border-[#EFE7DB] bg-[#FAFAFC] px-4 font-bold text-sm text-[#1F2937] placeholder-[#64748B]/40 focus-visible:ring-1 focus-visible:ring-[#6D4CFF]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* ---- STYLE TAB ---- */}
+                  {step2Tab === "style" && (
+                    <motion.div
+                      key="tab-style"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex flex-col gap-5"
+                    >
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Style du dessin</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {[
+                            { name: "Contour simple", desc: "Trait propre", Icon: Pencil },
+                            { name: "Noir & Blanc détaillé", desc: "Ombrages", Icon: Contrast },
+                            { name: "Contours épais", desc: "Pour les petits", Icon: Minus },
+                            { name: "Version couleur", desc: "Livre coloré", Icon: Palette },
+                          ].map((st) => {
+                            const active = drawingStyle === st.name
+                            return (
+                              <button
+                                key={st.name}
+                                onClick={() => setDrawingStyle(st.name)}
+                                className={cn(
+                                  "rounded-[14px] border-2 p-3 flex flex-col items-center gap-1.5 cursor-pointer transition-all",
+                                  active
+                                    ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
+                                    : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
+                                )}
+                              >
+                                <st.Icon className="w-5 h-5 text-[#3B2416]" />
+                                <span className="text-[10px] font-black text-[#1F2937] text-center leading-tight">{st.name}</span>
+                                <span className="text-[8px] font-semibold text-[#64748B]">{st.desc}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider">Épaisseur des contours</h4>
+                          <span className="text-xs font-extrabold text-[#6D4CFF] bg-[#6D4CFF]/10 px-2.5 py-0.5 rounded-full">{contourThickness}%</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold text-[#64748B]">Fin</span>
+                          <Slider
+                            value={[contourThickness]}
+                            onValueChange={(val) => setContourThickness(val[0])}
+                            max={100}
+                            step={1}
+                            className="flex-1 cursor-pointer"
+                          />
+                          <span className="text-[10px] font-bold text-[#64748B]">Épais</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* ---- FORMAT TAB ---- */}
+                  {step2Tab === "format" && (
+                    <motion.div
+                      key="tab-format"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex flex-col gap-5"
+                    >
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Format</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {[
+                            { id: "A4", name: "A4", dim: "21 x 29.7 cm" },
+                            { id: "A5", name: "A5", dim: "14.8 x 21 cm" },
+                            { id: "Letter", name: "US Letter", dim: "21.6 x 27.9 cm" },
+                            { id: "Carré", name: "Carré", dim: "21 x 21 cm" },
+                          ].map((f) => {
+                            const active = bookFormat === f.id
+                            return (
+                              <button
+                                key={f.id}
+                                onClick={() => setBookFormat(f.id)}
+                                className={cn(
+                                  "rounded-[14px] border-2 p-3 flex flex-col items-center gap-1 cursor-pointer transition-all",
+                                  active
+                                    ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
+                                    : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
+                                )}
+                              >
+                                <span className="text-sm font-black text-[#1F2937]">{f.name}</span>
+                                <span className="text-[9px] font-bold text-[#64748B]">{f.dim}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Orientation</h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { id: "Portrait", name: "Portrait", desc: "Vertical" },
+                            { id: "Paysage", name: "Paysage", desc: "Horizontal" },
+                            { id: "Carré", name: "Carré", desc: "1:1" },
+                          ].map((o) => {
+                            const active = orientation === o.id
+                            return (
+                              <button
+                                key={o.id}
+                                onClick={() => setOrientation(o.id)}
+                                className={cn(
+                                  "rounded-[14px] border-2 p-3 flex flex-col items-center gap-1 cursor-pointer transition-all",
+                                  active
+                                    ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
+                                    : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
+                                )}
+                              >
+                                <span className="text-xs font-black text-[#1F2937]">{o.name}</span>
+                                <span className="text-[9px] font-bold text-[#64748B]">{o.desc}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Cadre décoratif</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {[
+                            { id: "Faso Dan Fani", name: "🇧🇫 Faso Dan Fani", desc: "Tissu" },
+                            { id: "Bogolan", name: "🇲🇱 Bogolan", desc: "Motifs" },
+                            { id: "Nature", name: "Nature", desc: "Feuilles", Icon: Leaf },
+                            { id: "Savane", name: "Savane", desc: "Animaux" },
+                            { id: "Animaux", name: "Animaux", desc: "Empreintes", Icon: PawPrint },
+                            { id: "Aucun", name: "Aucun", desc: "Sans cadre", Icon: Ban },
+                          ].map((fr) => {
+                            const active = decorativeFrame === fr.id
+                            return (
+                              <button
+                                key={fr.id}
+                                onClick={() => setDecorativeFrame(fr.id)}
+                                className={cn(
+                                  "rounded-[14px] border-2 p-3 flex flex-col items-center gap-1 cursor-pointer transition-all",
+                                  active
+                                    ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
+                                    : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
+                                )}
+                              >
+                                {fr.Icon && <fr.Icon className="w-4 h-4 mb-1 text-[#3B2416]" />}
+                                <span className="text-[10px] font-black text-[#1F2937] text-center leading-tight">{fr.name}</span>
+                                <span className="text-[8px] font-bold text-[#64748B]">{fr.desc}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* ---- OPTIONS TAB ---- */}
+                  {step2Tab === "options" && (
+                    <motion.div
+                      key="tab-options"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex flex-col gap-5"
+                    >
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Ajouts au livre</h4>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { state: pageNumbers, setter: setPageNumbers, title: "Numéroter les pages", desc: "Affiche le numéro en bas" },
+                            { state: addTitlePage, setter: setAddTitlePage, title: "Page de garde", desc: "Page de couverture personnalisée" },
+                            { state: belongsTo, setter: setBelongsTo, title: '"Ce livre appartient à"', desc: "Page d'identification enfant" },
+                            { state: educationalText, setter: setEducationalText, title: "Texte éducatif", desc: "Petites phrases pour apprendre" },
+                            { state: funFact, setter: setFunFact, title: "Fait amusant", desc: "Anecdotes rigolotes" },
+                            { state: questions, setter: setQuestions, title: "Questions", desc: "Mini-jeux et questions" },
+                          ].map((opt, idx) => (
+                            <div key={idx} className="flex items-center justify-between gap-3 p-3 rounded-[12px] bg-[#FAFAFC]/80 border border-neutral-50">
+                              <div className="flex flex-col leading-tight">
+                                <span className="text-xs font-black text-[#1F2937]">{opt.title}</span>
+                                <span className="text-[9px] font-semibold text-[#64748B]">{opt.desc}</span>
+                              </div>
+                              <button
+                                onClick={() => opt.setter(!opt.state)}
+                                className={cn(
+                                  "w-[40px] h-[22px] rounded-full transition-colors relative shrink-0 border border-[#E5E7EB] cursor-pointer",
+                                  opt.state ? "bg-[#22C55E]" : "bg-neutral-200"
+                                )}
+                              >
+                                <div className={cn(
+                                  "absolute top-0.5 w-[17px] h-[17px] rounded-full bg-white transition-all shadow-sm",
+                                  opt.state ? "left-[20px]" : "left-0.5"
+                                )} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
+                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Impression</h4>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { state: optimizeInk, setter: setOptimizeInk, title: "Optimiser l'encre", desc: "Lignes plus fines" },
+                            { state: rectoOnly, setter: setRectoOnly, title: "Recto uniquement", desc: "Page blanche au verso" },
+                            { state: cutMarks, setter: setCutMarks, title: "Repères de coupe", desc: "Pour couper le papier" },
+                            { state: bindingMargin, setter: setBindingMargin, title: "Marge de reliure", desc: "Espace pour agrafer" },
+                          ].map((opt, idx) => (
+                            <div key={idx} className="flex items-center justify-between gap-3 p-3 rounded-[12px] bg-[#FAFAFC]/80 border border-neutral-50">
+                              <div className="flex flex-col leading-tight">
+                                <span className="text-xs font-black text-[#1F2937]">{opt.title}</span>
+                                <span className="text-[9px] font-semibold text-[#64748B]">{opt.desc}</span>
+                              </div>
+                              <button
+                                onClick={() => opt.setter(!opt.state)}
+                                className={cn(
+                                  "w-[40px] h-[22px] rounded-full transition-colors relative shrink-0 border border-[#E5E7EB] cursor-pointer",
+                                  opt.state ? "bg-[#22C55E]" : "bg-neutral-200"
+                                )}
+                              >
+                                <div className={cn(
+                                  "absolute top-0.5 w-[17px] h-[17px] rounded-full bg-white transition-all shadow-sm",
+                                  opt.state ? "left-[20px]" : "left-0.5"
+                                )} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex items-center justify-between gap-4 py-2">
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                     <Button
                       onClick={handlePrevStep}
-                      className="h-12 px-6 rounded-2xl border border-neutral-200 bg-white text-[#64748B] hover:bg-neutral-50 font-extrabold text-sm cursor-pointer shadow-sm flex items-center gap-1.5"
+                      className="h-11 px-5 rounded-2xl border border-neutral-200 bg-white text-[#64748B] hover:bg-neutral-50 font-extrabold text-sm cursor-pointer shadow-sm flex items-center gap-1.5"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Retour</span>
                     </Button>
                   </motion.div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Button
                         onClick={handleSaveConfigs}
-                        className="h-12 px-5 rounded-2xl border border-[#7D6AF8]/20 bg-[#7D6AF8]/5 text-[#7D6AF8] hover:bg-[#7D6AF8]/10 font-extrabold text-sm cursor-pointer"
+                        className="h-11 px-4 rounded-2xl border border-[#6D4CFF]/20 bg-[#6D4CFF]/5 text-[#6D4CFF] hover:bg-[#6D4CFF]/10 font-extrabold text-sm cursor-pointer"
                       >
                         Enregistrer
                       </Button>
                     </motion.div>
-
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Button
                         onClick={handleNextStep}
-                        className="h-12 px-6 rounded-2xl bg-[#7D6AF8] text-white hover:bg-[#7D6AF8]/90 font-extrabold text-sm cursor-pointer shadow-md flex items-center gap-1.5"
+                        className="h-11 px-5 rounded-2xl bg-[#6D4CFF] text-white hover:bg-[#6D4CFF]/90 font-extrabold text-sm cursor-pointer shadow-md flex items-center gap-1.5"
                       >
-                        <span>Continuer vers Aperçu</span>
+                        <span>Aperçu</span>
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     </motion.div>
                   </div>
                 </div>
-
               </div>
 
-              {/* ================= STEP 2: COLONNE DROITE (APERÇU STICKY) ================= */}
+              {/* ================= RIGHT COLUMN: STICKY PREVIEW ================= */}
               <div className="hidden lg:block sticky top-8 flex flex-col gap-6 w-[360px] xl:w-[380px] shrink-0">
                 <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-6 bg-white shadow-md flex flex-col items-center gap-5">
                   <h3 className="text-sm font-extrabold text-[#64748B] uppercase tracking-wider self-start flex items-center gap-1.5">
-                    <Eye className="w-4 h-4 text-[#7D6AF8]" /> Aperçu en temps réel
+                    <Eye className="w-4 h-4 text-[#6D4CFF]" /> Aperçu
                   </h3>
-
                   <div className="w-full flex justify-center items-center py-2 bg-neutral-50/20 rounded-2xl border border-dashed border-neutral-100/85">
                     <BookPreviewCanvas
                       selectedCover={selectedCover}
@@ -1373,34 +1189,27 @@ export function ColoringBooksPage() {
                       orientation={orientation}
                     />
                   </div>
-
-                  {/* Summary below */}
                   <div className="w-full h-[1px] bg-neutral-100 my-1" />
-
-                  <div className="w-full flex flex-col gap-3.5">
+                  <div className="w-full flex flex-col gap-3">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-[#64748B]">Nombre de dessins</span>
-                      <span className="font-black text-[#1F2937]">{selectedIds.length} dessins</span>
+                      <span className="font-semibold text-[#64748B]">Dessins</span>
+                      <span className="font-black text-[#1F2937]">{selectedIds.length}</span>
                     </div>
-
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-[#64748B]">Pages totales</span>
-                      <span className="font-black text-[#1F2937]">{totalPagesCount} pages</span>
+                      <span className="font-semibold text-[#64748B]">Pages</span>
+                      <span className="font-black text-[#1F2937]">{totalPagesCount}</span>
                     </div>
-
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-[#64748B]">Format / Orientation</span>
-                      <span className="font-black text-[#1F2937] capitalize">{bookFormat} ({orientation})</span>
+                      <span className="font-semibold text-[#64748B]">Format</span>
+                      <span className="font-black text-[#1F2937] capitalize">{bookFormat} / {orientation}</span>
                     </div>
-
                     <div className="flex justify-between items-center text-xs bg-[#FAFAFC] p-2.5 rounded-xl border border-neutral-100">
-                      <span className="font-semibold text-[#64748B]">Poids PDF estimé</span>
+                      <span className="font-semibold text-[#64748B]">Poids estimé</span>
                       <span className="font-black text-[#20C997]">{calculatedPdfWeight} MB</span>
                     </div>
                   </div>
                 </Card>
               </div>
-
             </motion.div>
           )}
 
@@ -1442,7 +1251,7 @@ export function ColoringBooksPage() {
                         <ZoomOut className="w-4 h-4" />
                       </button>
 
-                      <span className="text-xs font-extrabold text-[#7D6AF8] bg-[#7D6AF8]/5 px-2.5 py-1 rounded-full w-[54px] text-center">
+                      <span className="text-xs font-extrabold text-[#6D4CFF] bg-[#6D4CFF]/5 px-2.5 py-1 rounded-full w-[54px] text-center">
                         {Math.round(zoomScale * 100)}%
                       </span>
 
@@ -1459,9 +1268,9 @@ export function ColoringBooksPage() {
                       <Button
                         onClick={handleFitWidth}
                         variant="outline"
-                        className="h-8 rounded-lg px-2.5 text-[11px] font-bold border border-[#7D6AF8]/20 text-[#7D6AF8] hover:bg-[#7D6AF8]/5 bg-transparent cursor-pointer"
+                        className="h-8 rounded-lg px-2.5 text-[11px] font-bold border border-[#6D4CFF]/20 text-[#6D4CFF] hover:bg-[#6D4CFF]/5 bg-transparent cursor-pointer"
                       >
-                        Fit Width
+                        Ajuster à la largeur
                       </Button>
                     </div>
                   </div>
@@ -1501,14 +1310,14 @@ export function ColoringBooksPage() {
                             />
                           </div>
                         ) : bookPages[currentBookPage]?.type === "belongs_to" ? (
-                          <div className="w-full h-full flex flex-col justify-between items-center border-[8px] border-dashed border-[#7D6AF8]/30 p-8 font-nunito bg-[#FFFDF7]/50 rounded-lg">
-                            <div className="w-full flex justify-between items-center text-[10px] font-black text-[#7D6AF8]/40">
+                          <div className="w-full h-full flex flex-col justify-between items-center border-[8px] border-dashed border-[#6D4CFF]/30 p-8 font-nunito bg-[#FFFDF7]/50 rounded-lg">
+                            <div className="w-full flex justify-between items-center text-[10px] font-black text-[#6D4CFF]/40">
                               <span>PETIT BAOBAB</span>
                               <span>PAGE DE GARDE</span>
                             </div>
 
                             <div className="flex-1 flex flex-col justify-center items-center text-center gap-4">
-                              <Gift className="w-12 h-12 text-[#7D6AF8]" />
+                              <Gift className="w-12 h-12 text-[#6D4CFF]" />
                               <h2 className="text-2xl font-black text-[#3B2416] tracking-tight uppercase">Ce livre appartient à :</h2>
                               <div className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#FFD95C] to-[#FFE08A] border-2 border-[#3B2416] shadow-sm transform -rotate-1">
                                 <span className="text-3xl font-extrabold text-[#3B2416] font-nunito">{childName || "Awa"}</span>
@@ -1534,12 +1343,12 @@ export function ColoringBooksPage() {
                                 decorativeFrame === "Nature" && "border-green-50",
                                 decorativeFrame === "Bogolan" && "border-neutral-200",
                                 decorativeFrame === "Savane" && "border-[#FFB300]/10",
-                                decorativeFrame === "Animaux" && "border-[#7D6AF8]/10"
+                                decorativeFrame === "Animaux" && "border-[#6D4CFF]/10"
                               )} />
                             )}
 
                             {/* Top header details */}
-                            <div className="w-full flex justify-between items-center text-[10px] font-black text-[#7D6AF8]/40 z-10">
+                            <div className="w-full flex justify-between items-center text-[10px] font-black text-[#6D4CFF]/40 z-10">
                               <span className="uppercase tracking-widest">{title}</span>
                               <span className="uppercase tracking-wider">Coloriage</span>
                             </div>
@@ -1563,7 +1372,7 @@ export function ColoringBooksPage() {
                                 </div>
                               ) : (
                                 <div className="text-center p-4">
-                                  <span className="text-3xl">🏁</span>
+                                  <Flag className="w-8 h-8 mx-auto text-[#FFB300]" />
                                   <p className="text-xs font-extrabold text-[#64748B] mt-2">Fin du livre</p>
                                 </div>
                               )}
@@ -1576,8 +1385,8 @@ export function ColoringBooksPage() {
                                   <>
                                     <span className="text-[9px] font-black text-[#FFB300] uppercase tracking-wider block flex items-center gap-1"><Lightbulb className="w-3 h-3" /> Le Savais-tu ?</span>
                                     <span className="text-[9px] font-extrabold text-[#7A6A5E] leading-tight block mt-0.5">
-                                      {bookPages[currentBookPage].label === "Éléphant" ? "L'éléphant communique par infrasons inaudibles pour les humains !" :
-                                       bookPages[currentBookPage].label === "Lion" ? "Le rugissement du lion peut s'entendre jusqu'à 8 kilomètres de distance !" :
+                                      {bookPages[currentBookPage].title === "Éléphant" ? "L'éléphant communique par infrasons inaudibles pour les humains !" :
+                                       bookPages[currentBookPage].title === "Lion" ? "Le rugissement du lion peut s'entendre jusqu'à 8 kilomètres de distance !" :
                                        "Cet animal adore s'amuser sous le soleil de l'Afrique !"}
                                     </span>
                                   </>
@@ -1629,56 +1438,7 @@ export function ColoringBooksPage() {
                     <BookText className="w-5 h-5 inline-block mr-1" /> Pages du livre ({totalPagesCount})
                   </span>
 
-                  <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-thin w-full items-stretch">
-                    {bookPages.map((page, idx) => {
-                      const isSelected = currentBookPage === idx
-                      return (
-                        <motion.button
-                          key={idx}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => setCurrentBookPage(idx)}
-                          className={cn(
-                            "w-[120px] h-[160px] rounded-xl border p-2 flex flex-col justify-between shrink-0 bg-white shadow-sm relative transition-all text-left",
-                            isSelected
-                              ? "border-[3px] border-[#7D6AF8] ring-2 ring-[#7D6AF8]/10"
-                              : "border-neutral-200/80 hover:border-neutral-300"
-                          )}
-                        >
-                          <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-neutral-900/5 text-neutral-600 rounded-full flex items-center justify-center text-[8px] font-black">
-                            {idx + 1}
-                          </div>
-
-                          {/* Mini visual representing page */}
-                          <div className="flex-1 w-full bg-[#FAFAFC] rounded-lg overflow-hidden flex items-center justify-center relative p-1 mt-1 border border-neutral-100">
-                            {page.type === "cover" ? (
-                              <TreePine className="w-5 h-5 text-[#22C55E]" />
-                            ) : page.type === "belongs_to" ? (
-                              <Gift className="w-5 h-5 text-[#7D6AF8]" />
-                            ) : (
-                              <div className="relative w-full h-full">
-                                <Image
-                                  src={page.image || "/illustrations/animals/elephant.svg"}
-                                  alt="miniature"
-                                  fill
-                                  className="object-contain grayscale"
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col leading-none pt-1 px-0.5">
-                            <span className="text-[10px] font-black text-[#1F2937] truncate w-full">
-                              {page.label}
-                            </span>
-                            <span className="text-[8px] font-bold text-[#64748B] mt-0.5 truncate w-full capitalize">
-                              {page.details}
-                            </span>
-                          </div>
-                        </motion.button>
-                      )
-                    })}
-                  </div>
+                  <BookIndex pages={bookPages} current={currentBookPage} onSelect={setCurrentBookPage} total={totalPagesCount} />
                 </div>
 
                 {/* BOTTOM ACTION BAR */}
@@ -1696,7 +1456,7 @@ export function ColoringBooksPage() {
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                     <Button
                       onClick={handleNextStep}
-                      className="h-12 px-8 rounded-2xl bg-[#7D6AF8] text-white hover:bg-[#7D6AF8]/90 font-extrabold text-sm cursor-pointer shadow-md flex items-center gap-2"
+                      className="h-12 px-8 rounded-2xl bg-[#6D4CFF] text-white hover:bg-[#6D4CFF]/90 font-extrabold text-sm cursor-pointer shadow-md flex items-center gap-2"
                     >
                       <span>Continuer vers Téléchargement</span>
                       <ArrowRight className="w-4 h-4" />
@@ -1712,7 +1472,7 @@ export function ColoringBooksPage() {
                 {/* SECTION 3: Informations */}
                 <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-6 bg-white shadow-sm flex flex-col gap-4">
                   <h3 className="text-xs font-black text-[#64748B] uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-neutral-100">
-                    <Info className="w-4 h-4 text-[#7D6AF8]" /> Informations
+                    <Info className="w-4 h-4 text-[#6D4CFF]" /> Informations
                   </h3>
 
                   <div className="flex flex-col gap-3 text-xs font-semibold text-[#1F2937]">
@@ -1728,7 +1488,7 @@ export function ColoringBooksPage() {
 
                     <div className="flex justify-between py-1.5 border-b border-neutral-50">
                       <span className="text-[#64748B]">Nombre de pages</span>
-                      <span className="font-extrabold text-[#7D6AF8]">{totalPagesCount} pages</span>
+                      <span className="font-extrabold text-[#6D4CFF]">{totalPagesCount} pages</span>
                     </div>
 
                     <div className="flex justify-between py-1.5 border-b border-neutral-50">
@@ -1756,17 +1516,17 @@ export function ColoringBooksPage() {
 
                   <div className="flex flex-col gap-3">
                     {[
-                      "Toutes les pages sont générées",
-                      "Couverture créée",
-                      "Numérotation",
-                      "Cadres décoratifs",
-                      "Qualité impression 300 DPI"
+                      { label: "Dessins sélectionnés", done: selectedIds.length > 0 },
+                      { label: "Couverture personnalisée", done: true },
+                      { label: "Numérotation des pages", done: pageNumbers },
+                      { label: "Cadre décoratif", done: decorativeFrame !== "Aucun" },
+                      { label: "Qualité impression 300 DPI", done: true },
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3 text-xs font-bold text-[#1F2937]">
-                        <div className="w-5 h-5 rounded-full bg-[#20C997]/10 text-[#20C997] flex items-center justify-center shrink-0">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.done ? "bg-[#20C997]/10 text-[#20C997]" : "bg-neutral-100 text-[#64748B]"}`}>
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
-                        <span>{item}</span>
+                        <span>{item.label}</span>
                       </div>
                     ))}
                   </div>
@@ -1806,30 +1566,46 @@ export function ColoringBooksPage() {
                 {/* Header card */}
                 <div className="flex flex-col gap-1">
                   <h2 className="text-[28px] font-black text-[#1F2937] flex items-center gap-2 leading-tight">
-                    <span>📥</span> Télécharger votre livre
+                    <Download className="w-7 h-7 text-[#1F2937]" /> Télécharger votre livre
                   </h2>
                   <p className="text-[15px] font-semibold text-[#64748B]">
                     Votre livre est prêt ! Téléchargez-le ou demandez une impression professionnelle.
                   </p>
                 </div>
 
-                {/* Generation Progress (only shown while generating) */}
-                {generationProgress < 100 && (
+                {/* Generation progress + error states */}
+                {(isGenerating || genStatus === "generating" || genStatus === "uploading") && (
                   <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-8 bg-white shadow-sm flex flex-col items-center gap-5">
-                    <Zap className="w-12 h-12 text-[#FFB300] animate-bounce" />
-                    <h3 className="text-xl font-extrabold text-[#1F2937]">Génération du PDF en cours…</h3>
+                    <div className="w-12 h-12 rounded-full border-4 border-[#E5E7EB] border-t-[#6D4CFF] animate-spin" />
+                    <h3 className="text-xl font-extrabold text-[#1F2937]">
+                      {genStatus === "uploading" ? "Sauvegarde de votre livre…" : "Génération du PDF en cours…"}
+                    </h3>
+                    <Progress.Root
+                      className="w-full h-2 overflow-hidden rounded-full bg-[#E5E7EB]"
+                      value={generationProgress}
+                    >
+                      <Progress.Indicator
+                        className="h-full bg-[#6D4CFF] transition-transform duration-300"
+                        style={{ transform: `translateX(-${100 - (generationProgress || 0)}%)` }}
+                      />
+                    </Progress.Root>
+                    <p className="text-xs font-bold text-[#6D4CFF]">{generationProgress || 0}%</p>
                     <p className="text-xs text-[#64748B] text-center max-w-sm">
                       Nous assemblons {selectedIds.length} coloriages avec la couverture &ldquo;{title}&rdquo; et vos options personnalisées.
                     </p>
-                    <div className="w-full h-3.5 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200/50">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-[#7D6AF8] to-[#20C997]"
-                        initial={{ width: "0%" }}
-                        animate={{ width: `${generationProgress}%` }}
-                        transition={{ duration: 0.15 }}
-                      />
-                    </div>
-                    <span className="text-sm font-black text-[#7D6AF8]">{generationProgress}%</span>
+                  </Card>
+                )}
+
+                {genStatus === "error" && (
+                  <Card className="rounded-[24px] border border-red-200 bg-red-50 p-8 shadow-sm flex flex-col items-center gap-4">
+                    <h3 className="text-lg font-extrabold text-red-600">La génération a échoué</h3>
+                    <p className="text-xs text-red-500 text-center max-w-sm">{genError}</p>
+                    <Button
+                      onClick={handleDownloadPdf}
+                      className="h-11 px-6 rounded-xl bg-[#6D4CFF] text-white font-bold text-sm cursor-pointer"
+                    >
+                      Réessayer
+                    </Button>
                   </Card>
                 )}
 
@@ -1845,7 +1621,7 @@ export function ColoringBooksPage() {
                       {/* Book Illustration */}
                       <div className="relative w-full rounded-[20px] bg-gradient-to-br from-[#F5F0FF] to-[#EEF7FF] flex flex-col items-center justify-center py-10 overflow-hidden">
                         {/* Decorative background circles */}
-                        <div className="absolute w-52 h-52 rounded-full bg-[#7D6AF8]/8 -top-10 -right-10" />
+                        <div className="absolute w-52 h-52 rounded-full bg-[#6D4CFF]/8 -top-10 -right-10" />
                         <div className="absolute w-32 h-32 rounded-full bg-[#20C997]/8 -bottom-8 -left-8" />
 
                         {/* Success badge */}
@@ -1867,11 +1643,11 @@ export function ColoringBooksPage() {
                         >
                           <svg width="180" height="220" viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg">
                             {/* Book shadow */}
-                            <ellipse cx="90" cy="208" rx="64" ry="10" fill="#7D6AF8" opacity="0.12" />
+                            <ellipse cx="90" cy="208" rx="64" ry="10" fill="#6D4CFF" opacity="0.12" />
                             {/* Back cover */}
                             <rect x="32" y="22" width="118" height="162" rx="10" fill="#E8E3FF" stroke="#C4B8FF" strokeWidth="1.5" />
                             {/* Book spine */}
-                            <rect x="32" y="22" width="18" height="162" rx="6" fill="#7D6AF8" opacity="0.7" />
+                            <rect x="32" y="22" width="18" height="162" rx="6" fill="#6D4CFF" opacity="0.7" />
                             {/* Front cover */}
                             <rect x="38" y="16" width="118" height="162" rx="10" fill="white" stroke="#E5E7EB" strokeWidth="1.5" />
                             {/* Cover gradient band */}
@@ -1892,14 +1668,14 @@ export function ColoringBooksPage() {
                             {/* Baobab illustration on cover */}
                             <circle cx="97" cy="148" r="18" fill="#F1EFFF" />
                             <path d="M94 162 C93 154, 90 144, 88 138 C89 134, 96 132, 97 132 C98 132, 105 134, 106 138 C104 144, 101 154, 100 162 Z" fill="#3B2416" />
-                            <circle cx="88" cy="136" r="9" fill="#7D6AF8" opacity="0.8" />
-                            <circle cx="106" cy="136" r="9" fill="#7D6AF8" opacity="0.8" />
-                            <circle cx="97" cy="130" r="11" fill="#7D6AF8" />
+                            <circle cx="88" cy="136" r="9" fill="#6D4CFF" opacity="0.8" />
+                            <circle cx="106" cy="136" r="9" fill="#6D4CFF" opacity="0.8" />
+                            <circle cx="97" cy="130" r="11" fill="#6D4CFF" />
                             {/* Petit Baobab branding */}
                             <text x="97" y="175" textAnchor="middle" fontSize="5.5" fontWeight="800" fill="#7A6A5E" opacity="0.6" fontFamily="sans-serif">PETIT BAOBAB</text>
                             <defs>
                               <linearGradient id="bookCoverGrad" x1="38" y1="16" x2="156" y2="64" gradientUnits="userSpaceOnUse">
-                                <stop stopColor="#7D6AF8" />
+                                <stop stopColor="#6D4CFF" />
                                 <stop offset="1" stopColor="#9B8FFA" />
                               </linearGradient>
                             </defs>
@@ -1919,17 +1695,17 @@ export function ColoringBooksPage() {
 
                       {/* File Info Grid */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {[
-                          { label: "Pages", value: `${totalPagesCount} pages`, icon: "📄", color: "#7D6AF8" },
-                          { label: "Format", value: bookFormat, icon: "📐", color: "#1194FF" },
-                          { label: "Qualité", value: "300 DPI", icon: "★", color: "#20C997" },
-                          { label: "Taille", value: `${calculatedPdfWeight} Mo`, icon: "💾", color: "#FFB300" },
-                        ].map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex flex-col items-center gap-1.5 p-3 rounded-[16px] bg-[#FAFAFC] border border-[#E5E7EB]/80"
-                          >
-                            <span className="text-xl">{item.icon}</span>
+                         {[
+                           { label: "Pages", value: `${totalPagesCount} pages`, Icon: FileText, color: "#6D4CFF" },
+                           { label: "Format", value: bookFormat, Icon: Ruler, color: "#1194FF" },
+                           { label: "Qualité", value: "300 DPI", Icon: Star, color: "#20C997" },
+                           { label: "Taille", value: `${calculatedPdfWeight} Mo`, Icon: HardDrive, color: "#FFB300" },
+                         ].map((item) => (
+                           <div
+                             key={item.label}
+                             className="flex flex-col items-center gap-1.5 p-3 rounded-[16px] bg-[#FAFAFC] border border-[#E5E7EB]/80"
+                           >
+                             <item.Icon className="w-5 h-5" style={{ color: item.color }} />
                             <span className="text-[11px] font-black" style={{ color: item.color }}>{item.value}</span>
                             <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider">{item.label}</span>
                           </div>
@@ -1952,8 +1728,8 @@ export function ColoringBooksPage() {
                               className={cn(
                                 "w-5 h-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all duration-150 cursor-pointer",
                                 opt.state
-                                  ? "bg-[#7D6AF8] border-[#7D6AF8]"
-                                  : "bg-white border-[#D1D5DB] group-hover:border-[#7D6AF8]/50"
+                                  ? "bg-[#6D4CFF] border-[#6D4CFF]"
+                                  : "bg-white border-[#D1D5DB] group-hover:border-[#6D4CFF]/50"
                               )}
                             >
                               {opt.state && <Check className="w-3 h-3 text-white stroke-[3]" />}
@@ -1966,23 +1742,11 @@ export function ColoringBooksPage() {
                       {/* Main Action Buttons */}
                       <div className="flex flex-col gap-3 mt-1">
                         <motion.div whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.975 }}>
-                          <Button
-                            onClick={handleDownloadPdf}
-                            className="w-full h-[64px] rounded-[18px] bg-[#7D6AF8] text-white hover:bg-[#6D5DE8] font-black text-[16px] flex items-center justify-center gap-3 shadow-lg shadow-[#7D6AF8]/25 border-none cursor-pointer"
-                          >
-                            <Download className="w-6 h-6" />
-                            <span>⬇ Télécharger le PDF</span>
-                          </Button>
+                          <DownloadButton book={book} className="w-full" />
                         </motion.div>
 
                         <motion.div whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.975 }}>
-                          <Button
-                            variant="outline"
-                            className="w-full h-[64px] rounded-[18px] border-2 border-[#7D6AF8]/20 bg-white text-[#7D6AF8] hover:bg-[#7D6AF8]/5 font-black text-[16px] flex items-center justify-center gap-3 cursor-pointer"
-                          >
-                            <Printer className="w-6 h-6" />
-                            <span>🖨 Demander une impression</span>
-                          </Button>
+                          <PrintButton book={book} className="w-full" />
                         </motion.div>
                       </div>
                     </Card>
@@ -1998,6 +1762,7 @@ export function ColoringBooksPage() {
                       </Button>
                       <Button
                         onClick={() => {
+                          useBookStore.getState().reset()
                           setActiveStep(1)
                           setGenerationProgress(0)
                           setIsGenerating(false)
@@ -2017,7 +1782,7 @@ export function ColoringBooksPage() {
                 {/* Order Summary Card */}
                 <Card className="rounded-[24px] border border-[#E5E7EB]/80 p-6 bg-white shadow-sm flex flex-col gap-4">
                   <h3 className="text-[15px] font-extrabold text-[#1F2937] flex items-center gap-2 pb-3 border-b border-neutral-100">
-                    <BookOpen className="w-5 h-5 text-[#7D6AF8]" /> Résumé de la commande
+                    <BookOpen className="w-5 h-5 text-[#6D4CFF]" /> Résumé de la commande
                   </h3>
 
                   <div className="flex flex-col gap-2.5 text-xs font-semibold text-[#1F2937]">
@@ -2031,11 +1796,11 @@ export function ColoringBooksPage() {
                     </div>
                     <div className="flex justify-between py-1 border-b border-neutral-50">
                       <span className="text-[#64748B]">Dessins</span>
-                      <span className="font-extrabold text-[#7D6AF8]">{selectedIds.length} illustrations</span>
+                      <span className="font-extrabold text-[#6D4CFF]">{selectedIds.length} illustrations</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-neutral-50">
                       <span className="text-[#64748B]">Pages totales</span>
-                      <span className="font-extrabold text-[#7D6AF8]">{totalPagesCount} pages</span>
+                      <span className="font-extrabold text-[#6D4CFF]">{totalPagesCount} pages</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-neutral-50">
                       <span className="text-[#64748B]">Format</span>
@@ -2047,7 +1812,7 @@ export function ColoringBooksPage() {
                     </div>
                     <div className="flex justify-between py-2 rounded-xl bg-[#F5F0FF] px-3 -mx-1 mt-1">
                       <span className="text-[#64748B] font-bold">Taille PDF estimée</span>
-                      <span className="font-black text-[#7D6AF8]">{calculatedPdfWeight} Mo</span>
+                      <span className="font-black text-[#6D4CFF]">{calculatedPdfWeight} Mo</span>
                     </div>
                   </div>
 
@@ -2112,19 +1877,19 @@ export function ColoringBooksPage() {
                 </Card>
 
                 {/* Premium Upsell Card */}
-                <Card className="rounded-[24px] border border-[#7D6AF8]/25 p-5 bg-gradient-to-br from-[#F5F0FF] to-[#EFF6FF] shadow-sm flex flex-col gap-3 relative overflow-hidden">
+                <Card className="rounded-[24px] border border-[#6D4CFF]/25 p-5 bg-gradient-to-br from-[#F5F0FF] to-[#EFF6FF] shadow-sm flex flex-col gap-3 relative overflow-hidden">
                   {/* decorative glow */}
-                  <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#7D6AF8]/10 pointer-events-none" />
+                  <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#6D4CFF]/10 pointer-events-none" />
 
                   <div className="flex items-center gap-2 relative z-10">
-                    <div className="w-8 h-8 rounded-xl bg-[#7D6AF8] flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-[#6D4CFF] flex items-center justify-center shrink-0">
                       <Sparkles className="w-4 h-4 text-white fill-white" />
                     </div>
                     <div>
                       <span className="text-[12px] font-black text-[#4C3BAF] uppercase tracking-wider">Premium</span>
                       <p className="text-[10px] font-semibold text-[#6D5DE8] leading-none">Accès illimité</p>
                     </div>
-                    <span className="ml-auto text-[10px] font-black bg-[#7D6AF8] text-white px-2.5 py-1 rounded-full shadow-sm">
+                    <span className="ml-auto text-[10px] font-black bg-[#6D4CFF] text-white px-2.5 py-1 rounded-full shadow-sm">
                       <Flame className="w-3.5 h-3.5 inline-block" /> Populaire
                     </span>
                   </div>
@@ -2137,14 +1902,14 @@ export function ColoringBooksPage() {
                       "Bibliothèque de 500+ dessins",
                     ].map((feat, i) => (
                       <li key={i} className="flex items-center gap-2 text-[11px] font-semibold text-[#374151]">
-                        <Star className="w-3.5 h-3.5 fill-[#7D6AF8] text-[#7D6AF8] shrink-0" />
+                        <Star className="w-3.5 h-3.5 fill-[#6D4CFF] text-[#6D4CFF] shrink-0" />
                         {feat}
                       </li>
                     ))}
                   </ul>
 
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="relative z-10">
-                    <Button className="w-full h-10 rounded-[14px] bg-[#7D6AF8] text-white hover:bg-[#6D5DE8] font-bold text-xs flex items-center justify-center gap-2 border-none cursor-pointer shadow-md shadow-[#7D6AF8]/25">
+                    <Button className="w-full h-10 rounded-[14px] bg-[#6D4CFF] text-white hover:bg-[#6D5DE8] font-bold text-xs flex items-center justify-center gap-2 border-none cursor-pointer shadow-md shadow-[#6D4CFF]/25">
                       <Sparkles className="w-3.5 h-3.5" />
                       Découvrir Premium — 4,99 €/mois
                     </Button>
@@ -2156,143 +1921,12 @@ export function ColoringBooksPage() {
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {isPrintableBookOpen && (
-          <motion.div
-            key="printable-book-preview"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#111827]/70 p-3 sm:p-6 overflow-y-auto"
-          >
-            <style>{`
-              @media print {
-                body * { visibility: hidden !important; }
-                #printable-book, #printable-book * { visibility: visible !important; }
-                #printable-book {
-                  position: absolute !important;
-                  inset: 0 auto auto 0 !important;
-                  width: 100% !important;
-                  background: white !important;
-                  padding: 0 !important;
-                }
-                .no-print { display: none !important; }
-                .print-page {
-                  width: 210mm !important;
-                  min-height: 297mm !important;
-                  margin: 0 !important;
-                  box-shadow: none !important;
-                  border: 0 !important;
-                  page-break-after: always;
-                }
-              }
-            `}</style>
-
-            <div className="mx-auto max-w-6xl bg-[#F8FAFC] rounded-[24px] shadow-2xl overflow-hidden">
-              <div className="sticky top-0 z-20 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#E5E7EB] bg-white/95 p-4 backdrop-blur no-print">
-                <div>
-                  <h3 className="text-[18px] font-black text-[#1F2937]">Votre livre personnalise</h3>
-                  <p className="text-[12px] font-bold text-[#64748B] mt-0.5">
-                    {totalPagesCount} pages - {selectedIds.length} coloriages - {bookFormat} {orientation}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handlePrintPdf}
-                    className="h-10 rounded-xl bg-[#7D6AF8] px-4 text-white hover:bg-[#6D5DE8] font-extrabold text-xs flex items-center gap-2"
-                  >
-                    <Printer className="w-4 h-4" />
-                    Imprimer / PDF
-                  </Button>
-                  <Button
-                    onClick={() => setIsPrintableBookOpen(false)}
-                    variant="outline"
-                    className="h-10 w-10 rounded-xl border border-[#E5E7EB] bg-white p-0"
-                    aria-label="Fermer"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div id="printable-book" className="flex flex-col items-center gap-6 p-4 sm:p-8 bg-[#EEF2F7]">
-                {bookPages.map((page, index) => {
-                  if (page.type === "cover") {
-                    return (
-                      <section
-                        key={`${page.type}-${index}`}
-                        className="print-page w-full max-w-[794px] min-h-[1123px] bg-white shadow-lg border border-[#E5E7EB] p-8 sm:p-14 flex flex-col items-center justify-center gap-8 text-center"
-                      >
-                        <BookPreviewCanvas
-                          selectedCover={selectedCover}
-                          selectedPalette={selectedPalette}
-                          title={title}
-                          subtitle={subtitle}
-                          childName={childName}
-                          author={author}
-                          decorativeFrame={decorativeFrame}
-                          orientation={orientation}
-                          scale={1.2}
-                        />
-                      </section>
-                    )
-                  }
-
-                  if (page.type === "belongs_to") {
-                    return (
-                      <section
-                        key={`${page.type}-${index}`}
-                        className="print-page w-full max-w-[794px] min-h-[1123px] bg-white shadow-lg border border-[#E5E7EB] p-8 sm:p-14 flex flex-col items-center justify-center gap-8 text-center"
-                      >
-                        <p className="text-[12px] font-black uppercase tracking-[0.22em] text-[#7D6AF8]">Petit Baobab</p>
-                        <div className="rounded-[24px] border-[6px] border-dashed border-[#7D6AF8]/25 px-8 py-10">
-                          <p className="text-[16px] font-black uppercase tracking-[0.16em] text-[#64748B]">Ce livre appartient a</p>
-                          <h2 className="mt-4 text-[42px] font-black text-[#3B2416]">{childName || "Awa"}</h2>
-                        </div>
-                        <p className="text-[16px] font-bold text-[#64748B]">Prepare tes crayons et amuse-toi bien.</p>
-                      </section>
-                    )
-                  }
-
-                  return (
-                    <section
-                      key={`${page.type}-${index}`}
-                      className="print-page w-full max-w-[794px] min-h-[1123px] bg-white shadow-lg border border-[#E5E7EB] p-8 sm:p-14 flex flex-col"
-                    >
-                      <div className="flex items-center justify-between text-[12px] font-black uppercase tracking-[0.14em] text-[#7D6AF8]/60">
-                        <span>{title || "Petit Baobab"}</span>
-                        {pageNumbers && <span>Page {index + 1}</span>}
-                      </div>
-
-                      <div className="relative flex-1 my-8 flex items-center justify-center">
-                        <div className="relative w-full h-[820px] max-h-full">
-                          <Image
-                            src={page.image || "/illustrations/animals/elephant.svg"}
-                            alt={page.label}
-                            fill
-                            unoptimized={page.isPersonal}
-                            className={cn(
-                              "object-contain",
-                              page.isPersonal || drawingStyle === "Version couleur" ? "" : "grayscale contrast-125 brightness-105"
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[14px] font-extrabold text-[#64748B]">
-                        <span>{page.label}</span>
-                        <span>Petit Baobab</span>
-                      </div>
-                    </section>
-                  )
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Version impression : masquee a l'ecran, affichee uniquement a l'impression */}
+      <div className="print-only" aria-hidden>
+        <BookPrint book={book} />
+      </div>
 
     </div>
+    </BookProvider>
   )
 }

@@ -75,7 +75,7 @@ export function PricingSection() {
 
       {/* Header */}
       <div className="w-full lg:max-w-[70%] mb-8 md:mb-12 text-left">
-        <h2 className="text-[28px] md:text-[36px] font-extrabold text-[#334155] leading-tight">
+        <h2 className="text-[24px] sm:text-[28px] md:text-[36px] font-extrabold text-[#334155] leading-tight">
           Choisissez le plan qui vous convient
         </h2>
         <p className="text-[16px] md:text-[18px] font-bold text-[#F59E0B] mt-2 flex items-center gap-1">

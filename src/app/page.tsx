@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu, X, Star } from "lucide-react"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -18,7 +20,7 @@ export default function LandingPage() {
     if (user) {
       router.push("/dashboard")
     } else {
-      router.push("/login?tab=signup")
+      router.push("/signup")
     }
   }
 
@@ -48,33 +50,54 @@ export default function LandingPage() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
-            <a className="hover:text-[#635BFF] transition-colors" href="#">Accueil</a>
-            <a className="hover:text-[#635BFF] transition-colors" href="#features">Fonctionnalités</a>
-            <div className="relative group cursor-pointer">
-              <span className="flex items-center gap-1 hover:text-[#635BFF] transition-colors">
-                Livres 
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                </svg>
-              </span>
-            </div>
-            <a className="hover:text-[#635BFF] transition-colors" href="#pricing">Tarifs</a>
-            <a className="hover:text-[#635BFF] transition-colors" href="#testimonials">À propos</a>
+            <a className="hover:text-[#6D4CFF] transition-colors" href="#">Accueil</a>
+            <a className="hover:text-[#6D4CFF] transition-colors" href="#pricing">Tarifs</a>
+            <a className="hover:text-[#6D4CFF] transition-colors" href="#testimonials">À propos</a>
           </nav>
 
           <div className="flex items-center gap-4">
             <button
               onClick={handleLogin}
-              className="px-5 py-2 text-sm font-semibold hover:bg-gray-100 rounded-[8px] transition-colors cursor-pointer"
+              className="hidden sm:inline-flex px-5 py-2 text-sm font-semibold hover:bg-gray-100 rounded-[8px] transition-colors cursor-pointer"
             >
               Se connecter
             </button>
             <button
               onClick={handleCTA}
-              className="px-5 py-2 text-sm font-semibold bg-[#635BFF] text-white rounded-[8px] hover:bg-[#635BFF]/90 transition-all shadow-md shadow-[#635BFF]/20 cursor-pointer"
+              className="hidden sm:inline-flex px-5 py-2 text-sm font-semibold bg-[#6D4CFF] text-white rounded-[8px] hover:bg-[#6D4CFF]/90 transition-all shadow-md shadow-[#6D4CFF]/20 cursor-pointer"
             >
               Créer un compte
             </button>
+
+            {/* Mobile Hamburger */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="md:hidden w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer">
+                  <Menu className="w-5 h-5 text-[#1A1A2E]" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-background pt-16 w-[290px]">
+                <nav className="flex flex-col gap-6 mt-8">
+                  <a href="#" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">Accueil</a>
+                  <a href="#pricing" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">Tarifs</a>
+                  <a href="#testimonials" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">À propos</a>
+                </nav>
+                <div className="absolute bottom-8 left-6 right-6 flex flex-col gap-3">
+                  <button
+                    onClick={() => { handleLogin() }}
+                    className="w-full h-11 rounded-full border border-gray-200 text-sm font-semibold hover:bg-gray-50 cursor-pointer"
+                  >
+                    Se connecter
+                  </button>
+                  <button
+                    onClick={() => { handleCTA() }}
+                    className="w-full h-11 rounded-full bg-[#6D4CFF] text-white text-sm font-semibold hover:bg-[#6D4CFF]/90 cursor-pointer"
+                  >
+                    Créer un compte
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
 
         </div>
@@ -88,16 +111,16 @@ export default function LandingPage() {
           <div className="animate-fade-in-up">
             <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.1] mb-6">
               Le coloriage <br/>
-              qui éveille la <span className="text-[#635BFF]">créativité</span> <br/>
+              qui éveille la <span className="text-[#6D4CFF]">créativité</span> <br/>
               et célèbre <span className="text-[#22C55E]">l'Afrique</span>
             </h1>
             <p className="text-lg text-gray-600 mb-10 max-w-lg">
-              Des milliers de dessins africains, des histoires captivantes et des outils intelligens pour apprendre en s'amusant.
+              Des milliers de dessins africains, des histoires captivantes et des outils intelligents pour apprendre en s'amusant.
             </p>
             <div className="flex flex-wrap gap-4 mb-12">
               <button
                 onClick={handleCTA}
-                className="px-8 py-4 bg-[#635BFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform shadow-lg shadow-[#635BFF]/30 cursor-pointer"
+                className="px-8 py-4 bg-[#6D4CFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform shadow-lg shadow-[#6D4CFF]/30 cursor-pointer"
               >
                 Commencer gratuitement
               </button>
@@ -105,7 +128,7 @@ export default function LandingPage() {
                 onClick={() => router.push("/login")}
                 className="px-8 py-4 bg-white border border-gray-200 text-gray-800 font-bold rounded-[8px] flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <span className="w-6 h-6 bg-[#635BFF] rounded-full flex items-center justify-center">
+                <span className="w-6 h-6 bg-[#6D4CFF] rounded-full flex items-center justify-center">
                   <svg className="w-3 h-3 text-white fill-current" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
@@ -144,7 +167,7 @@ export default function LandingPage() {
             />
             {/* Background Elements (Simulated) */}
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-50 -z-10"></div>
-            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#635BFF]/10 rounded-full blur-3xl opacity-50 -z-10"></div>
+            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#6D4CFF]/10 rounded-full blur-3xl opacity-50 -z-10"></div>
           </div>
 
         </div>
@@ -235,7 +258,7 @@ export default function LandingPage() {
           
           {/* Step 1 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
-            <div className="absolute top-4 left-4 w-8 h-8 bg-[#635BFF]/20 text-[#635BFF] font-bold rounded-full flex items-center justify-center text-xs">1</div>
+            <div className="absolute top-4 left-4 w-8 h-8 bg-[#6D4CFF]/20 text-[#6D4CFF] font-bold rounded-full flex items-center justify-center text-xs">1</div>
             <div className="h-56 flex items-center justify-center mb-6">
               <img
                 alt="Step 1"
@@ -323,46 +346,24 @@ export default function LandingPage() {
 
             <div className="md:w-1/3 text-center md:text-left">
               <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
-                <span className="text-2xl">⭐</span>
+                <Star className="w-6 h-6 text-[#FFB300] fill-[#FFB300]" />
                 <h2 className="text-3xl font-extrabold">Crée ton propre livre de coloriage</h2>
               </div>
               <p className="text-gray-600 mb-8">Un livre unique, à ton image. Parfait pour s'amuser, apprendre et offrir !</p>
               <button
                 onClick={handleCTA}
-                className="px-8 py-3 bg-[#635BFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform cursor-pointer"
+                className="px-8 py-3 bg-[#6D4CFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform cursor-pointer"
               >
                 Créer mon livre
               </button>
             </div>
 
-            <div className="md:w-1/3 flex gap-4 overflow-x-auto pb-4">
-              {/* Book Previews */}
-              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-[#635BFF]">
-                <img
-                  alt="Book 1"
-                  className="rounded-lg mb-2 w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz-d3Ri4geNZofFP6e9OKPAF0fMHnV6glgRS_w5_CssxIxWtgoopW85EJM5n7wsBpqLb-hwADQ86aBuIhy0cnlm07T3FKPKN4oMQk99IFjDBS8RKxJaPBRvGWpC8a4sIlr2U73Xbbu-t6jLJuAbcFGUzGYbTG4IoFxbNBjuZ9UBPZpn_gbD_6_JLjcUnPyBPbA6mvQ8Ah0iCCXbGuNTnnoJLz1UgZdeakrjRVdL58ghyrMpk0MOZpb0k5BTOQUaLDLQcASPI1mHuTb"
-                />
-                <p className="text-[10px] font-bold text-center">Les animaux de la savane</p>
-              </div>
-
-              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-[#22C55E]">
-                <img
-                  alt="Book 2"
-                  className="rounded-lg mb-2 w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEQi1HUZHqMH80U9570YVwwiUpeYvwzpV-w_Gc0qDkxpckvt6Zeb7QdQehm0ASWU-L9ngBCbRvgqa__4i8GZcq_AJQFsEIbr-OLrpzrHVFi88-7Mgn08sp3e-Ta9jTepl8T6G01dPa5Z8Jukw5ouMrNZCmCWe6MnRtOrziKaRb9yh4w-IBFzRK0dfWoHe32dkRyCyNjivWtz0PsYr9ILxtUotTBN5Liemhc3KEgOC7KkO7zDjrmTmca1IsUXmuRnrMjVcBuKRIkE5o"
-                />
-                <p className="text-[10px] font-bold text-center">Mon livre de coloriage</p>
-              </div>
-
-              <div className="min-w-[140px] bg-white p-2 rounded-xl shadow-md border-t-4 border-orange-500">
-                <img
-                  alt="Book 3"
-                  className="rounded-lg mb-2 w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2QUiAl9Ww8H12Sq-85KuVBBlwX4wk4o_tlST-un2gMcwEUxwDuV8YZcKQhP8KBCK5Axk9lpLlPu1iru_HkA4B7Vu7sH7A6AD5HpHySfcseZmVAfkektmkTwYrnEDD0NhllZG55j3ZtC0j6n4lLhOmHdoNdDELWRStD7mb0IVEGpFd-kzEGIfcvabdZYftC4oG8jXEycRXV7RudDnBDd_nRw_wtfUZ7e8ctbHuvpOhcXGkweQVBC1SVMOmWTHoCUJw5t2OMNXFQYN0"
-                />
-                <p className="text-[10px] font-bold text-center">Les instruments africains</p>
-              </div>
+            <div className="md:w-1/3 flex justify-center items-center">
+              <img
+                alt="Collection de livres"
+                className="w-full max-w-[340px] md:max-w-[400px] drop-shadow-xl object-contain"
+                src="/illustrations/Collection-livres.webp"
+              />
             </div>
 
           </div>
@@ -395,7 +396,7 @@ export default function LandingPage() {
                 <div className="flex items-center gap-4 mb-4">
                   <img
                     alt="Aminata"
-                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMshMF73B2AVXDBCo2U7qw6G-cXiJeM1AyQeKASzc9xAyD91GVGG7agzLQbOftSy4Wnh7JTBnl2n_tgn-fUAjSPe6tYsUxO7Q7s9tn8Xx4uzdU3GdQOMoeC5mZPoeABTLzORAMwgstzxwU-GLAIXVL4dDLxs6UtIbhyGtAKWBTdWmpRB2M2n83UXGaFARfNrpc_yXBFjc1BBl_BNIW9ueTLulV2lj5aeUdIt5n8FJMxhT5weyg541bg8-pnR0JgVSyCrwXssBSAVyT"
                   />
                   <div>
@@ -411,7 +412,7 @@ export default function LandingPage() {
                 <div className="flex items-center gap-4 mb-4">
                   <img
                     alt="Yacouba"
-                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzcHUD2pDdYxT7rOS5H-3Xt11s5zxwUAnlAigVKuPhejRxxCbuCfG1CMzmJLF4D3Ib04XRghAeKfyzDGuyAbfZ2KttTjrFZgUfz088zx9tP-DC_KoV7olzz36mHoWfNt63pBSI0nbINoQQn8VZtVm3uPnfk8y0kx3TNyiMjtv3P3i162esyhDes3MSPvT7NQ90orygLlniC69ah9mqOWICE50nPlHCFMiTLiWR0sH-dEnTXXp-Yo-E575mXQiWgzd1UW4VzSyCe8wN"
                   />
                   <div>
@@ -427,7 +428,7 @@ export default function LandingPage() {
                 <div className="flex items-center gap-4 mb-4">
                   <img
                     alt="Fatou"
-                    className="w-12 h-12 rounded-full border-2 border-[#635BFF]/20 object-cover"
+                    className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCk9dEUgVbzCwSDhGyQRrcQvHseeU-88AmXxRyHdCk-vouLWaXCMCdreS36bTc3wdDRhpawoFn6nsw67kkzodRftXTWwMyONcsHZ5jI62X0ALmMmsJG7Y0nofk5z6b8AnHlHODLcSWvAVu67guLnOC8raDdO1xuDHcUH7H40edVFI9A7p1gna1rCocPaXXjN8HMYftmRiG3osAkOKBXY0P7DodWkLE-9rtDso2ednR-f0cV-lITLHjC49hbmuTXHdBKvBcmd3Q0QPH"
                   />
                   <div>
@@ -446,7 +447,7 @@ export default function LandingPage() {
 
       {/* BEGIN: FooterCTA */}
       <section className="px-6 pb-24 pt-12">
-        <div className="max-w-7xl mx-auto bg-[#635BFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto bg-[#6D4CFF] rounded-[32px] p-8 md:p-12 text-white relative flex flex-col md:flex-row md:items-center justify-between gap-8">
           
           {/* Left Column (40%): Title and Subtitle */}
           <div className="relative z-10 md:w-[40%] text-center md:text-left">
@@ -458,7 +459,7 @@ export default function LandingPage() {
           <div className="relative z-10 md:w-[20%] flex flex-col items-center justify-center gap-2">
             <button
               onClick={handleCTA}
-              className="px-8 py-3.5 bg-white text-[#635BFF] font-bold rounded-[32px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer text-sm w-full md:w-auto text-center whitespace-nowrap"
+              className="px-8 py-3.5 bg-white text-[#6D4CFF] font-bold rounded-[32px] hover:scale-105 transition-all shadow-xl shadow-black/20 cursor-pointer text-sm w-full md:w-auto text-center whitespace-nowrap"
             >
               Commencer gratuitement
             </button>
@@ -509,10 +510,10 @@ export default function LandingPage() {
             <div className="col-span-1">
               <h4 className="font-bold text-sm text-[#1C1C3A] mb-6">Produit</h4>
               <ul className="space-y-4 text-sm text-gray-500">
-                <li><a className="hover:text-[#635BFF]" href="#">Coloriages</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Livres</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Jeux éducatifs</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Histoires</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Coloriages</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Livres</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Jeux éducatifs</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Histoires</a></li>
               </ul>
             </div>
 
@@ -520,10 +521,10 @@ export default function LandingPage() {
             <div className="col-span-1">
               <h4 className="font-bold text-sm text-[#1C1C3A] mb-6">Entreprise</h4>
               <ul className="space-y-4 text-sm text-gray-500">
-                <li><a className="hover:text-[#635BFF]" href="#">À propos</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Notre mission</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Blog</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Contact</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">À propos</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Notre mission</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Blog</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Contact</a></li>
               </ul>
             </div>
 
@@ -531,10 +532,10 @@ export default function LandingPage() {
             <div className="col-span-1">
               <h4 className="font-bold text-sm text-[#1C1C3A] mb-6">Ressources</h4>
               <ul className="space-y-4 text-sm text-gray-500">
-                <li><a className="hover:text-[#635BFF]" href="#">Aide</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Guide parents</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Confidentialité</a></li>
-                <li><a className="hover:text-[#635BFF]" href="#">Conditions</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Aide</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Guide parents</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Confidentialité</a></li>
+                <li><a className="hover:text-[#6D4CFF]" href="#">Conditions</a></li>
               </ul>
             </div>
 

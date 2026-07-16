@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, ChevronDown, Star } from "lucide-react"
+import { BookOpen, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 import { useAuthStore } from "@/lib/auth-store"
 
@@ -18,7 +19,14 @@ interface ParentHeaderProps {
   onChildChange: (child: string) => void
 }
 
+const getAvatarSrc = (mascot: string) => {
+  if (mascot === "lion") return "/illustrations/lion.webp"
+  if (mascot === "robot") return "/illustrations/robot.webp"
+  return "/illustrations/awa.webp"
+}
+
 export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps) {
+  const router = useRouter()
   const { account, profiles, activeProfileId, selectProfile } = useAuthStore()
 
   const activeProfile = profiles.find((p) => p.id === activeProfileId) || profiles[0]
@@ -28,10 +36,10 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 select-none">
       {/* Title & Subtitle */}
       <div>
-        <h1 className="text-[36px] font-extrabold text-[#334155] leading-tight">
+        <h1 className="text-[28px] sm:text-[32px] lg:text-[36px] font-extrabold text-[#2D1846] leading-tight">
           Espace parents
         </h1>
-        <p className="text-base font-medium text-[#64748B] mt-1">
+        <p className="text-base font-medium text-[#7A6A5E] mt-1">
           Gérez les comptes, les plans et suivez les activités de vos enfants.
         </p>
       </div>
@@ -39,20 +47,21 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
       {/* Actions */}
       <div className="flex items-center gap-4 flex-wrap">
         {/* Star Badge */}
-        <div className="w-[140px] h-[58px] rounded-[16px] border border-[#E5E7EB] bg-white flex items-center gap-3 px-3 shadow-sm">
-          <div className="w-9 h-9 rounded-full bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B] shrink-0">
+        <div className="w-[140px] h-[58px] rounded-[16px] border border-[#EFE7DB] bg-white flex items-center gap-3 px-3 shadow-sm">
+          <div className="w-9 h-9 rounded-full bg-[#FFB300]/10 flex items-center justify-center text-[#FFB300] shrink-0">
             <Star className="w-5 h-5 fill-current" />
           </div>
           <div className="flex flex-col justify-center leading-tight">
-            <span className="text-[16px] font-extrabold text-[#334155]">{starsBalance}</span>
-            <span className="text-[10px] font-bold text-[#64748B]">Mes étoiles</span>
+            <span className="text-[16px] font-extrabold text-[#3B2416]">{starsBalance}</span>
+            <span className="text-[10px] font-bold text-[#7A6A5E]">Mes étoiles</span>
           </div>
         </div>
 
         {/* Mes Livres Button */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
-            className="w-[160px] h-[56px] rounded-[18px] bg-[#6D4AFF] text-white hover:bg-[#6D4AFF]/90 font-bold text-[16px] flex items-center justify-center gap-2 shadow-md border-none cursor-pointer"
+            onClick={() => router.push("/mes-livres")}
+            className="w-[160px] h-[56px] rounded-[18px] bg-[#6D4CFF] text-white hover:bg-[#6D4CFF]/90 font-bold text-[16px] flex items-center justify-center gap-2 shadow-md border-none cursor-pointer"
           >
             <BookOpen className="w-5 h-5" />
             <span>Mes livres</span>
@@ -63,10 +72,10 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
         {profiles && profiles.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 h-[58px] rounded-full border border-[#E5E7EB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
+              <div className="flex items-center gap-3 h-[58px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none">
                 <Avatar className="w-10 h-10 border border-neutral-100">
                   <AvatarImage 
-                    src={`/illustrations/mascot_${activeProfile?.mascot || "awa"}.webp`}
+                    src={getAvatarSrc(activeProfile?.mascot || "awa")}
                     onError={(e) => {
                       e.currentTarget.src = `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${activeProfile?.name || "child"}`
                     }}
@@ -74,14 +83,14 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
                   <AvatarFallback>{activeProfile?.name?.slice(0, 2).toUpperCase() || "AW"}</AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[16px] font-extrabold text-[#334155]">
+                  <span className="text-[16px] font-extrabold text-[#3B2416]">
                     {activeProfile?.name}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-[#64748B]" />
+                  <ChevronDown className="w-4 h-4 text-[#7A6A5E]" />
                 </div>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[150px] rounded-2xl p-1.5">
+            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-1.5">
               {profiles.map((profile) => (
                 <DropdownMenuItem 
                   key={profile.id}
@@ -89,11 +98,31 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
                     selectProfile(profile.id)
                     onChildChange(profile.name.toLowerCase())
                   }} 
-                  className="rounded-xl font-bold text-sm text-[#334155]"
+                  className="rounded-xl font-bold text-sm text-[#3B2416]"
                 >
+                  <Avatar className="w-7 h-7 mr-2">
+                    <AvatarImage src={getAvatarSrc(profile.mascot)} />
+                    <AvatarFallback>{profile.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
                   {profile.name}
                 </DropdownMenuItem>
               ))}
+              <div className="h-px bg-[#F0E7DA] my-1" />
+              <DropdownMenuItem onClick={() => router.push("/parametres")} className="rounded-xl font-bold text-sm text-[#7A6A5E]">
+                <Settings className="inline w-4 h-4 mr-2" /> Paramètres
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/parents")} className="rounded-xl font-bold text-sm text-[#7A6A5E]">
+                <Users className="inline w-4 h-4 mr-2" /> Espace Parents
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  await useAuthStore.getState().logout()
+                  router.push("/login")
+                }}
+                className="rounded-xl font-bold text-sm text-[#FF5E83]"
+              >
+                <LogOut className="inline w-4 h-4 mr-2" /> Se déconnecter
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -106,7 +135,7 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
               window.location.href = "/login"
             }}
             variant="outline"
-            className="h-[58px] px-5 rounded-full border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer shadow-sm bg-white"
+            className="h-[58px] px-5 rounded-full border border-[#EFE7DB] text-[#FF5E83] hover:bg-red-50 hover:border-red-200 font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer shadow-sm bg-white"
           >
             <span>Déconnexion</span>
           </Button>

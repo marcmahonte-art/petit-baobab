@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabaseClient"
+import { getSupabaseServer } from "@/lib/supabaseServer"
 import { getServerUser } from "@/lib/auth"
 
 export async function GET(request: Request) {
   try {
+    const supabase = await getSupabaseServer()
     // 1. Verify user session
     const user = await getServerUser()
     if (!user) {

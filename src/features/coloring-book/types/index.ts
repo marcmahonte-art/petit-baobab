@@ -2,6 +2,7 @@
 export type { BookFrame, BookFrameOption } from "./BookFrame"
 export type { BookInfo, BookFormat, BookOptions, BookOrientation, BookStep, BookWizardState, DrawingCategory, LibraryDrawing } from "./Book"
 export type { BookPage, BookPageType } from "./BookPage"
+export type { ColoringBook, ColoringBookSettings } from "./ColoringBook"
 export type { BookSettings } from "./BookSettings"
 export type { BookStyle, BookStyleOption } from "./BookStyle"
 export type { CoverPalette, CoverPaletteColor, CoverTemplate } from "./Cover"

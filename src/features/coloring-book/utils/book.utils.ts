@@ -16,6 +16,10 @@ export function getSelectedDrawings(selectedImages: string[], customDrawings: Li
     .filter((drawing): drawing is LibraryDrawing => Boolean(drawing))
 }
 
+/**
+ * Construit la liste ordonnée des pages du livre.
+ * Chaque page reçoit un `id` unique et stable (jamais un index de tableau).
+ */
 export function buildPreview(params: {
   selectedImages: string[]
   options: Pick<BookOptions, "addTitlePage" | "belongsTo">
@@ -26,15 +30,42 @@ export function buildPreview(params: {
   const pages: BookPage[] = []
 
   if (params.options.addTitlePage) {
-    pages.push({ type: "cover", label: "Couverture", details: params.cover })
+    pages.push({
+      id: `cover-${params.cover}`,
+      type: "cover",
+      title: "Couverture",
+      theme: "couverture",
+      category: params.cover,
+      details: params.cover,
+    })
   }
 
   if (params.options.belongsTo) {
-    pages.push({ type: "belongs_to", label: "Page de garde", details: `Appartient à ${params.bookInfo.childName}` })
+    const child = params.bookInfo.childName || "Awa"
+    pages.push({
+      id: `belongs-${child}`,
+      type: "belongs_to",
+      title: "Ce livre appartient à",
+      theme: "page-de-garde",
+      category: "appartient",
+      details: `Appartient à ${child}`,
+    })
   }
 
   getSelectedDrawings(params.selectedImages, params.customDrawings).forEach((drawing) => {
-    pages.push({ type: "drawing", label: drawing.name, image: drawing.image, details: drawing.category, isPersonal: drawing.isPersonal })
+    const isSvg = typeof drawing.image === "string" && drawing.image.toLowerCase().endsWith(".svg")
+    pages.push({
+      id: `drawing-${drawing.id}`,
+      type: "drawing",
+      title: drawing.name,
+      theme: drawing.category,
+      category: drawing.category,
+      details: drawing.category,
+      isPersonal: drawing.isPersonal,
+      svgPath: isSvg ? drawing.image : undefined,
+      image: drawing.image,
+      svg: drawing.svg,
+    })
   })
 
   return pages

@@ -74,7 +74,7 @@ export function PricingCard({
 
       {/* Header */}
       <div className="flex flex-col items-center text-center">
-        <h4 className={cn("text-[26px] font-extrabold mb-1", activeColors.text)}>
+        <h4 className={cn("text-[20px] sm:text-[24px] font-extrabold mb-1", activeColors.text)}>
           {name}
         </h4>
         <p className="text-xs font-semibold text-[#64748B] mb-4">
@@ -84,7 +84,7 @@ export function PricingCard({
         </p>
 
         <div className="flex flex-col items-center gap-1.5 mb-5">
-          <span className="text-[38px] font-extrabold text-[#334155] tracking-tight">
+          <span className="text-[30px] sm:text-[36px] font-extrabold text-[#334155] tracking-tight">
             {price}
           </span>
           <span className="text-[12px] font-semibold text-[#64748B]">

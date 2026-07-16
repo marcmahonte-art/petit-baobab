@@ -24,6 +24,14 @@ export async function POST(request: Request) {
       )
     }
 
+    const STYLE_MAP: Record<string, string> = {
+      noir_blanc: "Noir & Blanc détaillé",
+      contour_simple: "Contour simple",
+      dessin_detaille: "Noir & Blanc détaillé",
+      version_couleur: "Version couleur",
+    }
+    const mappedStyle = STYLE_MAP[style] || "Contour simple"
+
     const { data: account } = await supabase
       .from("accounts")
       .select("id")
@@ -105,7 +113,7 @@ export async function POST(request: Request) {
           title: BOOK_TITLE,
           author: (user.email?.split("@")[0]) || "Artiste",
           child_name: profile.name,
-          style: "Contour simple",
+          style: mappedStyle,
           format: "A4",
           orientation: "Portrait",
           frame: "Aucun",

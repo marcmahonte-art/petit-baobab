@@ -9,7 +9,7 @@ import type { ToolType } from "./store"
 /* ------------------------------------------------------------------ */
 
 const MAX_HISTORY = 100
-const RAINBOW_FALLBACK = "#FFD95C"
+const RAINBOW_FALLBACK = "#FCBF49"
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -36,6 +36,7 @@ export interface EngineExportData {
 
 interface VectorPathDef {
   id: string
+  d: string
   path2d: Path2D
   stroke: string
   strokeWidth: number
@@ -81,7 +82,7 @@ export class DrawingEngine {
 
   /* Tool state */
   private tool: ToolType = "brush"
-  private color: string = "#FFD95C"
+  private color: string = "#FCBF49"
   private brushSize: number = 6
   private zoom: number = 1
   private panX: number = 0
@@ -197,6 +198,7 @@ export class DrawingEngine {
     for (const p of sorted) {
       this.vectorDefs.push({
         id: p.id,
+        d: p.d,
         path2d: new Path2D(p.d),
         stroke: p.stroke,
         strokeWidth: p.strokeWidth,
@@ -691,4 +693,23 @@ export class DrawingEngine {
   }
 
   isVectorModeEnabled(): boolean { return this.isVectorMode }
+
+  /**
+   * Exports the current drawing as a VECTOR SVG string (outlines + region fills).
+   * Returns "" when the template is raster-only (no vector definitions), so the
+   * caller can fall back to a raster PNG.
+   */
+  toSVG(): string {
+    if (!this.isVectorMode) return ""
+
+    const paths = [...this.vectorDefs]
+      .sort((a, b) => a.zIndex - b.zIndex)
+      .map((vp) => {
+        const fill = this.pathFills.get(vp.id) || "#FFFFFF"
+        return `<path d="${vp.d}" fill="${fill}" stroke="${vp.stroke}" stroke-width="${vp.strokeWidth}" stroke-linejoin="round" stroke-linecap="round"/>`
+      })
+      .join("")
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${this.W} ${this.H}" width="${this.W}" height="${this.H}"><rect width="${this.W}" height="${this.H}" fill="#FFFFFF"/>${paths}</svg>`
+  }
 }

@@ -23,12 +23,12 @@ export function BookStepper({ activeStep, selectedCount, isGenerating, generatio
           >
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm shrink-0 transition-colors duration-200",
-              activeStep > 1 ? "bg-[#20C997] text-white" : "bg-[#7D6AF8] text-white"
+              activeStep > 1 ? "bg-[#20C997] text-white" : "bg-[#6D4CFF] text-white"
             )}>
               {activeStep > 1 ? <Check className="w-4 h-4 stroke-[3]" /> : "1"}
             </div>
             <div className="flex flex-col leading-tight mt-0.5">
-              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 1 ? "text-[#7D6AF8]" : "text-[#1F2937] group-hover:text-[#7D6AF8]")}>
+              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 1 ? "text-[#6D4CFF]" : "text-[#1F2937] group-hover:text-[#6D4CFF]")}>
                 Choisir les dessins
               </span>
               <span className="text-[10px] font-bold text-[#64748B] mt-0.5">Sélectionne tes dessins préférés</span>
@@ -43,12 +43,12 @@ export function BookStepper({ activeStep, selectedCount, isGenerating, generatio
           >
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm shrink-0 transition-colors duration-200",
-              activeStep === 2 ? "bg-[#7D6AF8] text-white" : activeStep > 2 ? "bg-[#20C997] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
+              activeStep === 2 ? "bg-[#6D4CFF] text-white" : activeStep > 2 ? "bg-[#20C997] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
             )}>
               {activeStep > 2 ? <Check className="w-4 h-4 stroke-[3]" /> : "2"}
             </div>
             <div className="flex flex-col leading-tight mt-0.5">
-              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 2 ? "text-[#7D6AF8]" : "text-[#1F2937] group-hover:text-[#7D6AF8]")}>
+              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 2 ? "text-[#6D4CFF]" : "text-[#1F2937] group-hover:text-[#6D4CFF]")}>
                 Personnaliser
               </span>
               <span className="text-[10px] font-bold text-[#64748B] mt-0.5">Titre, couverture et options</span>
@@ -63,12 +63,12 @@ export function BookStepper({ activeStep, selectedCount, isGenerating, generatio
           >
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm shrink-0 transition-colors duration-200",
-              activeStep === 3 ? "bg-[#7D6AF8] text-white" : activeStep > 3 ? "bg-[#20C997] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
+              activeStep === 3 ? "bg-[#6D4CFF] text-white" : activeStep > 3 ? "bg-[#20C997] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
             )}>
               {activeStep > 3 ? <Check className="w-4 h-4 stroke-[3]" /> : "3"}
             </div>
             <div className="flex flex-col leading-tight mt-0.5">
-              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 3 ? "text-[#7D6AF8]" : "text-[#1F2937] group-hover:text-[#7D6AF8]")}>
+              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 3 ? "text-[#6D4CFF]" : "text-[#1F2937] group-hover:text-[#6D4CFF]")}>
                 Aperçu
               </span>
               <span className="text-[10px] font-bold text-[#64748B] mt-0.5">Vois ton livre avant création</span>
@@ -83,14 +83,14 @@ export function BookStepper({ activeStep, selectedCount, isGenerating, generatio
           >
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm shrink-0 transition-colors duration-200",
-              activeStep === 4 ? "bg-[#7D6AF8] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
+              activeStep === 4 ? "bg-[#6D4CFF] text-white" : "bg-[#7A6A5E]/15 text-[#7A6A5E]"
             )}>
               {activeStep === 4 && isGenerating && generationProgress < 100 ? (
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : "4"}
             </div>
             <div className="flex flex-col leading-tight mt-0.5">
-              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 4 ? "text-[#7D6AF8]" : "text-[#1F2937] group-hover:text-[#7D6AF8]")}>
+              <span className={cn("text-[13px] font-extrabold transition-colors", activeStep === 4 ? "text-[#6D4CFF]" : "text-[#1F2937] group-hover:text-[#6D4CFF]")}>
                 Télécharger
               </span>
               <span className="text-[10px] font-bold text-[#64748B] mt-0.5">PDF prêt à imprimer</span>

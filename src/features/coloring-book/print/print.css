@@ -1,0 +1,66 @@
+/* =========================================================================
+   print.css — Version impression du livre de coloriage
+   Masque toute l'UI interactive et n'affiche QUE <BookPrint />.
+   ========================================================================= */
+
+/* Conteneur réservé à l'impression : masqué à l'écran, visible au print */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* 1. Masquer toute l'interface applicative (sidebar, navbar, boutons,
+        zoom, palette, animations…) en une seule règle robuste. */
+  body {
+    visibility: hidden;
+  }
+
+  /* 2. Rendre visible UNIQUEMENT le livre à imprimer. */
+  .print-only {
+    visibility: visible;
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* 3. Format de page et marges */
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* 4. Aucune animation / transition résiduelle */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+  }
+
+  /* 5. Chaque page = une feuille A4, saut de page après */
+  .print-page {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}

@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-nunito: "Nunito Sans";
   --color-bg: #FFF9F2;
   --color-text: #1A1A2E;
   --color-text-muted: #6B6B7B;
@@ -28,12 +30,83 @@
 
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+  /* shadcn/ui theme tokens (requis par Sheet, Button, Card, Dialog…)
+     Mappés vers des variables CSS définies dans :root / .dark ci-dessous. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* =========================================================================
+   shadcn/ui — variables de thème (clair par défaut)
+   Le Drawer mobile utilise --background (#FFFDF8) = fond plein et opaque.
+   ========================================================================= */
+:root {
+  --background: #FFFDF8;
+  --foreground: #3B2416;
+  --card: #FFFFFF;
+  --card-foreground: #3B2416;
+  --popover: #FFFFFF;
+  --popover-foreground: #3B2416;
+  --primary: #7D6AF8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5EFE6;
+  --secondary-foreground: #3B2416;
+  --muted: #F5EFE6;
+  --muted-foreground: #7A6A5E;
+  --accent: #FBF3E6;
+  --accent-foreground: #3B2416;
+  --destructive: #FF5E83;
+  --destructive-foreground: #FFFFFF;
+  --border: #F0E7DA;
+  --input: #F0E7DA;
+  --ring: #7D6AF8;
+}
+
+/* Mode sombre compatible */
+.dark {
+  --background: #1A1410;
+  --foreground: #F5EFE6;
+  --card: #241C16;
+  --card-foreground: #F5EFE6;
+  --popover: #241C16;
+  --popover-foreground: #F5EFE6;
+  --primary: #8B7BF5;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2E251D;
+  --secondary-foreground: #F5EFE6;
+  --muted: #2E251D;
+  --muted-foreground: #C9B8A8;
+  --accent: #2E251D;
+  --accent-foreground: #F5EFE6;
+  --destructive: #FF5E83;
+  --destructive-foreground: #FFFFFF;
+  --border: #3A2E24;
+  --input: #3A2E24;
+  --ring: #8B7BF5;
 }
 
 @keyframes float {

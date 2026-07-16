@@ -7,9 +7,9 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 
 const mascotAssets: Record<string, string> = {
-  awa: "/illustrations/mascot_awa.webp",
-  lion: "/illustrations/mascot_lion.webp",
-  robot: "/illustrations/mascot_robot.webp",
+  awa: "/illustrations/awa.webp",
+  lion: "/illustrations/lion.webp",
+  robot: "/illustrations/robot.webp",
 }
 
 const mascotColors: Record<string, string> = {

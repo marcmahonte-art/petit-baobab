@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Bell, Globe, Menu, ChevronDown, Star } from "lucide-react"
+import { Search, Bell, Globe, Menu, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,7 @@ export function Header() {
   // Credits/Stars store
   const credits = useCreditStore()
   const creditInfo = credits.useCredits()
-  const { account } = useAuthStore()
+  const { account, logout } = useAuthStore()
   const displayStars = account ? account.stars_balance : creditInfo.remaining
 
   // Profiles store
@@ -96,6 +96,121 @@ export function Header() {
     setUnreadNotifications(unreadNotifications.filter((n) => n.id !== id))
   }
 
+  const renderNotifications = () => (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute right-0 top-full mt-2 z-50 w-[calc(100vw-2rem)] max-w-[20rem] bg-white rounded-2xl border border-[#EFE7DB] shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-200"
+    >
+      <div className="flex items-center justify-between border-b border-[#F0E7DA] pb-2 mb-2">
+        <span className="text-sm font-bold text-[#3B2416]">Notifications</span>
+        {unreadNotifications.length > 0 && (
+          <button
+            onClick={handleMarkAllRead}
+            className="text-xs font-bold text-[#6D4CFF] hover:underline bg-transparent border-none cursor-pointer"
+          >
+            Tout marquer comme lu
+          </button>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+        {unreadNotifications.length === 0 ? (
+          <p className="text-xs text-[#7A6A5E] text-center py-4 font-semibold">
+            Aucune nouvelle notification
+          </p>
+        ) : (
+          unreadNotifications.map((n) => (
+            <div
+              key={n.id}
+              className="flex items-start justify-between gap-2 p-2 hover:bg-[#FFF9F2] rounded-xl group transition-colors"
+            >
+              <span className="text-xs font-bold text-[#3B2416] leading-snug">{n.text}</span>
+              <button
+                onClick={() => handleRemoveNotification(n.id)}
+                className="text-xs text-[#7A6A5E] hover:text-[#FF5E83] opacity-0 group-hover:opacity-100 transition-opacity bg-transparent border-none cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+
+  const renderProfileMenu = () => (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute right-0 top-full mt-2 z-50 w-[calc(100vw-2rem)] max-w-[16rem] bg-white rounded-2xl border border-[#EFE7DB] shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-200"
+    >
+      <div className="flex items-center gap-3 border-b border-[#F0E7DA] pb-3 mb-3">
+        <Avatar className="w-12 h-12">
+          <AvatarImage src={getAvatarSrc(profileMascot)} />
+          <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col text-left">
+          <span className="text-sm font-black text-[#3B2416]">{profileName}</span>
+          <span className="text-[11px] font-bold text-[#7A6A5E]">{profileAge}</span>
+        </div>
+      </div>
+
+      {profiles.length > 1 && (
+        <div className="mb-3">
+          <span className="text-[10px] font-black text-[#7A6A5E] uppercase tracking-wider block mb-1.5">
+            Changer de profil
+          </span>
+          <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
+            {profiles.map((p) => {
+              if (p.id === activeProfileId) return null
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    switchProfile(p.id)
+                    setShowProfileDropdown(false)
+                  }}
+                  className="flex items-center gap-2 p-1.5 hover:bg-[#FFF9F2] rounded-xl cursor-pointer transition-colors"
+                >
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage src={getAvatarSrc(p.mascot)} />
+                    <AvatarFallback>{p.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-bold text-[#3B2416]">{p.name}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1 pt-1 border-t border-[#F0E7DA]/50">
+        <Link
+          href="/parametres"
+          onClick={() => setShowProfileDropdown(false)}
+          className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
+        >
+          <Settings className="inline w-3.5 h-3.5 mr-1" /> Paramètres
+        </Link>
+        <Link
+          href="/parents"
+          onClick={() => setShowProfileDropdown(false)}
+          className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
+        >
+          <Users className="inline w-3.5 h-3.5 mr-1" /> Espace Parents
+        </Link>
+        <button
+          onClick={async () => {
+            setShowProfileDropdown(false)
+            await logout()
+            router.push("/login")
+          }}
+          className="text-xs font-bold text-[#FF5E83] hover:bg-[#FF5E83]/10 p-2 rounded-xl transition-colors block text-left w-full border-none bg-transparent cursor-pointer"
+        >
+          <LogOut className="inline w-3.5 h-3.5 mr-1" /> Se déconnecter
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 py-2 lg:h-[72px] select-none relative w-full">
       {/* Mobile Top Bar (Brand + Actions) & Desktop Actions Alignment */}
@@ -104,11 +219,11 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-10 h-10 text-[#7A6A5E]">
+              <Button variant="ghost" size="icon" className="w-10 h-10 text-[#7A6A5E]" aria-label="Menu de navigation">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-4 w-[280px]">
+            <SheetContent side="left" className="p-4 w-[290px]">
               <Sidebar />
             </SheetContent>
           </Sheet>
@@ -143,44 +258,52 @@ export function Header() {
             variant="ghost"
             size="icon"
             className="w-9 h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] bg-white hover:bg-neutral-50 shrink-0 flex items-center justify-center text-[10px] font-bold"
+            aria-label="Changer de langue"
           >
             <Globe className="w-4 h-4" />
-            <span className="uppercase ml-0.5">{lang}</span>
+            <span className="uppercase ml-0.5 hidden sm:inline">{lang}</span>
           </Button>
 
           {/* Bell Toggle Mobile */}
-          <Button
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowNotifications(!showNotifications)
-              setShowProfileDropdown(false)
-            }}
-            variant="ghost"
-            size="icon"
-            className="w-9 h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadNotifications.length > 0 && (
-              <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-[#FF5E83] rounded-full text-[8px] font-extrabold text-white flex items-center justify-center">
-                {unreadNotifications.length}
-              </span>
-            )}
-          </Button>
+          <div className="relative">
+            <Button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowNotifications(!showNotifications)
+                setShowProfileDropdown(false)
+              }}
+              variant="ghost"
+              size="icon"
+              className="w-9 h-9 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadNotifications.length > 0 && (
+                <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-[#FF5E83] rounded-full text-[8px] font-extrabold text-white flex items-center justify-center">
+                  {unreadNotifications.length}
+                </span>
+              )}
+            </Button>
+            {showNotifications && renderNotifications()}
+          </div>
 
           {/* Profile Dropdown Toggle Mobile */}
-          <div
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowProfileDropdown(!showProfileDropdown)
-              setShowNotifications(false)
-            }}
-            className="flex items-center gap-1.5 h-[40px] rounded-full border border-[#EFE7DB] pl-1.5 pr-2 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none"
-          >
-            <Avatar className="w-7 h-7">
-              <AvatarImage src={getAvatarSrc(profileMascot)} />
-              <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <ChevronDown className="w-3 h-3 text-[#7A6A5E] shrink-0" />
+          <div className="relative">
+            <div
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowProfileDropdown(!showProfileDropdown)
+                setShowNotifications(false)
+              }}
+              className="flex items-center gap-1.5 h-[40px] rounded-full border border-[#EFE7DB] pl-1.5 pr-2 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm select-none"
+            >
+              <Avatar className="w-7 h-7">
+                <AvatarImage src={getAvatarSrc(profileMascot)} />
+                <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <ChevronDown className="w-3 h-3 text-[#7A6A5E] shrink-0" />
+            </div>
+            {showProfileDropdown && renderProfileMenu()}
           </div>
         </div>
       </div>
@@ -190,6 +313,7 @@ export function Header() {
         <button
           type="submit"
           className="absolute left-6 top-1/2 -translate-y-1/2 text-[#7A6A5E] hover:text-[#3B2416] transition-colors border-none bg-transparent cursor-pointer"
+          aria-label="Rechercher"
         >
           <Search className="w-5 h-5" />
         </button>
@@ -222,159 +346,58 @@ export function Header() {
           }}
           variant="ghost"
           className="h-11 px-4 rounded-full border border-[#EFE7DB] text-[#7A6A5E] bg-white hover:bg-neutral-50 flex items-center gap-2 text-sm font-bold"
+          aria-label="Changer de langue"
         >
           <Globe className="w-4 h-4" />
           <span className="uppercase text-xs">{lang}</span>
         </Button>
 
         {/* Notifications */}
-        <Button
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowNotifications(!showNotifications)
-            setShowProfileDropdown(false)
-          }}
-          variant="ghost"
-          size="icon"
-          className="w-11 h-11 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
-        >
-          <Bell className="w-5 h-5" />
-          {unreadNotifications.length > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#FF5E83] rounded-full text-[9px] font-extrabold text-white flex items-center justify-center">
-              {unreadNotifications.length}
-            </span>
-          )}
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowNotifications(!showNotifications)
+              setShowProfileDropdown(false)
+            }}
+            variant="ghost"
+            size="icon"
+            className="w-11 h-11 rounded-full border border-[#EFE7DB] text-[#7A6A5E] relative bg-white hover:bg-neutral-50 shrink-0"
+            aria-label="Notifications"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadNotifications.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#FF5E83] rounded-full text-[9px] font-extrabold text-white flex items-center justify-center">
+                {unreadNotifications.length}
+              </span>
+            )}
+          </Button>
+          {showNotifications && renderNotifications()}
+        </div>
 
         {/* Profile Dropdown */}
-        <div
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowProfileDropdown(!showProfileDropdown)
-            setShowNotifications(false)
-          }}
-          className="flex items-center gap-2 h-[56px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm"
-        >
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={getAvatarSrc(profileMascot)} />
-            <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col text-left leading-none">
-            <span className="text-sm font-bold text-[#3B2416]">{profileName}</span>
-            <span className="text-[10px] font-bold text-[#7A6A5E] mt-0.5">{profileAge}</span>
-          </div>
-          <ChevronDown className="w-4 h-4 text-[#7A6A5E] ml-1 shrink-0" />
-        </div>
-      </div>
-
-      {/* Global Notifications Dropdown */}
-      {showNotifications && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 lg:right-16 top-16 z-50 w-80 bg-white rounded-2xl border border-[#EFE7DB] shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-200"
-        >
-          <div className="flex items-center justify-between border-b border-[#F0E7DA] pb-2 mb-2">
-            <span className="text-sm font-bold text-[#3B2416]">Notifications</span>
-            {unreadNotifications.length > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                className="text-xs font-bold text-[#7C57FF] hover:underline bg-transparent border-none cursor-pointer"
-              >
-                Tout marquer comme lu
-              </button>
-            )}
-          </div>
-          <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
-            {unreadNotifications.length === 0 ? (
-              <p className="text-xs text-[#7A6A5E] text-center py-4 font-semibold">
-                Aucune nouvelle notification
-              </p>
-            ) : (
-              unreadNotifications.map((n) => (
-                <div
-                  key={n.id}
-                  className="flex items-start justify-between gap-2 p-2 hover:bg-[#FFF9F2] rounded-xl group transition-colors"
-                >
-                  <span className="text-xs font-bold text-[#3B2416] leading-snug">{n.text}</span>
-                  <button
-                    onClick={() => handleRemoveNotification(n.id)}
-                    className="text-xs text-[#7A6A5E] hover:text-[#FF5E83] opacity-0 group-hover:opacity-100 transition-opacity bg-transparent border-none cursor-pointer"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Global Profile Dropdown */}
-      {showProfileDropdown && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 top-16 z-50 w-64 bg-white rounded-2xl border border-[#EFE7DB] shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-200"
-        >
-          <div className="flex items-center gap-3 border-b border-[#F0E7DA] pb-3 mb-3">
-            <Avatar className="w-12 h-12">
+        <div className="relative">
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowProfileDropdown(!showProfileDropdown)
+              setShowNotifications(false)
+            }}
+            className="flex items-center gap-2 h-[56px] rounded-full border border-[#EFE7DB] pl-2 pr-4 bg-white cursor-pointer hover:bg-neutral-50 transition-colors shadow-sm"
+          >
+            <Avatar className="w-10 h-10">
               <AvatarImage src={getAvatarSrc(profileMascot)} />
               <AvatarFallback>{profileName.substring(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <div className="flex flex-col text-left">
-              <span className="text-sm font-black text-[#3B2416]">{profileName}</span>
-              <span className="text-[11px] font-bold text-[#7A6A5E]">{profileAge}</span>
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-sm font-bold text-[#3B2416]">{profileName}</span>
+              <span className="text-[10px] font-bold text-[#7A6A5E] mt-0.5">{profileAge}</span>
             </div>
+            <ChevronDown className="w-4 h-4 text-[#7A6A5E] ml-1 shrink-0" />
           </div>
-
-          {/* Switch profile section */}
-          {profiles.length > 1 && (
-            <div className="mb-3">
-              <span className="text-[10px] font-black text-[#7A6A5E] uppercase tracking-wider block mb-1.5">
-                Changer de profil
-              </span>
-              <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
-                {profiles.map((p) => {
-                  if (p.id === activeProfileId) return null
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => {
-                        switchProfile(p.id)
-                        setShowProfileDropdown(false)
-                      }}
-                      className="flex items-center gap-2 p-1.5 hover:bg-[#FFF9F2] rounded-xl cursor-pointer transition-colors"
-                    >
-                      <Avatar className="w-7 h-7">
-                        <AvatarImage src={getAvatarSrc(p.mascot)} />
-                        <AvatarFallback>{p.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs font-bold text-[#3B2416]">{p.name}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Links */}
-          <div className="flex flex-col gap-1 pt-1 border-t border-[#F0E7DA]/50">
-            <Link
-              href="/parametres"
-              onClick={() => setShowProfileDropdown(false)}
-              className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
-            >
-              ⚙️ Paramètres
-            </Link>
-            <Link
-              href="/parents"
-              onClick={() => setShowProfileDropdown(false)}
-              className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
-            >
-              👨‍👩‍👧 Espace Parents
-            </Link>
-          </div>
+          {showProfileDropdown && renderProfileMenu()}
         </div>
-      )}
+      </div>
     </header>
   )
 }

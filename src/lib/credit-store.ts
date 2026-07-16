@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { useAuthStore } from "./auth-store"
 
 export type PlanType = "free" | "decouverte" | "super-baobab" | "ecole-pro"
 
@@ -51,8 +52,6 @@ function isNewMonthlyPeriod(subscriptionDate: string, lastReset: string): boolea
 export function getCreditCost(style: StyleType): number {
   return CREDIT_COST[style]
 }
-
-import { useAuthStore } from "./auth-store"
 
 export function canGenerate(style: StyleType): { allowed: boolean; reason?: string; cost: number } {
   const cost = CREDIT_COST[style]

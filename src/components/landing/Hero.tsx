@@ -27,7 +27,7 @@ export default function Hero() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         {/* Left Column */}
         <div>
-          <h1 className="text-[36px] lg:text-display-lg font-extrabold leading-tight">
+          <h1 className="text-[28px] sm:text-[34px] lg:text-display-lg font-extrabold leading-tight">
             <span className="text-[#1A1A2E]">Le coloriage</span>
             <br />
             <span className="text-[#1A1A2E]">qui éveille la </span>
@@ -56,7 +56,7 @@ export default function Hero() {
             ) : (
               <>
                 <Button
-                  onClick={() => router.push("/login?tab=signup")}
+                  onClick={() => router.push("/signup")}
                   className="h-14 px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-[16px] rounded-full shadow-hover hover:scale-[1.03] transition-all duration-200 cursor-pointer"
                 >
                   {lang === "fr" ? "Commencer gratuitement" : "Start Free"}

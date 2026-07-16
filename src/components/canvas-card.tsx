@@ -8,6 +8,8 @@ import { savaneArtPaths } from "@/lib/line-art"
 import type { SaveDrawingInput, SavedDrawing } from "@/features/drawings/types"
 import { storageService } from "@/lib/storageService"
 import { useProfileStore } from "@/lib/profile-store"
+import { drawingService } from "@/features/drawings/DrawingService"
+import { setDrawingSvg } from "@/lib/pdf/drawingSvgCache"
 
 export interface CanvasCardRef {
   undo: () => void
@@ -81,6 +83,12 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
   /* ---- Load canvas from a saved drawing ---- */
   const loadCanvasFromSaved = useCallback(async (engine: DrawingEngine, drawing: SavedDrawing) => {
     if (isNewFormat(drawing.state.canvasJson)) {
+      const data = JSON.parse(drawing.state.canvasJson) as { isVectorMode?: boolean }
+      if (data.isVectorMode) {
+        engine.loadVectorTemplate(savaneArtPaths)
+      } else if (drawing.template?.image) {
+        await engine.loadRasterTemplate(drawing.template.image)
+      }
       await engine.importState(drawing.state.canvasJson)
     } else {
       await engine.importLegacyImage(drawing.image)
@@ -119,9 +127,8 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       const activeId = activeSavedDrawingId
       if (activeId) {
         try {
-          const raw = window.localStorage.getItem("petit-baobab.saved-drawings.v1")
-          if (raw) {
-            const list = JSON.parse(raw) as SavedDrawing[]
+          const list = await drawingService.list()
+          if (list) {
             const found = list.find((d) => d.id === activeId)
             if (found) {
               setSelectedTool(found.state.selectedTool)
@@ -295,7 +302,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
     download: () => {
       const engine = engineRef.current
       if (!engine) return
-      const dataURL = engine.toDataURL({ format: "png", quality: 1, multiplier: 1 })
+      const dataURL = engine.toDataURL({ format: "png", quality: 1, multiplier: 2 })
       const link = document.createElement("a")
       link.download = "mon-coloriage-petit-baobab.png"
       link.href = dataURL
@@ -316,14 +323,17 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
       const canvasJson = engine.exportState()
       const filledZones = engine.getFilledZoneCount()
 
-      const drawingId = activeSavedDrawingId || crypto.randomUUID()
-      const cleanProfileId = profileId || "anonymous"
+        const drawingId = activeSavedDrawingId || crypto.randomUUID()
+        const cleanProfileId = profileId || "anonymous"
+
+        const vectorSvg = engine.toSVG()
+        if (vectorSvg) setDrawingSvg(drawingId, vectorSvg)
 
       let imageUrl = ""
       let thumbnailUrl = ""
 
       try {
-        const imageBlob = await engine.toBlob({ format: "png", quality: 1, multiplier: 1 })
+        const imageBlob = await engine.toBlob({ format: "png", quality: 1, multiplier: 2 })
         const thumbBlob = await engine.toBlob({ format: "png", quality: 0.85, multiplier: 0.28 })
 
         if (imageBlob && thumbBlob) {
@@ -334,7 +344,7 @@ export const CanvasCard = forwardRef<CanvasCardRef, CanvasCardProps>((props, ref
         }
       } catch (error) {
         console.error("Failed to upload drawing to Supabase Storage, using fallback base64 DataURLs:", error)
-        imageUrl = engine.toDataURL({ format: "png", quality: 1, multiplier: 1 })
+        imageUrl = engine.toDataURL({ format: "png", quality: 1, multiplier: 2 })
         thumbnailUrl = engine.toDataURL({ format: "png", quality: 0.85, multiplier: 0.28 })
       }
 

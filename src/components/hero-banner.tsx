@@ -1,6 +1,14 @@
+"use client"
+
 import Image from "next/image"
+import { useProfileStore } from "@/lib/profile-store"
 
 export function HeroBanner() {
+  const profiles = useProfileStore((s) => s.profiles)
+  const activeProfileId = useProfileStore((s) => s.activeProfileId)
+  const activeProfile = profiles.find((p) => p.id === activeProfileId)
+  const childName = activeProfile?.name || "Awa"
+
   return (
     <section className="h-[180px] xs:h-[200px] md:h-[250px] lg:h-[250px] rounded-[32px] bg-[#FFF5CC] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] relative select-none">
       {/* Left Section (Character & Greeting) */}
@@ -11,14 +19,14 @@ export function HeroBanner() {
             alt="Awa"
             width={240}
             height={240}
-            className="w-[120px] h-[120px] xs:w-[140px] h-[140px] md:w-[240px] md:h-[240px] object-contain object-bottom"
+            className="w-[120px] h-[120px] xs:w-[140px] md:w-[240px] md:h-[240px] object-contain object-bottom"
             priority
           />
         </div>
 
         <div className="relative z-10 pl-[110px] xs:pl-[130px] md:pl-[240px] lg:pl-[210px] xl:pl-[240px] flex flex-col justify-center h-full text-left max-w-[540px]">
           <h2 className="text-xl xs:text-2xl md:text-[32px] xl:text-[38px] font-extrabold leading-none text-[#3B2416] whitespace-nowrap">
-            Bonjour Awa !
+            Bonjour {childName} !
           </h2>
           <p className="text-xs xs:text-sm md:text-[20px] xl:text-[24px] font-bold text-[#3B2416] mt-1.5 xs:mt-2 leading-snug">
             Qu&apos;allons-nous créer aujourd&apos;hui ?

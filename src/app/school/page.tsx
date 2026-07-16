@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ArrowLeft,
   Settings,
+  Lightbulb,
 } from "lucide-react"
 import Image from "next/image"
 
@@ -143,7 +144,7 @@ export default function SchoolSkeletonPage() {
 
         {/* Demo Alert Box */}
         <div className="bg-[#FFE08A]/15 border-2 border-[#FFE08A] rounded-[24px] p-5 flex items-start gap-4">
-          <div className="w-8 h-8 rounded-full bg-[#FFE08A] flex items-center justify-center text-[#3B2416] shrink-0 font-bold text-sm">💡</div>
+          <div className="w-8 h-8 rounded-full bg-[#FFE08A] flex items-center justify-center text-[#3B2416] shrink-0"><Lightbulb className="w-4 h-4" /></div>
           <div>
             <h4 className="font-extrabold text-sm mb-1">{lang === "fr" ? "Prêt pour les développements futurs" : "Ready for future integration"}</h4>
             <p className="text-xs text-[#7A6A5E] font-bold leading-normal">

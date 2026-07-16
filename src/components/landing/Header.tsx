@@ -145,7 +145,7 @@ export default function Header() {
                 {lang === "fr" ? "Se connecter" : "Log In"}
               </Button>
               <Button
-                onClick={() => router.push("/login?tab=signup")}
+                onClick={() => router.push("/signup")}
                 className="h-11 rounded-full px-6 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-semibold shadow-card hover:shadow-hover hover:scale-[1.02] transition-all duration-200 ease-out cursor-pointer"
               >
                 {lang === "fr" ? "Créer un compte" : "Create Account"}
@@ -160,7 +160,7 @@ export default function Header() {
                 <Menu className="w-5 h-5 text-[#1A1A2E]" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-white pt-16">
+            <SheetContent side="right" className="bg-background pt-16 w-[290px] sm:w-[320px]">
               <nav className="flex flex-col gap-6 mt-8">
                 {navLinks.map((link) => (
                   <a
@@ -190,7 +190,7 @@ export default function Header() {
                   {lang === "fr" ? "Se connecter" : "Log In"}
                 </Button>
                 <Button
-                  onClick={() => { setSheetOpen(false); router.push("/login?tab=signup") }}
+                  onClick={() => { setSheetOpen(false); router.push("/signup") }}
                   className="w-full h-11 rounded-full bg-[#7D6AF8] hover:bg-[#6552E8] text-white"
                 >
                   {lang === "fr" ? "Créer un compte" : "Create Account"}

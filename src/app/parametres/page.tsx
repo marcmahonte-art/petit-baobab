@@ -15,7 +15,8 @@ import {
   Check,
   Music,
   User,
-  Sparkles
+  Sparkles,
+  Lightbulb,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -379,7 +380,7 @@ export default function ParametresPage() {
                   
                   <div className="p-4 rounded-2xl bg-[#FFF5CC] border border-[#FFE08A] flex flex-col gap-2 mt-2">
                     <span className="text-xs font-black text-[#3B2416] uppercase tracking-wider block">
-                      💡 Astuce Mascotte
+                      <Lightbulb className="inline w-3.5 h-3.5 mr-1" /> Astuce Mascotte
                     </span>
                     <p className="text-xs font-semibold text-[#7A6A5E] leading-relaxed">
                       La mascotte choisie t&apos;accompagnera partout sur le site et te donnera des encouragements quand tu finiras tes dessins !

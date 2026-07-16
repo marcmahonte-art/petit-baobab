@@ -1,8 +1,8 @@
 -- ============================================================
--- Petit Baobab — Authentification & Gestion des Étoiles
+-- Petit Baobab — Authentification & Gestion des Étoiles (Correction)
 -- ============================================================
 -- Ce script configure les tables de profils, comptes parents,
--- profils enfants, dessins IA et historique des transactions.
+-- profils enfants, dessins IA, livres et historique des transactions.
 --
 -- ▸ À exécuter dans : Supabase Dashboard → SQL Editor → New Query
 -- ▸ Projet : https://supabase.com/dashboard/project/bsepfqpjomrtveavbfib
@@ -43,16 +43,69 @@ CREATE TABLE IF NOT EXISTS public.child_profiles (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table: public.drawings (Historique des dessins magiques / coloriages)
-CREATE TABLE IF NOT EXISTS public.drawings (
+-- Renommer public.drawings en public.saved_drawings si elle existe et saved_drawings n'existe pas
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'drawings') THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'saved_drawings') THEN
+      ALTER TABLE public.drawings RENAME TO saved_drawings;
+    ELSE
+      DROP TABLE IF EXISTS public.drawings CASCADE;
+    END IF;
+  END IF;
+END $$;
+
+-- Table: public.saved_drawings (Historique des dessins magiques / coloriages)
+CREATE TABLE IF NOT EXISTS public.saved_drawings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id UUID NOT NULL REFERENCES public.child_profiles(id) ON DELETE CASCADE,
   image_url TEXT NOT NULL,
   origin TEXT NOT NULL CHECK (origin IN ('coloriage', 'ia')),
   style TEXT NOT NULL,
   stars_cost INTEGER NOT NULL DEFAULT 0,
-  status TEXT NOT NULL CHECK (status IN ('en_cours', 'terminé', 'erreur')),
-  created_at TIMESTAMPTZ DEFAULT now()
+  status TEXT NOT NULL CHECK (status IN ('en_cours', 'terminé', 'erreur', 'in_progress', 'completed', 'error')),
+  name TEXT NOT NULL DEFAULT 'Dessin sans titre',
+  model_name TEXT,
+  is_colored BOOLEAN DEFAULT false,
+  thumbnail TEXT,
+  template JSONB DEFAULT '{}'::jsonb,
+  state JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- S'assurer que les nouvelles colonnes sont présentes sur saved_drawings si elle existait déjà
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT 'Dessin sans titre';
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS model_name TEXT;
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS is_colored BOOLEAN DEFAULT false;
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS thumbnail TEXT;
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS template JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS state JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.saved_drawings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
+-- Table: public.books (Livres créés par les enfants)
+-- NOTE : On supprime l'ancienne table de livres créée potentiellement avec un profile_id TEXT dans setup-supabase-storage.sql pour forcer le bon type UUID
+DROP TABLE IF EXISTS public.books CASCADE;
+
+CREATE TABLE IF NOT EXISTS public.books (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID NOT NULL REFERENCES public.child_profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  subtitle TEXT,
+  author TEXT DEFAULT 'Anonyme',
+  child_name TEXT,
+  cover TEXT,
+  palette TEXT,
+  style TEXT,
+  frame TEXT,
+  format TEXT,
+  orientation TEXT,
+  pages JSONB DEFAULT '[]'::jsonb,
+  status TEXT NOT NULL CHECK (status IN ('draft', 'finalized')),
+  pdf_url TEXT,
+  cover_image_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Table: public.stars_transactions (Historique des mouvements d'étoiles)
@@ -73,7 +126,16 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 DECLARE
   new_account_id UUID;
+  email_display_name TEXT;
+  username TEXT;
 BEGIN
+  -- Extraire un joli nom par défaut de l'adresse e-mail
+  username := split_part(new.email, '@', 1);
+  email_display_name := initcap(replace(replace(replace(username, '.', ' '), '_', ' '), '-', ' '));
+  IF email_display_name IS NULL OR email_display_name = '' THEN
+    email_display_name := 'Mon Enfant';
+  END IF;
+
   -- 1. Créer le profil public
   INSERT INTO public.profiles (id, email, locale)
   VALUES (
@@ -109,7 +171,7 @@ BEGIN
     SELECT 1 FROM public.child_profiles WHERE account_id = new_account_id
   ) THEN
     INSERT INTO public.child_profiles (account_id, name, mascot, pin_required)
-    VALUES (new_account_id, 'Mon Enfant', 'awa', false);
+    VALUES (new_account_id, email_display_name, 'awa', false);
   END IF;
 
   RETURN new;
@@ -171,36 +233,48 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.child_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.drawings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saved_drawings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stars_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Politiques RLS: profiles
+DROP POLICY IF EXISTS "L'utilisateur peut lire son propre profil" ON public.profiles;
 CREATE POLICY "L'utilisateur peut lire son propre profil" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "L'utilisateur peut mettre à jour son propre profil" ON public.profiles;
 CREATE POLICY "L'utilisateur peut mettre à jour son propre profil" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
 -- Politiques RLS: accounts
+DROP POLICY IF EXISTS "L'utilisateur peut lire son propre compte familial" ON public.accounts;
 CREATE POLICY "L'utilisateur peut lire son propre compte familial" ON public.accounts
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "L'utilisateur peut modifier son propre compte familial" ON public.accounts;
 CREATE POLICY "L'utilisateur peut modifier son propre compte familial" ON public.accounts
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "L'utilisateur peut créer son propre compte familial" ON public.accounts;
+CREATE POLICY "L'utilisateur peut créer son propre compte familial" ON public.accounts
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- Politiques RLS: child_profiles
+DROP POLICY IF EXISTS "L'utilisateur peut lire les profils enfants de sa famille" ON public.child_profiles;
 CREATE POLICY "L'utilisateur peut lire les profils enfants de sa famille" ON public.child_profiles
   FOR SELECT USING (
     account_id IN (SELECT id FROM public.accounts WHERE user_id = auth.uid())
   );
 
+DROP POLICY IF EXISTS "L'utilisateur peut modifier les profils enfants de sa famille" ON public.child_profiles;
 CREATE POLICY "L'utilisateur peut modifier les profils enfants de sa famille" ON public.child_profiles
   FOR ALL USING (
     account_id IN (SELECT id FROM public.accounts WHERE user_id = auth.uid())
   );
 
--- Politiques RLS: drawings
-CREATE POLICY "L'utilisateur peut lire les dessins de sa famille" ON public.drawings
+-- Politiques RLS: saved_drawings
+DROP POLICY IF EXISTS "L'utilisateur peut lire les dessins de sa famille" ON public.saved_drawings;
+CREATE POLICY "L'utilisateur peut lire les dessins de sa famille" ON public.saved_drawings
   FOR SELECT USING (
     profile_id IN (
       SELECT cp.id FROM public.child_profiles cp
@@ -209,7 +283,29 @@ CREATE POLICY "L'utilisateur peut lire les dessins de sa famille" ON public.draw
     )
   );
 
-CREATE POLICY "L'utilisateur peut modifier les dessins de sa famille" ON public.drawings
+DROP POLICY IF EXISTS "L'utilisateur peut modifier les dessins de sa famille" ON public.saved_drawings;
+CREATE POLICY "L'utilisateur peut modifier les dessins de sa famille" ON public.saved_drawings
+  FOR ALL USING (
+    profile_id IN (
+      SELECT cp.id FROM public.child_profiles cp
+      JOIN public.accounts acc ON cp.account_id = acc.id
+      WHERE acc.user_id = auth.uid()
+    )
+  );
+
+-- Politiques RLS: books
+DROP POLICY IF EXISTS "L'utilisateur peut lire les livres de sa famille" ON public.books;
+CREATE POLICY "L'utilisateur peut lire les livres de sa famille" ON public.books
+  FOR SELECT USING (
+    profile_id IN (
+      SELECT cp.id FROM public.child_profiles cp
+      JOIN public.accounts acc ON cp.account_id = acc.id
+      WHERE acc.user_id = auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "L'utilisateur peut modifier les livres de sa famille" ON public.books;
+CREATE POLICY "L'utilisateur peut modifier les livres de sa famille" ON public.books
   FOR ALL USING (
     profile_id IN (
       SELECT cp.id FROM public.child_profiles cp
@@ -219,11 +315,22 @@ CREATE POLICY "L'utilisateur peut modifier les dessins de sa famille" ON public.
   );
 
 -- Politiques RLS: stars_transactions
+DROP POLICY IF EXISTS "L'utilisateur peut lire l'historique d'étoiles de sa famille" ON public.stars_transactions;
 CREATE POLICY "L'utilisateur peut lire l'historique d'étoiles de sa famille" ON public.stars_transactions
   FOR SELECT USING (
     account_id IN (SELECT id FROM public.accounts WHERE user_id = auth.uid())
   );
 
--- ============================================================
--- FIN DU SCRIPT MIGRATION
--- ============================================================
+DROP POLICY IF EXISTS "L'utilisateur peut créer des transactions pour son compte" ON public.stars_transactions;
+CREATE POLICY "L'utilisateur peut créer des transactions pour son compte" ON public.stars_transactions
+  FOR INSERT WITH CHECK (
+    account_id IN (SELECT id FROM public.accounts WHERE user_id = auth.uid())
+  );
+
+-- ────────────────────────────────────────────────────────────
+-- 4. INDEX DE PERFORMANCE
+-- ────────────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_child_profiles_account_id ON public.child_profiles(account_id);
+CREATE INDEX IF NOT EXISTS idx_saved_drawings_profile_id ON public.saved_drawings(profile_id);
+CREATE INDEX IF NOT EXISTS idx_books_profile_id ON public.books(profile_id);
+CREATE INDEX IF NOT EXISTS idx_stars_transactions_account_id ON public.stars_transactions(account_id);

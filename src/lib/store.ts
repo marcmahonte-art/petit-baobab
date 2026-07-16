@@ -47,7 +47,7 @@ export interface ColoringState {
 
 export const useColoringStore = create<ColoringState>((set, get) => ({
   selectedTool: "brush",
-  selectedColor: "#FFD95C",
+  selectedColor: "#FCBF49",
   brushSize: 6,
   points: 120,
   badges: ["Super Artiste", "Explorateur", "Creatif", "Lecteur"],

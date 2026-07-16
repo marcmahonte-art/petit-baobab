@@ -5,9 +5,11 @@
   | "Traits épais"
   | "Contours épais"
 
+import type { LucideIcon } from "lucide-react"
+
 export interface BookStyleOption {
   id: BookStyle
   name: string
   desc: string
-  icon: string
+  icon: LucideIcon
 }

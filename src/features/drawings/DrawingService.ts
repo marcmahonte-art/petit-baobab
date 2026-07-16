@@ -1,4 +1,5 @@
 import { DrawingRepository } from "@/features/drawings/DrawingRepository"
+import { useProfileStore } from "@/lib/profile-store"
 import type { DrawingItem } from "@/lib/store"
 import type { DrawingSort, SaveDrawingInput, SavedDrawing } from "@/features/drawings/types"
 
@@ -13,15 +14,17 @@ export class DrawingService {
   constructor(private repository = new DrawingRepository()) {}
 
   async list(filters?: { search?: string; category?: string; sort?: DrawingSort }) {
+    const activeProfileId = useProfileStore.getState().activeProfileId
     const drawings = await this.repository.list()
     const search = filters?.search?.trim().toLowerCase() || ""
     const category = filters?.category || "all"
 
     return drawings
       .filter((drawing) => {
+        const matchesProfile = !activeProfileId || drawing.profileId === activeProfileId
         const matchesSearch = !search || drawing.name.toLowerCase().includes(search) || drawing.modelName.toLowerCase().includes(search)
         const matchesCategory = category === "all" || drawing.category === category
-        return matchesSearch && matchesCategory
+        return matchesProfile && matchesSearch && matchesCategory
       })
       .sort((a, b) => {
         if (filters?.sort === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -93,7 +96,7 @@ export class DrawingService {
       state: {
         canvasJson: "",
         selectedTool: "brush",
-        selectedColor: "#FFD95C",
+        selectedColor: "#FCBF49",
         brushSize: 6,
         usedColors: [],
         filledZones: 0,

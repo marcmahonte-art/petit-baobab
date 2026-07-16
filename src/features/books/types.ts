@@ -3,7 +3,7 @@ export type BookFormat = "A4" | "A5" | "Letter" | "Carré"
 export type BookOrientation = "Portrait" | "Paysage" | "Carré"
 export type BookFrame = "Nature" | "Faso Dan Fani" | "Bogolan" | "Savane" | "Animaux" | "Aucun"
 export type BookStyle = "Contour simple" | "Noir & Blanc détaillé" | "Traits épais" | "Version couleur"
-export type CoverTemplate = "petit-baobab" | "savane" | "ecole" | "afrique" | "coloree"
+export type CoverTemplate = "petit-baobab" | "savane" | "ecole" | "afrique" | "coloree" | "ia"
 export type CoverPalette = "Purple" | "Green" | "Yellow" | "Orange" | "Blue" | "Pink" | "Turquoise" | "Multicolore"
 
 export interface BookPageRef {

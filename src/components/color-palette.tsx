@@ -6,30 +6,31 @@ import { Check } from "lucide-react"
 import { motion } from "framer-motion"
 
 export const colors = [
-  { name: "Rouge", value: "#FF5E83" },
-  { name: "Orange", value: "#FF8E3C" },
-  { name: "Jaune", value: "#FFD95C" },
-  { name: "Vert Clair", value: "#A8E05F" }, // Added light green to match mockup
-  { name: "Vert", value: "#20C997" },
-  { name: "Turquoise", value: "#13C6A2" },
-  { name: "Bleu", value: "#1194FF" },
-  { name: "Violet", value: "#7D6AF8" },
-  { name: "Rose", value: "#FF85A2" },
-  { name: "Marron", value: "#8D5B4C" },
-  { name: "Beige", value: "#F0E7DA" },
-  { name: "Gris", value: "#A19388" },
-  { name: "Noir", value: "#3B2416" },
-  { name: "Rainbow", value: "rainbow" },
+  { name: "Rouge", value: "#E63946" },
+  { name: "Orange", value: "#F77F00" },
+  { name: "Jaune", value: "#FCBF49" },
+  { name: "Vert pomme", value: "#8AC926" },
+  { name: "Bleu ciel", value: "#1982C4" },
+  { name: "Violet", value: "#6A4C93" },
+  { name: "Rose pastel", value: "#FFB5C0" },
+  { name: "Pêche", value: "#FFD8A9" },
+  { name: "Bleu pastel", value: "#A8DADC" },
+  { name: "Vert menthe", value: "#B5E8C5" },
+  { name: "Lavande", value: "#D4C1EC" },
+  { name: "Marron", value: "#8B5E3C" },
+  { name: "Beige", value: "#E8D4B0" },
+  { name: "Vert forêt", value: "#3A5A40" },
+  { name: "Noir", value: "#2B2D42" },
+  { name: "Blanc", value: "#F1F1F1" },
 ]
 
 export function ColorPalette() {
   const { selectedColor, setSelectedColor } = useColoringStore()
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none w-full">
+    <div className="flex items-center gap-2 flex-wrap w-full">
       {colors.map((color) => {
         const isSelected = selectedColor === color.value
-        const isRainbow = color.value === "rainbow"
 
         return (
           <motion.button
@@ -42,19 +43,10 @@ export function ColorPalette() {
               "w-[48px] h-[48px] rounded-full relative cursor-pointer flex items-center justify-center transition-all shadow-sm focus:outline-none shrink-0 border border-black/10",
               isSelected && "border-[4px] border-[#F5C400] scale-105"
             )}
-            style={{
-              background: isRainbow
-                ? "linear-gradient(45deg, #ff5e83, #ff8e3c, #ffd95c, #20c997, #1194ff, #7d6af8)"
-                : color.value,
-            }}
+            style={{ background: color.value }}
           >
             {isSelected && (
               <Check className="w-5 h-5 text-white stroke-[3.5px] drop-shadow-sm" />
-            )}
-            {isRainbow && !isSelected && (
-              <span className="text-[9px] font-black text-white drop-shadow-sm uppercase">
-                Arc
-              </span>
             )}
           </motion.button>
         )

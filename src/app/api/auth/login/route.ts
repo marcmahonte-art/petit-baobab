@@ -168,7 +168,7 @@ export async function POST(request: Request) {
         })
         .select()
       
-      profiles = newProfile ? [newProfile] : []
+      profiles = newProfile || []
     }
 
     // 4. Store session tokens in secure httpOnly cookies

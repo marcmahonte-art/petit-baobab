@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Africa silhouette -->
+  <path d="M70 36 C84 30, 96 34, 100 44 C112 38, 124 40, 128 52 C140 54, 146 64, 140 74 C150 84, 150 98, 138 104 C142 116, 132 126, 122 122 C120 134, 108 138, 102 130 C92 138, 80 132, 80 120 C68 122, 60 112, 66 102 C56 96, 56 82, 66 78 C58 68, 60 54, 70 52 C60 46, 58 38, 70 36 Z" fill="#FFB300"/>
+  <!-- Bogolan pattern dots -->
+  <g fill="#3B2416">
+    <circle cx="92" cy="70" r="3"/><circle cx="104" cy="74" r="3"/><circle cx="86" cy="84" r="3"/>
+    <circle cx="100" cy="88" r="3"/><circle cx="112" cy="84" r="3"/><circle cx="94" cy="98" r="3"/>
+    <circle cx="108" cy="100" r="3"/>
+  </g>
+  <!-- Triangle pattern -->
+  <g fill="#FF5E83">
+    <path d="M82 108 L88 108 L85 114 Z"/>
+    <path d="M100 108 L106 108 L103 114 Z"/>
+    <path d="M118 108 L124 108 L121 114 Z"/>
+  </g>
+  <!-- Drum -->
+  <g transform="translate(140 130)">
+    <rect x="-16" y="-18" width="32" height="36" rx="4" fill="#8A5A2B"/>
+    <ellipse cx="0" cy="-18" rx="16" ry="6" fill="#E9C9A0"/>
+    <ellipse cx="0" cy="18" rx="16" ry="6" fill="#6B4423"/>
+    <path d="M-16 -6 L16 -6 M-16 6 L16 6" stroke="#FFD95C" stroke-width="3"/>
+  </g>
+  <!-- Small sun -->
+  <circle cx="40" cy="44" r="14" fill="#FFD95C"/>
+  <g stroke="#FFD95C" stroke-width="2.5" stroke-linecap="round">
+    <line x1="40" y1="22" x2="40" y2="28"/><line x1="40" y1="60" x2="40" y2="66"/>
+    <line x1="18" y1="44" x2="24" y2="44"/><line x1="56" y1="44" x2="62" y2="44"/>
+  </g>
+</svg>

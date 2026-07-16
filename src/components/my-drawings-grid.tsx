@@ -1,7 +1,6 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { ChevronDown, Loader2 } from "lucide-react"
@@ -89,18 +88,17 @@ export function MyDrawingsGrid() {
                     className={cn(
                       "w-[120px] h-[120px] rounded-[18px] border p-2 flex items-center justify-center cursor-pointer transition-all shadow-sm relative bg-white overflow-hidden",
                       isActive
-                        ? "border-[2px] border-[#7C57FF] ring-2 ring-[#7C57FF]/15"
-                        : "border-[#ECECEC] hover:border-[#7C57FF]/40"
+                        ? "border-[2px] border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15"
+                        : "border-[#ECECEC] hover:border-[#6D4CFF]/40"
                     )}
                   >
                     <div className="w-full h-full relative flex items-center justify-center bg-[#FFF9F2] rounded-[12px] overflow-hidden">
-                      <Image
+                      <img
                         src={draw.image}
                         alt={draw.name}
-                        width={100}
-                        height={100}
                         className="w-full h-full object-contain p-1.5"
                         loading="lazy"
+                        onError={(e) => { e.currentTarget.style.opacity = "0" }}
                       />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] font-black text-center py-1 pointer-events-none truncate px-1">

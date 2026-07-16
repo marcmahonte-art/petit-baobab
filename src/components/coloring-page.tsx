@@ -29,6 +29,21 @@ export function ColoringPage() {
 
   const profileId = useProfileStore((s) => s.activeProfileId)
 
+  // Load drawing from URL param (dashboard link)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const drawingId = params.get("id")
+    if (drawingId && profileId) {
+      drawingService.list().then((all) => {
+        const found = all.find((d) => d.id === drawingId)
+        if (found) {
+          setCurrentDrawing(found.template)
+          setActiveSavedDrawingId(found.id)
+        }
+      })
+    }
+  }, [])
+
   const {
     currentDrawing,
     setCurrentDrawing,
@@ -48,7 +63,10 @@ export function ColoringPage() {
         currentDrawing.category || selectedCategory,
         profileId
       ).then((result) => {
-        if (result) setGalleryRefreshKey((k) => k + 1)
+        if (result) {
+          setActiveSavedDrawingId(result.id)
+          setGalleryRefreshKey((k) => k + 1)
+        }
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,7 +185,7 @@ export function ColoringPage() {
           <CanvasCard ref={canvasRef} />
 
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-[16px] w-full">
-            <div className="bg-white rounded-[28px] border border-[#EFE7DB] p-[18px] flex items-center gap-[16px] shadow-[0_4px_12px_rgba(0,0,0,0.06)] min-w-0 overflow-hidden">
+            <div className="bg-white rounded-[28px] border border-[#EFE7DB] p-[18px] flex items-center gap-[16px] shadow-[0_4px_12px_rgba(0,0,0,0.06)] min-w-0">
               <ColorPalette />
             </div>
             <div className="w-full sm:w-[180px] bg-white rounded-[28px] border border-[#EFE7DB] p-[20px] flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.06)] shrink-0">
@@ -194,7 +212,7 @@ export function ColoringPage() {
       <Sheet>
         <SheetTrigger asChild>
           <Button
-            className="md:hidden fixed bottom-24 right-6 z-50 w-[64px] h-[64px] rounded-full bg-[#7C57FF] shadow-xl text-white p-0 flex items-center justify-center"
+            className="md:hidden fixed bottom-24 right-6 z-50 w-[64px] h-[64px] rounded-full bg-[#6D4CFF] shadow-xl text-white p-0 flex items-center justify-center"
             size="icon"
           >
             <Sliders className="w-8 h-8" />

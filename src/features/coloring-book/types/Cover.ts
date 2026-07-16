@@ -1,4 +1,4 @@
-﻿export type CoverTemplate = "petit-baobab" | "savane" | "ecole" | "afrique" | "coloree"
+﻿export type CoverTemplate = "petit-baobab" | "savane" | "ecole" | "afrique" | "coloree" | "ia"
 
 export type CoverPalette =
   | "Purple"

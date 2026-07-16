@@ -157,47 +157,87 @@ export class RemoteDrawingStorage implements DrawingStorage {
       return []
     }
 
-    return (data || []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      modelName: row.model_name,
-      category: row.category,
-      origin: row.origin as "coloriage" | "ia",
-      status: row.status as "in_progress" | "completed" | "error",
-      profileId: row.profile_id ?? "",
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      isColored: row.is_colored ?? true,
-      image: row.image,
-      thumbnail: row.thumbnail,
-      template: row.template,
-      state: row.state,
-    }))
+    return (data || []).map((row) => {
+      const stateObj = typeof row.state === "object" && row.state !== null ? row.state as any : {}
+      return {
+        id: row.id,
+        name: row.name,
+        modelName: row.model_name,
+        category: row.category,
+        origin: (row.origin || stateObj.origin || "coloriage") as "coloriage" | "ia",
+        status: (row.status || stateObj.status || "in_progress") as "in_progress" | "completed" | "error",
+        profileId: row.profile_id || stateObj.profileId || "",
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        isColored: row.is_colored !== undefined ? row.is_colored : (stateObj.isColored ?? true),
+        image: row.image,
+        thumbnail: row.thumbnail,
+        template: row.template,
+        state: row.state,
+      }
+    })
   }
 
   async save(drawing: SavedDrawing) {
-    const { error } = await supabase
+    try {
+      // 1. Try saving with the full schema (if the migration was run on Supabase)
+      const { error } = await supabase
+        .from("saved_drawings")
+        .upsert({
+          id: drawing.id,
+          name: drawing.name,
+          model_name: drawing.modelName,
+          category: drawing.category,
+          origin: drawing.origin,
+          status: drawing.status,
+          profile_id: drawing.profileId,
+          created_at: drawing.createdAt,
+          updated_at: drawing.updatedAt,
+          is_colored: drawing.isColored,
+          image: drawing.image,
+          thumbnail: drawing.thumbnail,
+          template: drawing.template,
+          state: drawing.state,
+          progress: drawing.status || "in_progress",
+        })
+
+      if (!error) {
+        return drawing
+      }
+
+      console.warn("Failed to save drawing with full schema, trying fallback...", error.message)
+    } catch (err: any) {
+      console.warn("Exception during full upsert, trying fallback...", err.message || err)
+    }
+
+    // 2. Fallback: Save to the table without the missing columns, embedding them in the 'state' JSONB
+    const fallbackState = {
+      ...drawing.state,
+      origin: drawing.origin,
+      status: drawing.status,
+      profileId: drawing.profileId,
+      isColored: drawing.isColored,
+    }
+
+    const { error: fallbackError } = await supabase
       .from("saved_drawings")
       .upsert({
         id: drawing.id,
         name: drawing.name,
         model_name: drawing.modelName,
         category: drawing.category,
-        origin: drawing.origin,
-        status: drawing.status,
-        profile_id: drawing.profileId,
         created_at: drawing.createdAt,
         updated_at: drawing.updatedAt,
-        is_colored: drawing.isColored,
         image: drawing.image,
         thumbnail: drawing.thumbnail,
         template: drawing.template,
-        state: drawing.state,
+        state: fallbackState,
+        progress: drawing.status || "in_progress",
       })
 
-    if (error) {
-      console.error("Error saving drawing to Supabase:", error)
-      throw error
+    if (fallbackError) {
+      console.error("Error saving drawing to Supabase with fallback:", fallbackError)
+      throw fallbackError
     }
 
     return drawing
@@ -219,6 +259,7 @@ export class RemoteDrawingStorage implements DrawingStorage {
       return null
     }
 
+    const stateObj = typeof data.state === "object" && data.state !== null ? data.state as any : {}
     return {
       id: data.id,
       name: data.name,
@@ -226,10 +267,10 @@ export class RemoteDrawingStorage implements DrawingStorage {
       category: data.category,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      origin: data.origin as "coloriage" | "ia",
-      status: data.status as "in_progress" | "completed" | "error",
-      profileId: data.profile_id ?? "",
-      isColored: data.is_colored ?? true,
+      origin: (data.origin || stateObj.origin || "coloriage") as "coloriage" | "ia",
+      status: (data.status || stateObj.status || "in_progress") as "in_progress" | "completed" | "error",
+      profileId: data.profile_id || stateObj.profileId || "",
+      isColored: data.is_colored !== undefined ? data.is_colored : (stateObj.isColored ?? true),
       image: data.image,
       thumbnail: data.thumbnail,
       template: data.template,

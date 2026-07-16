@@ -20,6 +20,9 @@ import {
   Sparkles,
   Check,
   Lock,
+  Settings,
+  Users,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,7 +30,6 @@ import { useCreditStore, getCreditCost, canGenerate, type StyleType } from "@/li
 import { useProfileStore } from "@/lib/profile-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { drawingService } from "@/features/drawings/DrawingService";
-import { useI18n } from "@/lib/i18n-provider";
 import { storageService, base64ToBlob } from "@/lib/storageService";
 
 /* ------------------------------------------------------------------ */
@@ -122,7 +124,6 @@ export default function MagicDrawingPage() {
     }
   }, []);
 
-  const { t } = useI18n();
   const creditInfo = credits.useCredits();
   const { account } = useAuthStore();
   const starsBalance = account?.stars_balance ?? 0;
@@ -251,7 +252,7 @@ export default function MagicDrawingPage() {
             state: {
               canvasJson: "",
               selectedTool: "brush",
-              selectedColor: "#FFD95C",
+              selectedColor: "#FCBF49",
               brushSize: 6,
               usedColors: [],
               filledZones: 0,
@@ -286,38 +287,50 @@ export default function MagicDrawingPage() {
     setDownloadProgress(0);
 
     try {
-      const response = await fetch(generatedImage);
-
-      if (!response.ok) throw new Error("Impossible de télécharger l'image.");
-
-      const contentLength = response.headers.get("Content-Length");
-      const total = contentLength ? parseInt(contentLength, 10) : 0;
-      const reader = response.body?.getReader();
-
       let blob: Blob;
 
-      if (reader && total > 0) {
-        const chunks: Uint8Array[] = [];
-        let received = 0;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-          received += value.length;
-          setDownloadProgress(Math.min(Math.round((received / total) * 45), 45));
+      if (generatedImage.startsWith("data:")) {
+        const byteString = atob(generatedImage.split(",")[1])
+        const mimeString = generatedImage.split(",")[0].split(":")[1].split(";")[0]
+        const ab = new ArrayBuffer(byteString.length)
+        const ia = new Uint8Array(ab)
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i)
         }
-
-        const combined = new Uint8Array(received);
-        let offset = 0;
-        for (const chunk of chunks) {
-          combined.set(chunk, offset);
-          offset += chunk.length;
-        }
-        blob = new Blob([combined.buffer], { type: "image/png" });
+        blob = new Blob([ab], { type: mimeString })
+        setDownloadProgress(45)
       } else {
-        blob = await response.blob();
-        setDownloadProgress(45);
+        const response = await fetch(generatedImage);
+
+        if (!response.ok) throw new Error("Impossible de télécharger l'image.");
+
+        const contentLength = response.headers.get("Content-Length");
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        const reader = response.body?.getReader();
+
+        if (reader && total > 0) {
+          const chunks: Uint8Array[] = [];
+          let received = 0;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            setDownloadProgress(Math.min(Math.round((received / total) * 45), 45));
+          }
+
+          const combined = new Uint8Array(received);
+          let offset = 0;
+          for (const chunk of chunks) {
+            combined.set(chunk, offset);
+            offset += chunk.length;
+          }
+          blob = new Blob([combined.buffer], { type: "image/png" });
+        } else {
+          blob = await response.blob();
+          setDownloadProgress(45);
+        }
       }
 
       setDownloadProgress(50);
@@ -588,14 +601,14 @@ export default function MagicDrawingPage() {
                         onClick={() => setShowProfileDropdown(false)}
                         className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
                       >
-                        ⚙️ Paramètres
+                        <Settings className="inline w-3.5 h-3.5 mr-1" /> Paramètres
                       </Link>
                       <Link
                         href="/parents"
                         onClick={() => setShowProfileDropdown(false)}
                         className="text-xs font-bold text-[#7A6A5E] hover:text-[#3B2416] hover:bg-[#FFF9F2] p-2 rounded-xl transition-colors block text-left"
                       >
-                        👨‍👩‍👧 Espace Parents
+                        <Users className="inline w-3.5 h-3.5 mr-1" /> Espace Parents
                       </Link>
                     </div>
                   </div>
@@ -992,7 +1005,7 @@ export default function MagicDrawingPage() {
                 className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center text-xl font-bold hover:bg-white/30 cursor-pointer"
                 aria-label="Fermer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
               <div className="relative w-full max-w-3xl aspect-[4/3]">
                 <Image

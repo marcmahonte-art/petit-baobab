@@ -59,6 +59,7 @@ export interface BookStore extends BookWizardState {
   setCustomDrawings: (drawings: LibraryDrawing[]) => void
   hydrate: (state: Partial<BookWizardState>) => void
   validate: () => boolean
+  reset: () => void
 }
 
 const initialState: BookWizardState = {
@@ -75,7 +76,7 @@ const initialState: BookWizardState = {
   preview: [],
   exportSettings: {
     bleed: true,
-    copiesCount: 10,
+    copiesCount: 1,
     generationProgress: 0,
     isGenerating: false,
   },
@@ -171,5 +172,8 @@ export const useBookStore = create<BookStore>((set, get) => ({
     })
     set({ errors })
     return Object.keys(errors).length === 0
+  },
+  reset: () => {
+    set({ ...initialState, preview: rebuildPreview(initialState) })
   },
 }))

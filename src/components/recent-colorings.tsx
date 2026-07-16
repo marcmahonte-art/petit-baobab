@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Pencil, Sparkles } from "lucide-react"
 import { drawingService } from "@/features/drawings/DrawingService"
 import type { SavedDrawing } from "@/features/drawings/types"
@@ -84,21 +83,26 @@ export function RecentColorings() {
           {colorings.map((c) => (
             <Link
               key={c.id}
-              href="/coloriage"
+              href={`/coloriage?id=${c.id}`}
               className="coloring-item h-[200px] xs:h-[240px] md:h-[280px] rounded-[18px] border border-[#ECECEC] p-2 xs:p-3 flex flex-col bg-white hover:shadow-md transition-shadow"
             >
-              <div className="flex-1 min-h-0 rounded-[12px] bg-[#FFF9F2] flex items-center justify-center overflow-hidden relative">
+               <div className="flex-1 min-h-0 rounded-[12px] bg-[#FFF9F2] flex items-center justify-center overflow-hidden relative">
                 {c.thumbnail || c.image ? (
                   <img
                     src={c.thumbnail || c.image}
                     alt={c.name}
                     className="w-[80%] h-[80%] object-contain"
+                    loading="lazy"
+                    onError={(e) => {
+                      const el = e.currentTarget
+                      el.style.display = "none"
+                      el.nextElementSibling?.classList.remove("hidden")
+                    }}
                   />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#E8E0F8] flex items-center justify-center">
-                    <Pencil className="w-6 h-6 text-[#6D4CFF]" />
-                  </div>
-                )}
+                ) : null}
+                <div className={`${c.thumbnail || c.image ? "hidden" : ""} w-12 h-12 rounded-full bg-[#E8E0F8] flex items-center justify-center`}>
+                  <Pencil className="w-6 h-6 text-[#6D4CFF]" />
+                </div>
                 <div className="absolute bottom-1.5 right-1.5 xs:bottom-2 xs:right-2 w-7 h-7 xs:w-8 xs:h-8 rounded-full bg-[#FFE08A] flex items-center justify-center">
                   <Pencil className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-[#3B2416]" />
                 </div>

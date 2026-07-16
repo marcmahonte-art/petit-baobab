@@ -3,6 +3,7 @@ import type { BookFrame } from "./BookFrame"
 import type { BookPage } from "./BookPage"
 import type { BookSettings } from "./BookSettings"
 import type { BookStyle } from "./BookStyle"
+import type { LucideIcon } from "lucide-react"
 import type { CoverPalette, CoverTemplate } from "./Cover"
 import type { PrintSettings } from "./PrintRequest"
 
@@ -16,12 +17,15 @@ export interface LibraryDrawing {
   image: string
   category: string
   isPersonal?: boolean
+  /** Optional vector SVG string (colored drawing) for high-quality PDF export */
+  svg?: string
 }
+
 
 export interface DrawingCategory {
   id: string
   label: string
-  icon: string
+  icon: LucideIcon
 }
 
 export interface BookInfo {

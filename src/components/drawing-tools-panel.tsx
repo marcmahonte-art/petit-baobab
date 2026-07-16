@@ -47,11 +47,11 @@ export function DrawingToolsPanel({
               className={cn(
                 "w-full flex items-center gap-[16px] pl-[18px] rounded-[18px] transition-all cursor-pointer h-[60px]",
                 isSelected
-                  ? "bg-[#EFE8FF] text-[#7C57FF] font-semibold"
+                  ? "bg-[#EFE8FF] text-[#6D4CFF] font-semibold"
                   : "bg-transparent text-[#3B2416] hover:bg-neutral-50 font-semibold"
               )}
             >
-              <tool.icon className={cn("w-[28px] h-[28px]", isSelected ? "text-[#7C57FF]" : "text-[#7A6A5E]")} />
+              <tool.icon className={cn("w-[28px] h-[28px]", isSelected ? "text-[#6D4CFF]" : "text-[#7A6A5E]")} />
               <span className="text-[16px]">{tool.label}</span>
             </motion.button>
           )
@@ -142,9 +142,9 @@ export function DrawingToolsPanel({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClearAll}
-        className="w-full flex items-center justify-center gap-2 h-[56px] rounded-full border-[2px] border-[#D8CCFF] text-[#7C57FF] bg-transparent hover:bg-[#7C57FF]/5 font-bold text-base cursor-pointer shadow-sm transition-all duration-250"
+        className="w-full flex items-center justify-center gap-2 h-[56px] rounded-full border-[2px] border-[#D8CCFF] text-[#6D4CFF] bg-transparent hover:bg-[#6D4CFF]/5 font-bold text-base cursor-pointer shadow-sm transition-all duration-250"
       >
-        <Trash2 className="w-5 h-5 text-[#7C57FF]" />
+        <Trash2 className="w-5 h-5 text-[#6D4CFF]" />
         <span>Effacer tout</span>
       </motion.button>
     </div>

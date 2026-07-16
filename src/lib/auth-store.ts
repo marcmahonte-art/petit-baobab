@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { useProfileStore } from "./profile-store"
 import { useCreditStore } from "./credit-store"
+import { supabase } from "@/lib/supabaseClient"
 
 export interface UserSession {
   id: string
@@ -65,6 +66,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data.error || "Identifiants incorrects.")
+      }
+
+      if (data.accessToken && data.refreshToken) {
+        await supabase.auth.setSession({
+          access_token: data.accessToken,
+          refresh_token: data.refreshToken,
+        })
       }
 
       const activeId = data.profiles && data.profiles.length > 0 ? data.profiles[0].id : null
@@ -193,6 +201,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const data = await res.json()
       if (data.authenticated && data.user) {
+        if (data.accessToken && data.refreshToken) {
+          await supabase.auth.setSession({
+            access_token: data.accessToken,
+            refresh_token: data.refreshToken,
+          })
+        }
         set({
           user: data.user,
           account: data.account,

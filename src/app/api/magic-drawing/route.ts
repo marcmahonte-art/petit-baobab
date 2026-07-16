@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser, adjustStars, STARS_REASONS } from "@/lib/auth";
 
 type MagicDrawingStyle =
@@ -98,6 +98,7 @@ avoid: ${negativePrompt}`;
 }
 
 export async function POST(request: Request) {
+  const supabase = await getSupabaseServer();
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {

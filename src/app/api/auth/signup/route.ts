@@ -156,6 +156,7 @@ export async function POST(request: Request) {
         email: user.email,
       },
       account: {
+        id: accountId,
         stars_balance: starsBalance,
         plan: plan,
       },

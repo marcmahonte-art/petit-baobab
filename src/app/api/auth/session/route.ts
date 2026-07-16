@@ -1,13 +1,28 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabaseClient"
+import { cookies } from "next/headers"
+import { getSupabaseServer } from "@/lib/supabaseServer"
 import { getServerUser, adjustStars } from "@/lib/auth"
+
+function getDisplayNameFromEmail(email: string): string {
+  if (!email) return "Mon Enfant"
+  const username = email.split("@")[0]
+  return username
+    .split(/[\._-]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ")
+}
 
 export async function GET() {
   try {
+    const supabase = await getSupabaseServer()
     const user = await getServerUser()
     if (!user) {
       return NextResponse.json({ authenticated: false })
     }
+
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get("sb-access-token")?.value
+    const refreshToken = cookieStore.get("sb-refresh-token")?.value
 
     // Fetch account details
     const { data: account, error: accError } = await supabase
@@ -44,13 +59,31 @@ export async function GET() {
     }
 
     // Fetch child profiles
-    const { data: profiles, error: profError } = await supabase
+    let { data: profiles, error: profError } = await supabase
       .from("child_profiles")
       .select("*")
       .eq("account_id", account.id)
 
+    // Dynamic fix: If an existing profile is named "Mon Enfant", rename it to the email-derived name
+    if (profiles && profiles.length > 0) {
+      const emailDisplayName = getDisplayNameFromEmail(user.email || "")
+      for (const p of profiles) {
+        if (p.name === "Mon Enfant") {
+          const { error: renameErr } = await supabase
+            .from("child_profiles")
+            .update({ name: emailDisplayName })
+            .eq("id", p.id)
+          if (!renameErr) {
+            p.name = emailDisplayName
+          }
+        }
+      }
+    }
+
     return NextResponse.json({
       authenticated: true,
+      accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
