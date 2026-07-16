@@ -227,19 +227,7 @@ export function Header() {
               <Sidebar />
             </SheetContent>
           </Sheet>
-          <div className="flex items-center">
-            <Link href="/">
-              <Image
-                src="/illustrations/logo-petit-baobab.webp"
-                alt="Petit Baobab"
-                width={120}
-                height={40}
-                className="h-[36px] w-auto object-contain cursor-pointer"
-                priority
-              />
-            </Link>
           </div>
-        </div>
 
         {/* Mobile Right: Actions */}
         <div className="flex items-center gap-2 shrink-0 relative">
