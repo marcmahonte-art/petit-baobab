@@ -51,10 +51,7 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
           <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-[#FFB300]/10 flex items-center justify-center text-[#FFB300] shrink-0">
             <Star className="w-4 h-4 md:w-5 md:h-5 fill-current" />
           </div>
-          <div className="flex flex-col justify-center leading-tight">
-            <span className="text-[14px] md:text-[16px] font-extrabold text-[#3B2416]">{starsBalance}</span>
-            <span className="text-[9px] md:text-[10px] font-bold text-[#7A6A5E]">Mes étoiles</span>
-          </div>
+          <span className="text-[14px] md:text-[16px] font-extrabold text-[#3B2416]">{starsBalance}</span>
         </div>
 
         {/* Mes Livres Button */}

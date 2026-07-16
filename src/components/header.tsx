@@ -318,12 +318,7 @@ export function Header() {
         {/* Stars/Credits Indicator */}
         <div className="flex items-center gap-2 h-11 px-4 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
           <Star className="w-5 h-5 text-[#FFB300] fill-[#FFB300]" />
-          <div className="flex flex-col leading-none">
-            <span className="text-[15px] font-black">{displayStars}</span>
-            <span className="text-[9px] font-bold text-[#7A6A5E]">
-              {displayStars > 1 ? "Étoiles restantes" : "Étoile restante"}
-            </span>
-          </div>
+          <span className="text-[15px] font-black">{displayStars}</span>
         </div>
 
         {/* Language Selection */}
