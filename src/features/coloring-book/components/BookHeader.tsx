@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
+import { BookOpen, ChevronDown, Settings, Users, LogOut } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -21,31 +21,21 @@ export function BookHeader() {
   const router = useRouter()
   const { account, logout } = useAuthStore()
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
-  const starsBalance = account?.stars_balance ?? 0
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
   const displayName = activeProfile?.name ?? "Enfant"
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 px-2">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 py-3 md:py-4 px-0 md:px-2">
         <div>
-          <h1 className="text-[32px] md:text-[40px] font-extrabold text-[#2D1846] leading-none tracking-tight flex items-center gap-2">
-            <BookOpen className="w-8 h-8 text-[#6D4CFF]" /> Livres de coloriage
+          <h1 className="text-[22px] md:text-[40px] font-extrabold text-[#2D1846] leading-none tracking-tight flex items-center gap-2">
+            <BookOpen className="w-5 h-5 md:w-8 md:h-8 text-[#6D4CFF]" /> Livres de coloriage
           </h1>
-          <p className="text-[15px] md:text-[16px] font-bold text-[#7A6A5E] mt-1.5 flex items-center gap-1">
+          <p className="text-[13px] md:text-[16px] font-bold text-[#7A6A5E] mt-1 md:mt-1.5 flex items-center gap-1">
             Crée ton propre livre de coloriage personnalisé !
           </p>
         </div>
 
         <div className="flex items-center gap-4 flex-wrap">
-          {/* Star Counter */}
-          <div className="w-[130px] h-[52px] rounded-[16px] border border-[#EFE7DB] bg-white flex items-center gap-2.5 px-3.5 shadow-sm">
-            <Star className="w-5 h-5 fill-current text-[#FFB300]" />
-            <div className="flex flex-col justify-center leading-none">
-              <span className="text-[15px] font-extrabold text-[#3B2416]">{starsBalance}</span>
-              <span className="text-[9px] font-bold text-[#7A6A5E] mt-0.5">Mes étoiles</span>
-            </div>
-          </div>
-
           {/* Mes Livres Button */}
           <Link href="/mes-livres">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
