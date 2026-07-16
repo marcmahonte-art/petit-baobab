@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
+import { BookOpen, ChevronDown, Star, Settings, Users } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -114,32 +114,11 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
               <DropdownMenuItem onClick={() => router.push("/parents")} className="rounded-xl font-bold text-sm text-[#7A6A5E]">
                 <Users className="inline w-4 h-4 mr-2" /> Espace Parents
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={async () => {
-                  await useAuthStore.getState().logout()
-                  router.push("/login")
-                }}
-                className="rounded-xl font-bold text-sm text-[#FF5E83]"
-              >
-                <LogOut className="inline w-4 h-4 mr-2" /> Se déconnecter
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
 
-        {/* Déconnexion Button */}
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={async () => {
-              await useAuthStore.getState().logout()
-              window.location.href = "/login"
-            }}
-            variant="outline"
-            className="h-[58px] px-5 rounded-full border border-[#EFE7DB] text-[#FF5E83] hover:bg-red-50 hover:border-red-200 font-bold text-[15px] flex items-center justify-center gap-2 cursor-pointer shadow-sm bg-white"
-          >
-            <span>Déconnexion</span>
-          </Button>
-        </motion.div>
+
       </div>
     </header>
   )
