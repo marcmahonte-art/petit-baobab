@@ -1,0 +1,3 @@
+[submodule "petit-baobab"]
+	path = petit-baobab
+	url = https://github.com/marcmahonte-art/petit-baobab.git
