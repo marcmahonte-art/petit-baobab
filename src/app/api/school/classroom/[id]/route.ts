@@ -58,7 +58,7 @@ export async function GET(
     // 4. Récupérer dessins, livres et connexions du jour
     let drawings: any[] = [];
     let books: any[] = [];
-    let activeTodayProfiles = new Set<string>();
+    const activeTodayProfiles = new Set<string>();
 
     if (profileIds.length > 0) {
       // Dessins

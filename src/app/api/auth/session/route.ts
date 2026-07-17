@@ -59,7 +59,7 @@ export async function GET() {
     }
 
     // Fetch child profiles
-    let { data: profiles, error: profError } = await supabase
+    const { data: profiles, error: profError } = await supabase
       .from("child_profiles")
       .select("*")
       .eq("account_id", account.id)

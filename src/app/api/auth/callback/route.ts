@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       .maybeSingle()
 
     // Check if account exists
-    let { data: existingAccount } = await authedClient
+    const { data: existingAccount } = await authedClient
       .from("accounts")
       .select("id")
       .eq("user_id", user.id)

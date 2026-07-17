@@ -78,7 +78,7 @@ export async function GET() {
     }
 
     // 6. Récupérer les connexions d'aujourd'hui (activités de type 'login' de moins de 24h)
-    let activeTodayProfiles = new Set<string>();
+    const activeTodayProfiles = new Set<string>();
     if (profileIds.length > 0) {
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);

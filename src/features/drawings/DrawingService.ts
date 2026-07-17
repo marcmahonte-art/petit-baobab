@@ -35,7 +35,7 @@ export class DrawingService {
 
   async save(input: SaveDrawingInput, existingId?: string | null) {
     const now = new Date().toISOString()
-    let id = existingId || input.id || this.createId()
+    const id = existingId || input.id || this.createId()
     let createdAt = now
 
     const searchId = existingId || input.id

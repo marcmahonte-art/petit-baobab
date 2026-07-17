@@ -135,9 +135,10 @@ export async function POST(request: Request) {
       .select("id, stars_balance, plan")
       .eq("user_id", user.id)
       .single();
-    if (error || !data) {
+    // Verify that we have a valid account after fetching based on session type
+    if (!data) {
       return NextResponse.json(
-        { error: "no_account", message: "Compte parent introuvable." },
+        { error: "no_account", message: "Compte introuvable." },
         { status: 404 }
       );
     }
@@ -182,13 +183,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unauthorized", message: "Session inconnue." }, { status: 401 });
   }
 
-  if (accError || !account) {
-    return NextResponse.json(
-      { error: "no_account", message: "Compte parent introuvable." },
-      { status: 404 }
-    );
-  }
-
   const body = await request.json().catch(() => null);
   const idea = typeof body?.idea === "string" ? body.idea.trim() : "";
   const style = allowedStyles.includes(body?.style)
@@ -213,12 +207,12 @@ export async function POST(request: Request) {
   const cost = styleCosts[style];
 
   // 3. Check stars balance
-  if (account.stars_balance < cost) {
+  if ((starsBalance ?? 0) < cost) {
     return NextResponse.json(
       {
         error: "insufficient_stars",
         message: "Plus assez d'étoiles pour ce dessin. Découvrez nos packs ou patientez jusqu'au renouvellement du mois prochain.",
-        plan: account.plan,
+        plan: plan,
       },
       { status: 403 }
     );
@@ -226,7 +220,7 @@ export async function POST(request: Request) {
 
   // 4. Generate drawing ID & deduct stars balance
   const drawingId = crypto.randomUUID();
-  const debitResult = await adjustStars(account.id, -cost, STARS_REASONS.GENERATION, drawingId);
+  const debitResult = await adjustStars(accountId!, -cost, STARS_REASONS.GENERATION, drawingId);
 
   if (!debitResult.success) {
     return NextResponse.json(
@@ -282,7 +276,7 @@ export async function POST(request: Request) {
     console.error("Generation failed. Refunding stars and logging error...", errorMsg);
 
     // Refund stars
-    await adjustStars(account.id, cost, STARS_REASONS.REFUND, drawingId);
+    await adjustStars(accountId!, cost, STARS_REASONS.REFUND, drawingId);
 
     // Update drawing status to 'erreur'
     await supabase
@@ -332,6 +326,7 @@ export async function POST(request: Request) {
     .update({
       image_url: finalImageUrl,
       status: "terminé",
+      // Ensure stars balance reflects deduction (optional, as adjustStars updates account)
     })
     .eq("id", drawingId);
 
