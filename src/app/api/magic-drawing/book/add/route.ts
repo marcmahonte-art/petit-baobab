@@ -5,11 +5,7 @@ export async function POST(request: Request) {
   try {
     const supabase = await getSupabaseServer()
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
-      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
-    }
-
+    const sessionType = request.headers.get("x-session-type")
     const body = await request.json().catch(() => null)
     if (!body) {
       return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 })
@@ -32,25 +28,84 @@ export async function POST(request: Request) {
     }
     const mappedStyle = STYLE_MAP[style] || "Contour simple"
 
-    const { data: account } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("user_id", user.id)
-      .single()
+    let accountId: string
+    let profile: { id: string; name: string }
 
-    if (!account) {
-      return NextResponse.json({ error: "Compte introuvable." }, { status: 404 })
-    }
+    if (sessionType === "student") {
+      // Session élève : identifiants injectés par le middleware
+      const profileId = request.headers.get("x-profile-id")
+      const classroomId = request.headers.get("x-classroom-id")
+      if (!profileId || !classroomId) {
+        return NextResponse.json({ error: "Session élève incomplète." }, { status: 401 })
+      }
 
-    const { data: profiles } = await supabase
-      .from("child_profiles")
-      .select("id, name")
-      .eq("account_id", account.id)
-      .limit(1)
+      // Récupérer l'account école via la classe
+      const { data: classroom, error: classErr } = await supabase
+        .from("classrooms")
+        .select("account_id")
+        .eq("id", classroomId)
+        .is("archived_at", null)
+        .single()
 
-    const profile = profiles?.[0]
-    if (!profile) {
-      return NextResponse.json({ error: "Aucun profil enfant." }, { status: 404 })
+      if (classErr || !classroom) {
+        return NextResponse.json({ error: "Classe introuvable." }, { status: 404 })
+      }
+      accountId = classroom.account_id
+
+      // Vérification de sécurité : le dessin référencé appartient bien au profil élève
+      if (providedDrawingId) {
+        const { data: drawing, error: drawErr } = await supabase
+          .from("saved_drawings")
+          .select("id")
+          .eq("id", providedDrawingId)
+          .eq("profile_id", profileId)
+          .single()
+        if (drawErr || !drawing) {
+          return NextResponse.json({ error: "Accès non autorisé au dessin." }, { status: 403 })
+        }
+      }
+
+      const { data: studentProfile, error: profErr } = await supabase
+        .from("child_profiles")
+        .select("id, name")
+        .eq("id", profileId)
+        .single()
+
+      if (profErr || !studentProfile) {
+        return NextResponse.json({ error: "Profil introuvable." }, { status: 404 })
+      }
+      profile = { id: studentProfile.id, name: studentProfile.name }
+    } else if (sessionType === "parent" || sessionType === "teacher") {
+      // Session parent/teacher : authentification Supabase Auth
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
+      }
+
+      const { data: account } = await supabase
+        .from("accounts")
+        .select("id")
+        .eq("user_id", user.id)
+        .single()
+
+      if (!account) {
+        return NextResponse.json({ error: "Compte introuvable." }, { status: 404 })
+      }
+      accountId = account.id
+
+      const { data: profiles } = await supabase
+        .from("child_profiles")
+        .select("id, name")
+        .eq("account_id", account.id)
+        .limit(1)
+
+      const firstProfile = profiles?.[0]
+      if (!firstProfile) {
+        return NextResponse.json({ error: "Aucun profil enfant." }, { status: 404 })
+      }
+      profile = { id: firstProfile.id, name: firstProfile.name }
+    } else {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
     let finalImageUrl = imageUrl
@@ -111,7 +166,7 @@ export async function POST(request: Request) {
         .insert({
           profile_id: profile.id,
           title: BOOK_TITLE,
-          author: (user.email?.split("@")[0]) || "Artiste",
+          author: profile.name || "Artiste",
           child_name: profile.name,
           style: mappedStyle,
           format: "A4",
