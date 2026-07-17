@@ -132,6 +132,7 @@ export async function POST(request: Request) {
       profile_id: childProfile.id,
       student_id: student.id,
       classroom_id: classroom.id,
+      account_id: classroom.account_id,
       name: student.display_name || student.first_name,
       mascot: student.mascot,
       classroom_name: classroom.name,

@@ -6,9 +6,14 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { StudentLoginResponse } from "@/types/school";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.STUDENT_JWT_SECRET || "your_student_jwt_secret_here_at_least_32_chars_long"
-);
+const STUDENT_JWT_SECRET = process.env.STUDENT_JWT_SECRET;
+if (!STUDENT_JWT_SECRET) {
+  throw new Error(
+    "STUDENT_JWT_SECRET est manquant. Définissez cette variable d'environnement " +
+      "en production : sans elle, les JWT élève seraient forgeables."
+  );
+}
+const JWT_SECRET = new TextEncoder().encode(STUDENT_JWT_SECRET);
 
 export const STUDENT_COOKIE_NAME = "sb-student-token";
 export const STUDENT_COOKIE_OPTIONS = {

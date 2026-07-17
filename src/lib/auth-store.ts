@@ -27,6 +27,7 @@ export interface StudentSessionState {
   mascot: "awa" | "lion" | "robot"
   profileId: string
   classroomId: string
+  accountId: string
   starsBalance: number
 }
 
@@ -204,13 +205,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setStarsBalance: (balance) => {
     set((state) => {
-      if (!state.account) return state
-      return {
-        account: {
-          ...state.account,
-          stars_balance: balance,
-        },
+      const next: Partial<AuthState> = {}
+      // Parent / compte familial
+      if (state.account) {
+        next.account = { ...state.account, stars_balance: balance }
       }
+      // Élève : mettre à jour le solde de la session élève pour que le Header
+      // affiche immédiatement le bon nombre d'étoiles après génération.
+      if (state.studentSession) {
+        next.studentSession = { ...state.studentSession, starsBalance: balance }
+      }
+      if (Object.keys(next).length === 0) return state
+      return next
     })
     // Sync to credit store
     useCreditStore.setState({

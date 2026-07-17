@@ -16,6 +16,7 @@ const payload: StudentLoginResponse = {
   profile_id: "p1",
   student_id: "s1",
   classroom_id: "c1",
+  account_id: "a1",
   name: "Awa",
   mascot: "awa",
   classroom_name: "CE1 A",

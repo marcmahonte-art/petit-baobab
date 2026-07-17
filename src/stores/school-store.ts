@@ -20,6 +20,7 @@ const MOCK_DASHBOARD: DashboardData = {
     consumed_this_month: 260,
     renewal_date: "2025-07-01T00:00:00Z",
     remaining: 180,
+    account_id: "acc-1",
   },
   classrooms: [
     {

@@ -140,44 +140,26 @@ async function adjustStarsFallback(
   referenceId: string | null,
   client: any
 ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
-  const { data: account, error: fetchErr } = await client
-    .from("accounts")
-    .select("stars_balance")
-    .eq("id", accountId)
-    .single()
+  // Fallback atomique : on délègue le calcul conditionnel à une fonction SQL
+  // dédiée (adjust_stars_atomic) qui fait un UPDATE .. SET stars_balance =
+  // stars_balance + X WHERE id = $1 AND stars_balance >= -X, et renvoie le
+  // nouveau solde ou NULL si l'opération a échoué (solde insuffisant / compte
+  // absent). Pas de SELECT + UPDATE séparés -> pas de race condition.
+  const { data: newBalance, error: rpcErr } = await client.rpc("adjust_stars_atomic", {
+    p_account_id: accountId,
+    p_amount: amount,
+    p_reason: reason,
+    p_reference_id: referenceId,
+  })
 
-  if (fetchErr || !account) {
-    return { success: false, error: "Compte introuvable." }
+  if (rpcErr) {
+    return { success: false, error: rpcErr.message }
   }
 
-  const currentBalance = account.stars_balance || 0
-  const nextBalance = currentBalance + amount
-
-  if (nextBalance < 0) {
+  // La fonction renvoie NULL si le solde était insuffisant.
+  if (newBalance === null || newBalance === undefined) {
     return { success: false, error: "Solde d'étoiles insuffisant." }
   }
 
-  const { error: updateErr } = await client
-    .from("accounts")
-    .update({ stars_balance: nextBalance })
-    .eq("id", accountId)
-
-  if (updateErr) {
-    return { success: false, error: updateErr.message }
-  }
-
-  const { error: txErr } = await client
-    .from("stars_transactions")
-    .insert({
-      account_id: accountId,
-      amount,
-      reason,
-      reference_id: referenceId,
-    })
-
-  if (txErr) {
-    console.error("Warning: stars transaction log failed:", txErr.message)
-  }
-
-  return { success: true, newBalance: nextBalance }
+  return { success: true, newBalance: Number(newBalance) }
 }

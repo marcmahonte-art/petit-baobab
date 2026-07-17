@@ -106,16 +106,24 @@ export async function POST(request: Request) {
 
     let starsBalance = account.stars_balance || 0
 
-    // Automatic rolling 24-hour top up back to 5 stars for Free plans
+    // Renouvellement gratuit : basé sur la date calendaire GMT (minuit passé),
+    // PAS sur une fenêtre glissante de 24h. Le solde repasse à 5, jamais plus
+    // (pas de cumul). Le cron pg_cron fait le vrai travail à minuit GMT ; ce
+    // bloc est un filet de sécurité pour les utilisateurs qui se connectent
+    // avant que le cron n'ait tourné.
     if (account.plan === "free" && starsBalance < 5) {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      
+      const startOfTodayUtc = new Date(Date.UTC(
+        new Date().getUTCFullYear(),
+        new Date().getUTCMonth(),
+        new Date().getUTCDate()
+      )).toISOString()
+
       const { data: recentResets, error: resetErr } = await authedClient
         .from("stars_transactions")
         .select("created_at")
         .eq("account_id", account.id)
         .in("reason", ["signup_bonus", "daily_reset"])
-        .gte("created_at", twentyFourHoursAgo)
+        .gte("created_at", startOfTodayUtc)
         .limit(1)
 
       if (!resetErr && (!recentResets || recentResets.length === 0)) {

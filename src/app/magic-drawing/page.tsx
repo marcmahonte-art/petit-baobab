@@ -176,6 +176,9 @@ export default function MagicDrawingPage() {
     setIsGenerating(true);
     setGenerationError("");
     setBookMessage("");
+    // Clé d'idempotence stable pour cette tentative de génération : empêche un
+    // double débit d'étoiles en cas de double-clic ou de rejeu réseau.
+    const idempotencyKey = `${currentProfileId || "anonymous"}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     try {
       const response = await fetch("/api/magic-drawing", {
         method: "POST",
@@ -186,6 +189,7 @@ export default function MagicDrawingPage() {
           idea: prompt,
           style: selectedStyle,
           profileId: currentProfileId || "anonymous",
+          idempotencyKey,
         }),
       });
 

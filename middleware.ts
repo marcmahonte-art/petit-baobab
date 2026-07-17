@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifyStudentToken } from "@/lib/auth/student-session";
 
 const ADULT_TOKEN = "sb-access-token";
 const STUDENT_TOKEN = "sb-student-token";
@@ -32,10 +33,17 @@ export async function middleware(request: NextRequest) {
   if (isChildRoute) {
     if (!adultToken) {
       if (studentToken) {
-        // Valider côté serveur plus loin (page). On laisse passer et on injecte
-        // les headers pour que le Server Component sache qu'on est élève.
+        // Décoder le JWT élève pour injecter les identifiants nécessaires en aval
+        // (magic-drawing/route.ts exige x-classroom-id et x-profile-id).
+        const session = await verifyStudentToken(studentToken);
         const headers = new Headers(request.headers);
         headers.set("x-session-type", "student");
+        if (session) {
+          if (session.classroom_id) headers.set("x-classroom-id", session.classroom_id);
+          if (session.profile_id) headers.set("x-profile-id", session.profile_id);
+          if (session.student_id) headers.set("x-student-id", session.student_id);
+          if (session.name) headers.set("x-student-name", session.name);
+        }
         return NextResponse.next({ request: { headers } });
       }
       const url = request.nextUrl.clone();

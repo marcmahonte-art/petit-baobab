@@ -13,6 +13,7 @@ import { useCreditStore } from "@/lib/credit-store"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
+import { useRealtimeStars } from "@/lib/hooks/useRealtimeStars"
 import Link from "next/link"
 
 const SCHOOL_GREEN = "#1D9E75"
@@ -33,8 +34,9 @@ export function Header() {
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
 
-  // ── Mode élève : header simplifié ──
+  // ── Mode élève : header simplifié + MAJ temps réel du solde ──
   if (studentSession && studentSession.type === "student") {
+    useRealtimeStars(studentSession.accountId)
     const mascotSrc =
       studentSession.mascot === "lion"
         ? "/illustrations/lion.webp"

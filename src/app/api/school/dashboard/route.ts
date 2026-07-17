@@ -7,11 +7,18 @@ import { getTeacherSession } from "@/lib/school-auth";
  * Centralise les données et calcule dynamiquement toutes les métriques requises.
  */
 export async function GET() {
-  const { errorResponse, account, supabase } = await getTeacherSession();
+  const { errorResponse, account, supabase, user } = await getTeacherSession();
   if (errorResponse) return errorResponse;
   if (!account || !supabase) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
+
+  // Nom réel de l'enseignant issu du compte authentifié (jamais un nom en dur).
+  const teacherName =
+    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.name as string | undefined) ||
+    (user?.email ? user.email.split("@")[0].replace(/[._-]/g, " ") : null) ||
+    "Enseignant";
 
   try {
     const accountId = account.id;
@@ -33,7 +40,7 @@ export async function GET() {
       // Retourner un état vide propre si aucune classe n'existe
       return NextResponse.json({
         teacher: {
-          name: account.user_id ? "Enseignant" : "Awa Kaboré",
+          name: teacherName,
           role: "Enseignant",
           avatar: null,
         },
@@ -285,7 +292,7 @@ export async function GET() {
     // F. Composer la réponse finale
     const response = {
       teacher: {
-        name: "Awa Kaboré", // Fallback, ou extraire du profil utilisateur Supabase si besoin
+        name: teacherName,
         role: "Enseignante",
         avatar: null,
       },
@@ -299,6 +306,7 @@ export async function GET() {
         ),
         renewal_date: account.plan_renewed_at ? new Date(account.plan_renewed_at).toISOString() : null,
         remaining: account.stars_balance || 0,
+        account_id: account.id,
       },
       classrooms: formattedClassrooms,
       recent_activity: formattedRecentActivity,

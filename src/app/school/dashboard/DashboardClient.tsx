@@ -9,6 +9,8 @@ import ClassesGrid from "@/components/school/ClassesGrid";
 import RecentActivities from "@/components/school/RecentActivities";
 import MotivationBanner from "@/components/school/MotivationBanner";
 import RightPanel from "@/components/school/RightPanel";
+import { useRealtimeStars } from "@/lib/hooks/useRealtimeStars";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function DashboardClient() {
   const { dashboardData, fetchDashboard, loading, error } = useSchoolStore();
@@ -17,9 +19,16 @@ export default function DashboardClient() {
 
   useEffect(() => {
     fetchDashboard();
-    const interval = setInterval(fetchDashboard, 30000); // Refresh every 30s
+    const interval = setInterval(fetchDashboard, 30000); // Refresh every 30s (fallback)
     return () => clearInterval(interval);
   }, []);
+
+  // Temps réel : dès qu'une mise à jour du solde de l'école arrive, on
+  // rafraîchit le tableau de bord (complète le polling 30s ci-dessus).
+  const accountId = dashboardData?.stars?.account_id;
+  useRealtimeStars(accountId, () => {
+    fetchDashboard();
+  });
 
   // Set default share classroom when data loads
   useEffect(() => {

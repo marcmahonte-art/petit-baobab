@@ -65,14 +65,13 @@ export async function GET(request: Request) {
       await setAuthCookies(session.access_token, session.refresh_token)
 
       // === REDIRECTION PAR RÔLE (Phase 4) ===
-      // Respecter le choix mémorisé par l'utilisateur si présent
-      const remembered = request.headers.get("x-pb-default-space")
+      // Respecter le choix mémorisé par l'utilisateur (persisté côté serveur).
       let redirectTo = next
 
       try {
         const { data: account } = await authedClient
           .from("accounts")
-          .select("plan, has_family_sub, has_school_sub")
+          .select("plan, has_family_sub, has_school_sub, default_space")
           .eq("user_id", user.id)
           .single()
 
@@ -80,9 +79,17 @@ export async function GET(request: Request) {
           const isSchool = account.has_school_sub === true
           const isFamily = account.has_family_sub === true
 
+          // Choix mémorisé côté serveur (colonne accounts.default_space),
+          // persistant (contrairement au localStorage illisible ici).
+          const remembered = account.default_space
+
           if (isSchool && isFamily) {
             // Les deux → écran de choix (ou choix mémorisé)
-            redirectTo = remembered === "school" ? "/school/dashboard" : "/select-space"
+            redirectTo = remembered === "school"
+              ? "/school/dashboard"
+              : remembered === "family"
+                ? "/dashboard"
+                : "/select-space"
           } else if (isSchool) {
             redirectTo = "/school/dashboard"
           } else {

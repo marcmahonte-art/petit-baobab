@@ -189,6 +189,10 @@ export async function POST(request: Request) {
     ? (body.style as MagicDrawingStyle)
     : "noir_blanc";
   const profileId = typeof body?.profileId === "string" ? body.profileId.trim() : "";
+  const idempotencyKey =
+    typeof body?.idempotencyKey === "string" && body.idempotencyKey.trim().length > 0
+      ? body.idempotencyKey.trim()
+      : null;
 
   if (!idea) {
     return NextResponse.json(
@@ -205,6 +209,31 @@ export async function POST(request: Request) {
   }
 
   const cost = styleCosts[style];
+
+  // 3b. Protection contre la double soumission (idempotence).
+  // Un verrou court empêche deux débits pour la même action dans une fenêtre
+  // de quelques secondes (double-clic / rejeu réseau). Le client envoie une
+  // idempotencyKey stable par tentative de génération.
+  if (idempotencyKey) {
+    const { error: lockErr } = await supabase
+      .from("magic_drawing_locks")
+      .insert({ key: idempotencyKey, account_id: accountId });
+
+    if (lockErr) {
+      // Clé déjà présente => soumission en double détectée.
+      if (
+        lockErr.code === "23505" ||
+        (lockErr.message && lockErr.message.includes("magic_drawing_locks_key_key"))
+      ) {
+        return NextResponse.json(
+          { error: "duplicate_request", message: "Génération déjà en cours pour cette demande." },
+          { status: 409 }
+        );
+      }
+      // Autre erreur : on continue sans bloquer la génération.
+      console.warn("Idempotency lock insert failed (non-blocking):", lockErr.message);
+    }
+  }
 
   // 3. Check stars balance
   if ((starsBalance ?? 0) < cost) {

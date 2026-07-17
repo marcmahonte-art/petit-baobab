@@ -9,6 +9,7 @@ import { Users, School as SchoolIcon, ChevronRight, LogOut } from "lucide-react"
 import { getServerUser } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import { clearAuthCookies } from "@/lib/auth";
+import { RememberSpaceScript } from "./remember-space-script";
 
 export const metadata = {
   title: "Choisir mon espace – Petit Baobab",
@@ -97,6 +98,7 @@ export default async function SelectSpacePage() {
                 Dessins et livres de votre enfant à la maison. Accédez à vos abonnements personnels.
               </p>
               <Link
+                id="space-family"
                 href="/dashboard"
                 className="w-full h-12 rounded-full font-bold text-white flex items-center justify-center gap-2 transition-transform active:scale-95"
                 style={{ backgroundColor: FAMILY_BLUE }}
@@ -125,6 +127,7 @@ export default async function SelectSpacePage() {
                 Gérez vos classes, suivez vos élèves. Tableau de bord enseignant.
               </p>
               <Link
+                id="space-school"
                 href="/school/dashboard"
                 className="w-full h-12 rounded-full font-bold text-white flex items-center justify-center gap-2 transition-transform active:scale-95"
                 style={{ backgroundColor: SCHOOL_GREEN }}
@@ -134,24 +137,19 @@ export default async function SelectSpacePage() {
             </motion.div>
           </div>
 
-          {/* Checkbox mémoriser le choix */}
+          {/* Checkbox mémoriser le choix (persisté côté serveur) */}
           <div className="mt-6 flex items-center justify-center gap-2">
             <input
               type="checkbox"
               id="remember-space"
               className="w-4 h-4 accent-[#7D6AF8]"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  localStorage.setItem("pb-default-space", "1");
-                } else {
-                  localStorage.removeItem("pb-default-space");
-                }
-              }}
             />
             <label htmlFor="remember-space" className="text-sm font-semibold text-[#7A6A5E] cursor-pointer">
               Se souvenir de mon choix par défaut
             </label>
           </div>
+
+          <RememberSpaceScript />
         </div>
       </div>
     </main>

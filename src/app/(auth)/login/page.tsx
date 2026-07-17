@@ -22,7 +22,7 @@ function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { lang } = useI18n()
-  const { login, isLoading, error, user } = useAuthStore()
+  const { login, isLoading, error, user, account } = useAuthStore()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -86,8 +86,11 @@ function LoginFormContent() {
     const result = await login(email, password)
     if (result.success) {
       const next = searchParams.get("next")
+      const plan = useAuthStore.getState().account?.plan
       if (next) {
         router.push(next)
+      } else if (plan === "ecole_pro") {
+        router.push("/school/dashboard")
       } else if (result.multipleProfiles) {
         router.push("/parents/select-profile")
       } else {

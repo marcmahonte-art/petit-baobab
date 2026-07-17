@@ -88,6 +88,7 @@ export interface DashboardData {
     consumed_this_month: number;
     renewal_date: string;
     remaining: number;
+    account_id: string;
   };
   classrooms: ClassroomWithStats[];
   recent_activity: StudentActivityFeed[];
@@ -140,6 +141,7 @@ export interface StudentLoginResponse {
   profile_id: string;
   student_id: string;
   classroom_id: string;
+  account_id: string;
   name: string;
   mascot: "awa" | "lion" | "robot";
   classroom_name: string;
