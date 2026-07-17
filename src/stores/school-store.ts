@@ -370,20 +370,26 @@ export const useSchoolStore = create<SchoolState>()(
         async addStudentsBulk(classroomId, students) {
           try {
             set({ loading: true, error: null });
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase
-              .from('school_students')
-              .insert(
-                students.map((s) => ({
-                  classroom_id: classroomId,
+            const res = await fetch('/api/school/students/bulk', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                classroom_id: classroomId,
+                students: students.map((s) => ({
                   first_name: s.first_name,
                   last_name: s.last_name,
                   display_name: s.display_name,
                   mascot: s.mascot,
-                }))
-              );
-            if (error) throw error;
-            toast({ title: 'Import réussie', description: `${students.length} élèves créés.` });
+                })),
+              }),
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || err.message || 'Erreur import élèves');
+            }
+            const data = await res.json();
+            const created = data.created ?? students.length;
+            toast({ title: 'Import réussie', description: `${created} élève(s) créé(s).` });
             await get().fetchDashboard();
             await get().fetchClasses();
           } catch (e: any) {
