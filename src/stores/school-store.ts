@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import { ClassroomWithStats, DashboardData, StudentActivityFeed } from '@/types/school';
 import { getSupabaseClient } from '@/lib/supabase-client';
 import { toast } from '@/components/ui/use-toast';
@@ -357,7 +357,7 @@ export const useSchoolStore = create<SchoolState>()(
                 }))
               );
             if (error) throw error;
-            toast({ title: 'Import réussie', description: `${data?.length ?? 0} élèves créés.` });
+            toast({ title: 'Import réussie', description: `${students.length} élèves créés.` });
             await get().fetchDashboard();
             await get().fetchClasses();
           } catch (e: any) {
@@ -370,7 +370,7 @@ export const useSchoolStore = create<SchoolState>()(
       }),
       {
         name: 'school-store',
-        getStorage: () => sessionStorage,
+        storage: createJSONStorage(() => sessionStorage),
       }
     )
   )
