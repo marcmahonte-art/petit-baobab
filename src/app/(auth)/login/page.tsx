@@ -209,6 +209,28 @@ function LoginFormContent() {
         </PrimaryButton>
       </form>
 
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3 w-full text-[#B7A99A] text-xs font-bold">
+          <span className="h-px flex-1 bg-[#EFE7DB]" />
+          {lang === "fr" ? "ou" : "or"}
+          <span className="h-px flex-1 bg-[#EFE7DB]" />
+        </div>
+
+        <p className="text-center text-xs text-[#64748B] font-semibold">
+          {lang === "fr"
+            ? "Vous êtes un élève ? Utilisez votre code de classe."
+            : "You are a student? Use your class code."}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => router.push("/school")}
+          className="w-full h-11 md:h-14 rounded-full bg-transparent border-2 border-[#E8E8EF] hover:border-[#7D6AF8] text-[#1C1C3A] font-bold text-sm md:text-base transition-colors cursor-pointer"
+        >
+          {lang === "fr" ? "Connexion élève (code de classe) →" : "Student login (class code) →"}
+        </button>
+      </div>
+
       <div className="mt-8 text-center text-sm font-semibold text-[#64748B]">
         <span>{lang === "fr" ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</span>
           <button

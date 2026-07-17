@@ -5,7 +5,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { signStudentToken } from "@/lib/auth/student-session";
+import { signStudentToken, STUDENT_COOKIE_NAME, STUDENT_COOKIE_OPTIONS } from "@/lib/auth/student-session";
 import { StudentLoginInput, StudentLoginResponse } from "@/types/school";
 
 export async function POST(request: Request) {
@@ -143,13 +143,7 @@ export async function POST(request: Request) {
 
     // 10. Poser le cookie HTTP-only 'sb-student-token'
     const cookieStore = await cookies();
-    cookieStore.set("sb-student-token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 604800, // 7 jours
-      path: "/",
-    });
+    cookieStore.set(STUDENT_COOKIE_NAME, token, STUDENT_COOKIE_OPTIONS);
 
     // Optionnel : poser un cookie client non HTTP-only pour que le client useSessionType sache qu'on est connecté
     cookieStore.set("sb-student-session-active", "true", {

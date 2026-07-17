@@ -21,11 +21,21 @@ export interface ChildProfileSession {
   pin_required: boolean
 }
 
+export interface StudentSessionState {
+  type: "student"
+  name: string
+  mascot: "awa" | "lion" | "robot"
+  profileId: string
+  classroomId: string
+  starsBalance: number
+}
+
 interface AuthState {
   user: UserSession | null
   account: AccountSession | null
   profiles: ChildProfileSession[]
   activeProfileId: string | null
+  studentSession: StudentSessionState | null
   isLoading: boolean
   error: string | null
   isInitialized: boolean
@@ -35,6 +45,8 @@ interface AuthState {
   logout: () => Promise<void>
   selectProfile: (profileId: string) => void
   setStarsBalance: (balance: number) => void
+  setStudentSession: (session: StudentSessionState) => void
+  clearStudentSession: () => void
   checkSession: () => Promise<void>
 }
 
@@ -50,6 +62,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   account: null,
   profiles: [],
   activeProfileId: null,
+  studentSession: null,
   isLoading: false,
   error: null,
   isInitialized: false,
@@ -159,6 +172,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       account: null,
       profiles: [],
       activeProfileId: null,
+      studentSession: null,
     })
 
     // Clear local stores
@@ -172,6 +186,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ activeProfileId: profileId })
       useProfileStore.setState({ activeProfileId: profileId })
     }
+  },
+
+  setStudentSession: (session) => {
+    set({ studentSession: session })
+    // Sync crédit store pour afficher le solde d'étoiles élève
+    useCreditStore.setState({
+      plan: "ecole-pro",
+      monthlyCredits: session.starsBalance,
+      monthlyUsed: 0,
+    })
+  },
+
+  clearStudentSession: () => {
+    set({ studentSession: null })
   },
 
   setStarsBalance: (balance) => {

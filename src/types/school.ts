@@ -146,3 +146,5 @@ export interface StudentLoginResponse {
   stars_balance: number;
   type: "student";
 }
+
+export type { MultipleStudentsResponse } from "@/types/auth";

@@ -63,7 +63,38 @@ export async function GET(request: Request) {
     if (existingProfile && existingAccount) {
       // === EXISTING USER: proceed normally ===
       await setAuthCookies(session.access_token, session.refresh_token)
-      return NextResponse.redirect(`${origin}${next}`)
+
+      // === REDIRECTION PAR RÔLE (Phase 4) ===
+      // Respecter le choix mémorisé par l'utilisateur si présent
+      const remembered = request.headers.get("x-pb-default-space")
+      let redirectTo = next
+
+      try {
+        const { data: account } = await authedClient
+          .from("accounts")
+          .select("plan, has_family_sub, has_school_sub")
+          .eq("user_id", user.id)
+          .single()
+
+        if (account) {
+          const isSchool = account.has_school_sub === true
+          const isFamily = account.has_family_sub === true
+
+          if (isSchool && isFamily) {
+            // Les deux → écran de choix (ou choix mémorisé)
+            redirectTo = remembered === "school" ? "/school/dashboard" : "/select-space"
+          } else if (isSchool) {
+            redirectTo = "/school/dashboard"
+          } else {
+            redirectTo = "/dashboard"
+          }
+        }
+      } catch (roleErr) {
+        // En cas d'erreur, on garde la redirection par défaut (safe)
+        console.error("Role redirect lookup failed:", roleErr)
+      }
+
+      return NextResponse.redirect(`${origin}${redirectTo}`)
     }
 
     // === NEW USER: create account, send verification email ===

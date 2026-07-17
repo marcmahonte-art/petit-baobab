@@ -15,19 +15,67 @@ import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
 import Link from "next/link"
 
+const SCHOOL_GREEN = "#1D9E75"
+
 export function Header() {
   const router = useRouter()
   const { lang, setLanguage, t } = useI18n()
-  
-  // Credits/Stars store
+
+  const { account, logout, studentSession, clearStudentSession } = useAuthStore()
   const credits = useCreditStore()
   const creditInfo = credits.useCredits()
-  const { account, logout } = useAuthStore()
-  const displayStars = account ? account.stars_balance : creditInfo.remaining
+  const displayStars = studentSession
+    ? studentSession.starsBalance
+    : account
+      ? account.stars_balance
+      : creditInfo.remaining
 
-  // Profiles store
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
+
+  // ── Mode élève : header simplifié ──
+  if (studentSession && studentSession.type === "student") {
+    const mascotSrc =
+      studentSession.mascot === "lion"
+        ? "/illustrations/lion.webp"
+        : studentSession.mascot === "robot"
+          ? "/illustrations/robot.webp"
+          : "/illustrations/awa.webp"
+
+    return (
+      <header className="flex items-center justify-between gap-4 py-2 lg:h-[72px] px-4 lg:px-6 w-full bg-white border-b border-[#EFE7DB]">
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-petit-baobab.svg" alt="Petit Baobab" className="h-8 w-auto" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 h-10 px-3 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">
+            <Star className="w-4 h-4 text-[#FFB300] fill-[#FFB300]" />
+            <span className="text-sm font-black">{displayStars}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={mascotSrc} alt={studentSession.name} className="w-8 h-8 rounded-full bg-[#FFF9F2]" />
+            <span className="text-sm font-bold text-[#1C1C3A] hidden sm:inline">
+              {studentSession.name}
+            </span>
+          </div>
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/student-logout", { method: "POST" })
+              clearStudentSession()
+              router.push("/school")
+            }}
+            className="flex items-center gap-1.5 text-sm font-bold text-[#7A6A5E] hover:text-[#1C1C3A] cursor-pointer bg-transparent border-none"
+            aria-label="Se déconnecter"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Quitter</span>
+          </button>
+        </div>
+      </header>
+    )
+  }
 
   // Profile local states
   const [profileName, setProfileName] = useState("Awa")
