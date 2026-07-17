@@ -336,11 +336,19 @@ export const useSchoolStore = create<SchoolState>()(
         async createClass(name, academicYear) {
           try {
             set({ loading: true, error: null });
-            const supabase = getSupabaseClient();
-            const payload: any = { name };
-            if (academicYear) payload.academic_year = academicYear;
-            const { data, error } = await supabase.rpc('create_classroom', payload);
-            if (error) throw error;
+            const res = await fetch('/api/school/classroom', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name,
+                academic_year: academicYear ?? '2025-2026',
+              }),
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || err.message || 'Erreur création classe');
+            }
+            const data = await res.json();
             await get().fetchClasses();
             toast({ title: 'Classe créée', description: `${name} a été ajoutée.` });
           } catch (e: any) {

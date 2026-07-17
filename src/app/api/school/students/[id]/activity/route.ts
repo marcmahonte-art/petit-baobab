@@ -35,6 +35,18 @@ export async function GET(
       return NextResponse.json({ error: "Élève introuvable." }, { status: 404 });
     }
 
+    // 1b. Vérifier que l'élève appartient bien au compte de l'enseignant connecté
+    const { data: ownerCheck, error: ownerError } = await supabase
+      .from("classrooms")
+      .select("account_id")
+      .eq("id", student.classroom_id)
+      .eq("account_id", account.id)
+      .single();
+
+    if (ownerError || !ownerCheck) {
+      return NextResponse.json({ error: "Accès non autorisé." }, { status: 403 });
+    }
+
     // 2. Récupérer le child_profile lié
     const { data: childProfile, error: profErr } = await supabase
       .from("child_profiles")

@@ -1,4 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
+import { getServerUser } from "@/lib/auth";
 
 function sanitizeFilename(filename: string) {
   return filename
@@ -11,16 +12,28 @@ function sanitizeFilename(filename: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const imageUrl = request.nextUrl.searchParams.get("imageUrl");
+  // PROTECTION A — Authentification obligatoire (parent OU élève)
+  const sessionType = request.headers.get("x-session-type");
+  const user = sessionType === "student" ? null : await getServerUser();
+  if (!user && sessionType !== "student") {
+    return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+
+  // PROTECTION B — Allowlist domaine Supabase Storage
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const supabaseDomain = new URL(supabaseUrl).hostname;
+  const allowedPattern = new RegExp(
+    `^https://${supabaseDomain.replace(/\./g, "\\.")}/storage/v1/object/public/`
+  );
+
+  const imageUrl = request.nextUrl.searchParams.get("imageUrl")
+    ?? request.nextUrl.searchParams.get("url");
   const filename = sanitizeFilename(
     request.nextUrl.searchParams.get("filename") || "mon-coloriage"
   );
 
-  if (!imageUrl) {
-    return NextResponse.json(
-      { error: "Le paramètre imageUrl est obligatoire." },
-      { status: 400 }
-    );
+  if (!imageUrl || !allowedPattern.test(imageUrl)) {
+    return NextResponse.json({ error: "URL non autorisée." }, { status: 400 });
   }
 
   let url: URL;
