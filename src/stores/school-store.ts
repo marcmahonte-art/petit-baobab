@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { ClassroomWithStats, DashboardData } from '@/types/school';
-import { getSupabaseServer } from '@/lib/supabase-server';
+import { getSupabaseClient } from '@/lib/supabase-client';
 import { toast } from '@/components/ui/use-toast';
 
 interface SchoolState {
@@ -35,7 +35,7 @@ export const useSchoolStore = create<SchoolState>()(
         async fetchDashboard() {
           try {
             set({ loading: true, error: null });
-            const supabase = await getSupabaseServer();
+            const supabase = getSupabaseClient();
             const { data, error } = await supabase.from('school_dashboard_view').select('*').single();
             if (error) throw error;
             set({ dashboardData: data as DashboardData, loading: false });
@@ -47,7 +47,7 @@ export const useSchoolStore = create<SchoolState>()(
         async fetchClasses() {
           try {
             set({ loading: true, error: null });
-            const supabase = await getSupabaseServer();
+            const supabase = getSupabaseClient();
             const { data, error } = await supabase.from('classrooms').select('*');
             if (error) throw error;
             set({ classes: data as ClassroomWithStats[], loading: false });
@@ -59,7 +59,7 @@ export const useSchoolStore = create<SchoolState>()(
         async createClass(name, academicYear) {
           try {
             set({ loading: true, error: null });
-            const supabase = await getSupabaseServer();
+            const supabase = getSupabaseClient();
             const payload: any = { name };
             if (academicYear) payload.academic_year = academicYear;
             const { data, error } = await supabase.rpc('create_classroom', payload);
@@ -82,7 +82,7 @@ export const useSchoolStore = create<SchoolState>()(
         async addStudentsBulk(classroomId, students) {
           try {
             set({ loading: true, error: null });
-            const supabase = await getSupabaseServer();
+            const supabase = getSupabaseClient();
             const { data, error } = await supabase
               .from('school_students')
               .insert(

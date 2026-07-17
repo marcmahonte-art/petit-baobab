@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSchoolStore } from '@/stores/school-store';
