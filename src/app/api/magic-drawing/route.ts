@@ -108,21 +108,79 @@ export async function POST(request: Request) {
     );
   }
 
-  // 1. Authenticate user
-  const user = await getServerUser();
-  if (!user) {
+  // 1. Determine session type from middleware headers
+  const sessionType = request.headers.get("x-session-type");
+  if (!sessionType) {
     return NextResponse.json(
       { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },
       { status: 401 }
     );
   }
 
-  // 2. Fetch the linked account
-  const { data: account, error: accError } = await supabase
-    .from("accounts")
-    .select("id, stars_balance, plan")
-    .eq("user_id", user.id)
-    .single();
+  let accountId: string | null = null;
+  let starsBalance: number | null = null;
+  let plan: string | null = null;
+
+  if (sessionType === "parent") {
+    // Parent session – use Supabase auth user
+    const user = await getServerUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },
+        { status: 401 }
+      );
+    }
+    const { data, error } = await supabase
+      .from("accounts")
+      .select("id, stars_balance, plan")
+      .eq("user_id", user.id)
+      .single();
+    if (error || !data) {
+      return NextResponse.json(
+        { error: "no_account", message: "Compte parent introuvable." },
+        { status: 404 }
+      );
+    }
+    accountId = data.id;
+    starsBalance = data.stars_balance;
+    plan = data.plan;
+  } else if (sessionType === "student") {
+    // Student session – fetch school account via classroom_id header
+    const classroomId = request.headers.get("x-classroom-id");
+    if (!classroomId) {
+      return NextResponse.json(
+        { error: "invalid_session", message: "Informations de classe manquantes." },
+        { status: 400 }
+      );
+    }
+    const { data, error } = await supabase
+      .from("classrooms")
+      .select("account_id")
+      .eq("id", classroomId)
+      .single();
+    if (error || !data) {
+      return NextResponse.json(
+        { error: "no_account", message: "Compte école introuvable." },
+        { status: 404 }
+      );
+    }
+    const accountRes = await supabase
+      .from("accounts")
+      .select("id, stars_balance, plan")
+      .eq("id", data.account_id)
+      .single();
+    if (accountRes.error || !accountRes.data) {
+      return NextResponse.json(
+        { error: "no_account", message: "Compte école introuvable." },
+        { status: 404 }
+      );
+    }
+    accountId = accountRes.data.id;
+    starsBalance = accountRes.data.stars_balance;
+    plan = accountRes.data.plan;
+  } else {
+    return NextResponse.json({ error: "unauthorized", message: "Session inconnue." }, { status: 401 });
+  }
 
   if (accError || !account) {
     return NextResponse.json(
@@ -179,7 +237,7 @@ export async function POST(request: Request) {
 
   // 5. Insert drawing log with status 'en_cours'
   const { error: insertErr } = await supabase
-    .from("drawings")
+    .from("saved_drawings")
     .insert({
       id: drawingId,
       profile_id: profileId,
@@ -228,7 +286,7 @@ export async function POST(request: Request) {
 
     // Update drawing status to 'erreur'
     await supabase
-      .from("drawings")
+      .from("saved_drawings")
       .update({ status: "erreur" })
       .eq("id", drawingId);
 
@@ -270,7 +328,7 @@ export async function POST(request: Request) {
 
   // 8. Update drawing status to 'terminé'
   await supabase
-    .from("drawings")
+    .from("saved_drawings")
     .update({
       image_url: finalImageUrl,
       status: "terminé",

@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Users, Settings, Star } from "lucide-react"
+import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Users, Settings, Star, CreditCard } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ const navItems = [
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },
   { icon: Users, label: "Espace parents", href: "/parents" },
+  { icon: CreditCard, label: "Facturation", href: "/parents/billing" },
   { icon: Settings, label: "Paramètres", href: "/parametres" },
 ]
 
