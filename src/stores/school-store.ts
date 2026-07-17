@@ -259,7 +259,7 @@ export const useSchoolStore = create<SchoolState>()(
             set({ dashboardData: data as DashboardData, loading: false });
           } catch (e: any) {
             set({ error: e.message || 'Erreur tableau de bord', loading: false });
-            toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
+            toast({ title: 'Erreur', description: e.message });
           }
         },
         async fetchClasses() {
@@ -277,7 +277,7 @@ export const useSchoolStore = create<SchoolState>()(
             set({ classes: data as ClassroomWithStats[], loading: false });
           } catch (e: any) {
             set({ error: e.message || 'Erreur classes', loading: false });
-            toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
+            toast({ title: 'Erreur', description: e.message });
           }
         },
         async fetchClassDetail(id) {
@@ -312,7 +312,7 @@ export const useSchoolStore = create<SchoolState>()(
             if (error) throw error;
             set({ students: data || [] });
           } catch (e: any) {
-            toast({ title: 'Erreur', description: 'Impossible de charger les élèves.', variant: 'destructive' });
+            toast({ title: 'Erreur', description: 'Impossible de charger les élèves.' });
           }
         },
         async createClass(name, academicYear) {
@@ -327,7 +327,7 @@ export const useSchoolStore = create<SchoolState>()(
             toast({ title: 'Classe créée', description: `${name} a été ajoutée.` });
           } catch (e: any) {
             set({ error: e.message || 'Erreur création', loading: false });
-            toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
+            toast({ title: 'Erreur', description: e.message });
           } finally {
             set({ loading: false });
           }
@@ -362,7 +362,7 @@ export const useSchoolStore = create<SchoolState>()(
             await get().fetchClasses();
           } catch (e: any) {
             set({ error: e.message || 'Erreur import bulk', loading: false });
-            toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
+            toast({ title: 'Erreur', description: e.message });
           } finally {
             set({ loading: false });
           }
