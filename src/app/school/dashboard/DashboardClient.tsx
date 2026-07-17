@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 import { useSchoolStore } from "@/stores/school-store";
 import { useRouter } from "next/navigation";
-import { Plus, ArrowRight } from "lucide-react";
-import SchoolHeader from "@/components/school/SchoolHeader";
-import StatsBar from "@/components/school/StatsBar";
-import ClassCard from "@/components/school/ClassCard";
+import { Plus } from "lucide-react";
+import DashboardHeader from "@/components/school/DashboardHeader";
+import DashboardStats from "@/components/school/DashboardStats";
+import ClassesGrid from "@/components/school/ClassesGrid";
 import RecentActivities from "@/components/school/RecentActivities";
 import MotivationBanner from "@/components/school/MotivationBanner";
 import RightPanel from "@/components/school/RightPanel";
@@ -17,32 +17,25 @@ export default function DashboardClient() {
 
   useEffect(() => {
     fetchDashboard();
-    const interval = setInterval(fetchDashboard, 30000); // 30 seconds refresh
+    const interval = setInterval(fetchDashboard, 30000); // Refresh every 30s
     return () => clearInterval(interval);
   }, []);
 
-  // Update default selected class for sharing when dashboard data loads
+  // Set default share classroom when data loads
   useEffect(() => {
     if (dashboardData?.classrooms?.length && !selectedShareClass) {
       setSelectedShareClass(dashboardData.classrooms[0]);
     }
   }, [dashboardData, selectedShareClass]);
 
-  if (loading && !dashboardData) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full border-4 border-[#7D6AF8] border-t-transparent h-12 w-12" />
-      </div>
-    );
-  }
-
   if (error && !dashboardData) {
     return (
-      <div className="p-6 text-center text-red-600 bg-red-50 border border-red-200 rounded-2xl">
-        <p className="mb-4 font-bold">{error}</p>
+      <div className="p-6 text-center text-red-600 bg-red-50 border border-red-200 rounded-2xl max-w-xl mx-auto mt-12">
+        <p className="mb-4 font-bold text-lg">Erreur de chargement</p>
+        <p className="text-sm text-red-500 mb-6">{error}</p>
         <button
           onClick={() => fetchDashboard()}
-          className="px-6 py-2.5 bg-[#7D6AF8] text-white font-bold rounded-xl hover:bg-[#6552E8] transition-colors"
+          className="px-6 py-2.5 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold rounded-xl transition-colors shadow-sm"
         >
           Réessayer
         </button>
@@ -50,9 +43,8 @@ export default function DashboardClient() {
     );
   }
 
-  if (!dashboardData) return null;
-
-  const { teacher, stars, classrooms, recent_activity, summary } = dashboardData;
+  const summary = dashboardData?.summary;
+  const stars = dashboardData?.stars || { balance: 0, monthly_limit: 1000, renewal_date: new Date().toISOString() };
 
   const handleShareClass = (cls: any) => {
     setSelectedShareClass(cls);
@@ -60,29 +52,17 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      {/* 1. School Top Header Greeting */}
-      <SchoolHeader
-        teacherName={teacher.name}
-        teacherRole={teacher.role}
-        starsRemaining={stars.remaining}
-        avatar={teacher.avatar}
-      />
+      {/* 1. Header showing teacher details */}
+      <DashboardHeader />
 
-      {/* 2. Stats Bar Summary */}
-      <StatsBar
-        totalClasses={summary.total_classes}
-        totalStudents={summary.total_students}
-        totalColoriages={summary.total_coloriages}
-        totalBooks={summary.total_books}
-        starsBalance={stars.balance}
-        starsLimit={stars.monthly_limit}
-      />
+      {/* 2. Stats row showing main metrics */}
+      <DashboardStats />
 
-      {/* 3. Main Dashboard Grid Layout */}
+      {/* 3. Main 3-Column Dashboard Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Left/Center Main Column */}
+        {/* Left main area (2/3 width) */}
         <div className="lg:col-span-2 xl:col-span-3 space-y-6">
-          {/* Section header: Mes classes */}
+          {/* Section: Classes */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -95,53 +75,33 @@ export default function DashboardClient() {
               </div>
 
               {/* Add classroom button */}
-              <button
-                onClick={() => router.push("/school/classes/create")}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-xs rounded-xl shadow-sm shadow-[#7D6AF8]/20 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Nouvelle classe</span>
-              </button>
+              {dashboardData?.classrooms && dashboardData.classrooms.length > 0 && (
+                <button
+                  onClick={() => router.push("/school/classes/create")}
+                  className="flex items-center gap-1.5 px-4 py-2.5 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-xs rounded-xl shadow-sm shadow-[#7D6AF8]/20 transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Nouvelle classe</span>
+                </button>
+              )}
             </div>
 
-            {/* Classes list card grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {classrooms.slice(0, 6).map((cls, idx) => (
-                <ClassCard
-                  key={cls.id}
-                  cls={cls}
-                  index={idx}
-                  onClick={() => router.push(`/school/classes/${cls.id}`)}
-                  onShare={() => handleShareClass(cls)}
-                />
-              ))}
-            </div>
-
-            {/* View all classes link button */}
-            <div className="flex justify-center pt-2">
-              <button
-                onClick={() => router.push("/school/classes")}
-                className="flex items-center gap-2 px-6 py-3 border-2 border-[#F0E7DA] bg-white text-[#7C69F6] font-bold text-xs rounded-2xl hover:bg-[#F5F0EB] transition-colors cursor-pointer"
-              >
-                <span>Voir toutes mes classes</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            {/* ClassesGrid Component */}
+            <ClassesGrid onShareClass={handleShareClass} />
           </section>
 
-          {/* Section: Recent Activities */}
+          {/* Section: Recent Activities Feed */}
           <section>
-            <RecentActivities
-              activities={recent_activity}
-              onViewAll={() => router.push("/school/activities")}
-            />
+            <RecentActivities />
           </section>
 
-          {/* Weekly Motivation Banner */}
-          <MotivationBanner starsEarnedThisWeek={summary.stars_earned_this_week} />
+          {/* Motivation banner for stars */}
+          {summary && summary.stars_earned_this_week > 0 && (
+            <MotivationBanner starsEarnedThisWeek={summary.stars_earned_this_week} />
+          )}
         </div>
 
-        {/* Right Sidebar Widget Panel */}
+        {/* Right sidebar column (1/3 width) */}
         <div className="lg:col-span-1">
           <RightPanel selectedClass={selectedShareClass} stars={stars} />
         </div>

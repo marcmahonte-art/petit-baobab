@@ -185,6 +185,13 @@ const MOCK_DASHBOARD: DashboardData = {
       student_avatar: null,
     },
   ],
+  stars_usage: {
+    coloriages: 120,
+    livres: 60,
+    activites: 45,
+    bonus: 30,
+    autres: 5,
+  },
   summary: {
     total_classes: 5,
     total_students: 132,
@@ -238,7 +245,7 @@ export const useSchoolStore = create<SchoolState>()(
         selectedStudentId: null,
         isStudentDrawerOpen: false,
         selectedClassForShare: null,
-        useMockData: true, // Activé pour le développement UI
+        useMockData: false, // Passer à false pour l'automatisation en production
         selectedClass: null,
         loadingDetail: false,
         errorDetail: null,
@@ -253,9 +260,12 @@ export const useSchoolStore = create<SchoolState>()(
               return;
             }
 
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase.from('school_dashboard_view').select('*').single();
-            if (error) throw error;
+            const res = await fetch('/api/school/dashboard');
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.message || err.error || 'Erreur lors de la récupération des données.');
+            }
+            const data = await res.json();
             set({ dashboardData: data as DashboardData, loading: false });
           } catch (e: any) {
             set({ error: e.message || 'Erreur tableau de bord', loading: false });
@@ -271,9 +281,12 @@ export const useSchoolStore = create<SchoolState>()(
               return;
             }
 
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase.from('classrooms').select('*');
-            if (error) throw error;
+            const res = await fetch('/api/school/classroom');
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.message || err.error || 'Erreur lors de la récupération des classes.');
+            }
+            const data = await res.json();
             set({ classes: data as ClassroomWithStats[], loading: false });
           } catch (e: any) {
             set({ error: e.message || 'Erreur classes', loading: false });
@@ -288,10 +301,14 @@ export const useSchoolStore = create<SchoolState>()(
               set({ selectedClass: cls, loadingDetail: false });
               return;
             }
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase.from('classrooms').select('*').eq('id', id).single();
-            if (error) throw error;
-            set({ selectedClass: data as ClassroomWithStats, loadingDetail: false });
+            const res = await fetch(`/api/school/classroom/${id}`);
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.message || err.error || 'Erreur lors de la récupération du détail.');
+            }
+            const data = await res.json();
+            // L'API renvoie { classroom, recent_activity }
+            set({ selectedClass: data.classroom as ClassroomWithStats, loadingDetail: false });
           } catch (e: any) {
             set({ errorDetail: e.message || 'Erreur détail classe', loadingDetail: false });
           }

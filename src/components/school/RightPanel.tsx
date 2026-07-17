@@ -2,6 +2,8 @@
 import React from "react";
 import ShareClassWidget from "./ShareClassWidget";
 import StarsBalanceWidget from "./StarsBalanceWidget";
+import StarsUsage from "./StarsUsage";
+import ProgressChart from "./ProgressChart";
 import QuickActionsWidget from "./QuickActionsWidget";
 import InspirationWidget from "./InspirationWidget";
 import { ClassroomWithStats } from "@/types/school";
@@ -31,10 +33,16 @@ export default function RightPanel({ selectedClass, stars }: RightPanelProps) {
         renewalDate={stars.renewal_date}
       />
 
-      {/* 3. Quick Actions Widget */}
+      {/* 3. Dynamic Stars Usage Breakdown */}
+      <StarsUsage />
+
+      {/* 4. Classroom Progression Rates Chart & Bravo Card */}
+      <ProgressChart />
+
+      {/* 5. Quick Actions Widget */}
       <QuickActionsWidget />
 
-      {/* 4. Inspiration / Motivation Widget */}
+      {/* 6. Inspiration / Motivation Widget */}
       <InspirationWidget />
     </div>
   );

@@ -91,6 +91,13 @@ export interface DashboardData {
   };
   classrooms: ClassroomWithStats[];
   recent_activity: StudentActivityFeed[];
+  stars_usage: {
+    coloriages: number;
+    livres: number;
+    activites: number;
+    bonus: number;
+    autres: number;
+  };
   summary: {
     total_classes: number;
     total_students: number;
