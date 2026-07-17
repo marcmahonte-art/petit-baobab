@@ -31,6 +31,8 @@ import {
   Trophy,
   MessageSquare,
   Printer,
+  Loader2,
+  Save,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -48,22 +50,12 @@ const MASCOT_IMAGES: Record<string, string> = {
   robot: "/illustrations/robot.webp",
 };
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; className: string }
-> = {
-  actif: {
-    label: "Actif",
-    className: "bg-[#10B981]/15 text-[#0E9F6E] border border-[#10B981]/30",
-  },
-  peu_actif: {
-    label: "Peu actif",
-    className: "bg-[#FF9500]/15 text-[#F97316] border border-[#FF9500]/30",
-  },
-  inactif: {
-    label: "Inactif",
-    className: "bg-[#EF4444]/15 text-[#DC2626] border border-[#EF4444]/30",
-  },
+const MASCOTS = ["awa", "lion", "robot"] as const;
+
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+  actif: { label: "Actif", className: "bg-[#10B981]/15 text-[#0E9F6E] border border-[#10B981]/30" },
+  peu_actif: { label: "Peu actif", className: "bg-[#FF9500]/15 text-[#F97316] border border-[#FF9500]/30" },
+  inactif: { label: "Inactif", className: "bg-[#EF4444]/15 text-[#DC2626] border border-[#EF4444]/30" },
 };
 
 const PAGE_SIZE = 20;
@@ -126,13 +118,7 @@ function MascotAvatar({ mascot, size = 48 }: { mascot: string; size?: number }) 
       className="rounded-full overflow-hidden bg-[#FFF8E1] border-2 border-[#F0E7DA] shrink-0"
       style={{ width: size, height: size }}
     >
-      <Image
-        src={src}
-        alt={mascot}
-        width={size}
-        height={size}
-        className="w-full h-full object-cover"
-      />
+      <Image src={src} alt={mascot} width={size} height={size} className="w-full h-full object-cover" />
     </div>
   );
 }
@@ -142,9 +128,7 @@ function StudentName({ student }: { student: StudentRow }) {
   return (
     <div className="flex flex-col">
       <span className="font-bold text-[#3B2416] text-sm leading-tight">{fullName}</span>
-      {student.badges.length > 0 && (
-        <span className="text-xs mt-0.5">{student.badges.join(" ")}</span>
-      )}
+      {student.badges.length > 0 && <span className="text-xs mt-0.5">{student.badges.join(" ")}</span>}
     </div>
   );
 }
@@ -152,9 +136,7 @@ function StudentName({ student }: { student: StudentRow }) {
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.inactif;
   return (
-    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${cfg.className}`}>
-      {cfg.label}
-    </span>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${cfg.className}`}>{cfg.label}</span>
   );
 }
 
@@ -182,6 +164,11 @@ export default function StudentsClient() {
   const [page, setPage] = useState(1);
 
   const [drawerStudent, setDrawerStudent] = useState<StudentRow | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Modales
+  const [editStudent, setEditStudent] = useState<StudentRow | null>(null);
+  const [moveStudent, setMoveStudent] = useState<StudentRow | null>(null);
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -241,34 +228,121 @@ export default function StudentsClient() {
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   const selectedClassObj = classes.find((c) => c.id === selectedClass);
+
+  // ───────────── Actions reliées à Supabase ─────────────
+
+  const runAction = useCallback(
+    async (key: string, student: StudentRow, extra?: any) => {
+      setActionLoading(key + student.id);
+      try {
+        let res: Response;
+        let payload: any = undefined;
+        let method = "POST";
+        let url = `/api/school/students/${student.id}`;
+
+        switch (key) {
+          case "change-class":
+            method = "PATCH";
+            payload = { classroom_id: extra.classroomId };
+            break;
+          case "add-stars":
+          case "remove-stars":
+            url = `/api/school/students/${student.id}/stars`;
+            payload = { amount: key === "add-stars" ? Math.abs(extra.amount || 1) : -Math.abs(extra.amount || 1) };
+            break;
+          case "reset":
+            url = `/api/school/students/${student.id}/reset`;
+            break;
+          case "delete":
+            method = "DELETE";
+            url = `/api/school/students/${student.id}`;
+            break;
+          default:
+            break;
+        }
+
+        res = await fetch(url, {
+          method,
+          headers: payload ? { "Content-Type": "application/json" } : undefined,
+          body: payload ? JSON.stringify(payload) : undefined,
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || data.message || "Opération échouée.");
+
+        const labels: Record<string, string> = {
+          "change-class": "Classe mise à jour",
+          "add-stars": data.message || "Étoiles ajoutées",
+          "remove-stars": data.message || "Étoiles retirées",
+          reset: "Progression réinitialisée",
+          delete: `${student.first_name} retiré de la classe`,
+        };
+        toast({ title: "Succès", description: labels[key] || "Opération réussie" });
+
+        // Rafraîchir les données après mutation
+        await fetchStudents();
+        if (drawerStudent?.id === student.id) setDrawerStudent(null);
+      } catch (e: any) {
+        toast({ title: "Erreur", description: e.message });
+      } finally {
+        setActionLoading(null);
+      }
+    },
+    [fetchStudents, drawerStudent]
+  );
 
   const handleAction = (action: string, student: StudentRow) => {
     switch (action) {
       case "view":
-      case "edit":
         setDrawerStudent(student);
         break;
+      case "edit":
+        setEditStudent(student);
+        break;
       case "change-class":
-        toast({ title: "Changer de classe", description: `Fonction à venir pour ${student.first_name}.` });
+        setMoveStudent(student);
         break;
       case "add-stars":
-        toast({ title: "Ajouter des étoiles", description: `+1 ⭐ pour ${student.first_name}.` });
+        runAction("add-stars", student, { amount: 1 });
         break;
       case "remove-stars":
-        toast({ title: "Retirer des étoiles", description: `-1 ⭐ pour ${student.first_name}.` });
+        runAction("remove-stars", student, { amount: 1 });
         break;
       case "reset":
-        toast({ title: "Réinitialiser", description: `Progression réinitialisée pour ${student.first_name}.` });
+        runAction("reset", student);
         break;
-      case "Trash2":
-        toast({ title: "Supprimer", description: `${student.first_name} retiré de la classe.` });
+      case "delete":
+        runAction("delete", student);
         break;
       default:
         break;
     }
   };
+
+  const exportCSV = useCallback(() => {
+    const header = ["Prénom", "Nom", "Classe", "Code classe", "Activités", "Étoiles", "Dernière activité", "Statut"];
+    const rows = students.map((s) => [
+      s.first_name,
+      s.last_name || "",
+      s.classroom_name,
+      s.class_code,
+      String(s.activities_count),
+      String(s.stars),
+      s.last_active ? new Date(s.last_active).toLocaleString("fr-FR") : "Jamais",
+      STATUS_CONFIG[s.status]?.label || s.status,
+    ]);
+    const csv = [header, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "eleves-petit-baobab.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast({ title: "Export CSV", description: `${students.length} élèves exportés.` });
+  }, [students]);
 
   const TABS = [
     { key: "all", label: "Tous", count: tabCounts.all },
@@ -336,7 +410,6 @@ export default function StudentsClient() {
         {/* Toolbar */}
         <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-4 flex flex-col gap-3">
           <div className="flex flex-col md:flex-row md:items-center gap-3">
-            {/* Sélecteur de classe */}
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
@@ -350,7 +423,6 @@ export default function StudentsClient() {
               ))}
             </select>
 
-            {/* Recherche */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A6A5E]" />
               <Input
@@ -361,7 +433,6 @@ export default function StudentsClient() {
               />
             </div>
 
-            {/* Filtres */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="rounded-xl border-2 border-[#F0E7DA] font-bold">
@@ -380,7 +451,6 @@ export default function StudentsClient() {
                     {t.label} ({t.count})
                   </DropdownMenuItem>
                 ))}
-                
                 <DropdownMenuItem onClick={() => setActiveTab("all")}>
                   Réinitialiser les filtres
                 </DropdownMenuItem>
@@ -388,7 +458,6 @@ export default function StudentsClient() {
             </DropdownMenu>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-wrap items-center gap-2">
             <Button
               onClick={() => router.push("/school/students/bulk")}
@@ -407,7 +476,7 @@ export default function StudentsClient() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => toast({ title: "Export CSV", description: "Téléchargement de la liste..." })}
+              onClick={exportCSV}
               className="rounded-xl border-2 border-[#F0E7DA] font-bold"
             >
               <Download className="w-4 h-4 mr-2" />
@@ -436,17 +505,9 @@ export default function StudentsClient() {
         {/* Empty state */}
         {filtered.length === 0 && (
           <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-12 text-center">
-            <Image
-              src={MASCOT_IMAGES.awa}
-              alt="Aucun élève"
-              width={120}
-              height={120}
-              className="mx-auto mb-4 opacity-80"
-            />
+            <Image src={MASCOT_IMAGES.awa} alt="Aucun élève" width={120} height={120} className="mx-auto mb-4 opacity-80" />
             <p className="text-lg font-bold text-[#3B2416] mb-1">Aucun élève trouvé.</p>
-            <p className="text-sm text-[#7A6A5E] mb-4">
-              Essayez un autre filtre ou ajoutez de nouveaux élèves.
-            </p>
+            <p className="text-sm text-[#7A6A5E] mb-4">Essayez un autre filtre ou ajoutez de nouveaux élèves.</p>
             <Button
               onClick={() => router.push("/school/students/bulk")}
               className="rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold"
@@ -498,7 +559,11 @@ export default function StudentsClient() {
                         <StatusBadge status={s.status} />
                       </td>
                       <td className="p-4 text-right">
-                        <RowActions student={s} onAction={handleAction} />
+                        <RowActions
+                          student={s}
+                          actionLoading={actionLoading}
+                          onAction={handleAction}
+                        />
                       </td>
                     </motion.tr>
                   ))}
@@ -528,7 +593,7 @@ export default function StudentsClient() {
                     <span className="text-xs text-[#7A6A5E]">· {s.activities_count} act.</span>
                   </div>
                 </div>
-                <RowActions student={s} onAction={handleAction} />
+                <RowActions student={s} actionLoading={actionLoading} onAction={handleAction} />
               </motion.div>
             ))}
           </div>
@@ -537,9 +602,7 @@ export default function StudentsClient() {
         {/* Pagination */}
         {filtered.length > 0 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#7A6A5E] font-medium">
-              {filtered.length} élève{filtered.length > 1 ? "s" : ""}
-            </p>
+            <p className="text-sm text-[#7A6A5E] font-medium">{filtered.length} élève{filtered.length > 1 ? "s" : ""}</p>
             <div className="flex items-center gap-2">
               <button
                 disabled={page <= 1}
@@ -565,7 +628,6 @@ export default function StudentsClient() {
 
       {/* ───────────── Panneau latéral droit ───────────── */}
       <aside className="lg:col-span-1 space-y-6">
-        {/* Classe actuelle */}
         <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-5">
           <h3 className="text-sm font-extrabold text-[#3B2416] mb-3">Classe actuelle</h3>
           <div className="flex items-center gap-3">
@@ -597,7 +659,6 @@ export default function StudentsClient() {
           </div>
         </div>
 
-        {/* Aperçu KPI */}
         <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-5">
           <h3 className="text-sm font-extrabold text-[#3B2416] mb-4">Aperçu</h3>
           <div className="grid grid-cols-2 gap-3">
@@ -608,7 +669,6 @@ export default function StudentsClient() {
           </div>
         </div>
 
-        {/* Actions rapides */}
         <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-5">
           <h3 className="text-sm font-extrabold text-[#3B2416] mb-4">Actions rapides</h3>
           <div className="space-y-2">
@@ -616,11 +676,10 @@ export default function StudentsClient() {
             <QuickAction label="Importer" icon={<Upload className="w-4 h-4" />} color="#EC4899" onClick={() => router.push("/school/students/bulk")} />
             <QuickAction label="Imprimer la liste" icon={<Printer className="w-4 h-4" />} color="#3B82F6" onClick={() => window.print()} />
             <QuickAction label="Envoyer un message" icon={<MessageSquare className="w-4 h-4" />} color="#F59E0B" onClick={() => toast({ title: "Message", description: "Fonction à venir." })} />
-            <QuickAction label="Gérer les étoiles" icon={<Star className="w-4 h-4" />} color="#10B981" onClick={() => toast({ title: "Étoiles", description: "Fonction à venir." })} />
+            <QuickAction label="Gérer les étoiles" icon={<Star className="w-4 h-4" />} color="#10B981" onClick={() => toast({ title: "Étoiles", description: "Sélectionnez un élève pour gérer ses étoiles." })} />
           </div>
         </div>
 
-        {/* Astuce */}
         <div className="bg-gradient-to-br from-[#FFF8E1] to-[#FFF0D4] rounded-2xl border border-[#F0E7DA] shadow-sm p-5">
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="w-5 h-5 text-[#F59E0B]" />
@@ -634,23 +693,50 @@ export default function StudentsClient() {
       </aside>
 
       {/* Drawer profil élève */}
-      <StudentDrawer student={drawerStudent} onClose={() => setDrawerStudent(null)} />
+      <StudentDrawer student={drawerStudent} onClose={() => setDrawerStudent(null)} onEdit={setEditStudent} />
+
+      {/* Modal Modifier */}
+      <EditStudentModal
+        student={editStudent}
+        classes={classes}
+        onClose={() => setEditStudent(null)}
+        onSaved={() => {
+          setEditStudent(null);
+          fetchStudents();
+        }}
+      />
+
+      {/* Modal Changer de classe */}
+      <MoveStudentModal
+        student={moveStudent}
+        classes={classes}
+        onClose={() => setMoveStudent(null)}
+        onMoved={() => {
+          setMoveStudent(null);
+          fetchStudents();
+        }}
+        runAction={runAction}
+        actionLoading={actionLoading}
+      />
     </div>
   );
 }
 
 function RowActions({
   student,
+  actionLoading,
   onAction,
 }: {
   student: StudentRow;
+  actionLoading: string | null;
   onAction: (action: string, student: StudentRow) => void;
 }) {
+  const busy = actionLoading === "add-stars" + student.id || actionLoading === "remove-stars" + student.id || actionLoading === "reset" + student.id || actionLoading === "delete" + student.id;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="p-2 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer">
-          <MoreHorizontal className="w-4 h-4 text-[#7A6A5E]" />
+        <button className="p-2 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer" disabled={busy}>
+          {busy ? <Loader2 className="w-4 h-4 text-[#7A6A5E] animate-spin" /> : <MoreHorizontal className="w-4 h-4 text-[#7A6A5E]" />}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52 p-1.5">
@@ -663,7 +749,6 @@ function RowActions({
         <DropdownMenuItem onClick={() => onAction("change-class", student)}>
           <ArrowLeftRight className="w-4 h-4 mr-2" /> Changer de classe
         </DropdownMenuItem>
-        
         <DropdownMenuItem onClick={() => onAction("add-stars", student)}>
           <PlusCircle className="w-4 h-4 mr-2" /> Ajouter des étoiles
         </DropdownMenuItem>
@@ -673,11 +758,7 @@ function RowActions({
         <DropdownMenuItem onClick={() => onAction("reset", student)}>
           <RotateCcw className="w-4 h-4 mr-2" /> Réinitialiser progression
         </DropdownMenuItem>
-        
-        <DropdownMenuItem
-          className="text-red-600 focus:text-red-600"
-          onClick={() => onAction("Trash2", student)}
-        >
+        <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => onAction("delete", student)}>
           <Trash2 className="w-4 h-4 mr-2" /> Supprimer
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -685,23 +766,10 @@ function RowActions({
   );
 }
 
-function KpiCard({
-  icon,
-  color,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  color: string;
-  label: string;
-  value: number;
-}) {
+function KpiCard({ icon, color, label, value }: { icon: React.ReactNode; color: string; label: string; value: number }) {
   return (
     <div className="bg-[#FFFDF7] rounded-xl p-3 border border-[#F0E7DA]">
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
-        style={{ backgroundColor: color + "1a", color }}
-      >
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ backgroundColor: color + "1a", color }}>
         {icon}
       </div>
       <p className="text-xl font-black text-[#3B2416]">{value}</p>
@@ -710,26 +778,10 @@ function KpiCard({
   );
 }
 
-function QuickAction({
-  label,
-  icon,
-  color,
-  onClick,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  color: string;
-  onClick: () => void;
-}) {
+function QuickAction({ label, icon, color, onClick }: { label: string; icon: React.ReactNode; color: string; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-3 w-full p-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left group cursor-pointer"
-    >
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ backgroundColor: color + "1a", color }}
-      >
+    <button onClick={onClick} className="flex items-center gap-3 w-full p-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left group cursor-pointer">
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + "1a", color }}>
         {icon}
       </div>
       <span className="text-sm font-bold text-[#3B2416]">{label}</span>
@@ -737,24 +789,233 @@ function QuickAction({
   );
 }
 
+function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+        >
+          <div className="flex items-center justify-between p-5 border-b border-[#F0E7DA]">
+            <h2 className="text-lg font-black text-[#3B2416]">{title}</h2>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#F5F0EB] cursor-pointer">
+              <X className="w-5 h-5 text-[#7A6A5E]" />
+            </button>
+          </div>
+          <div className="p-5">{children}</div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function EditStudentModal({
+  student,
+  classes,
+  onClose,
+  onSaved,
+}: {
+  student: StudentRow | null;
+  classes: ClassOption[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [mascot, setMascot] = useState<string>("awa");
+  const [classroomId, setClassroomId] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (student) {
+      setFirstName(student.first_name);
+      setLastName(student.last_name || "");
+      setDisplayName(student.display_name || "");
+      setMascot(student.mascot);
+      setClassroomId(student.classroom_id);
+    }
+  }, [student]);
+
+  if (!student) return null;
+
+  const handleSave = async () => {
+    if (firstName.trim().length < 2) {
+      toast({ title: "Erreur", description: "Le prénom doit faire au moins 2 caractères." });
+      return;
+    }
+    const display = displayName.trim() || `${firstName.trim()} ${lastName.trim()}`.trim();
+    try {
+      setSaving(true);
+      const res = await fetch(`/api/school/students/${student.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
+          display_name: display,
+          mascot,
+          classroom_id: classroomId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Échec de la modification.");
+      toast({ title: "Succès", description: "Élève mis à jour." });
+      onSaved();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <ModalShell title={`Modifier ${student.first_name}`} onClose={onClose}>
+      <div className="space-y-4">
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Prénom</label>
+          <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border-2 border-[#F0E7DA]" />
+        </div>
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Nom</label>
+          <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl border-2 border-[#F0E7DA]" />
+        </div>
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Nom affiché</label>
+          <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Optionnel" className="rounded-xl border-2 border-[#F0E7DA]" />
+        </div>
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Mascotte</label>
+          <div className="flex gap-2">
+            {MASCOTS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMascot(m)}
+                className={`rounded-xl border-2 p-1 transition-all ${mascot === m ? "border-[#7D6AF8] ring-2 ring-[#7D6AF8]/30" : "border-[#F0E7DA]"}`}
+              >
+                <Image src={MASCOT_IMAGES[m]} alt={m} width={44} height={44} className="rounded-lg object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Classe</label>
+          <select
+            value={classroomId}
+            onChange={(e) => setClassroomId(e.target.value)}
+            className="w-full border-2 border-[#F0E7DA] bg-white rounded-xl px-3 py-2.5 text-sm font-bold text-[#3B2416] focus:outline-none focus:border-[#7D6AF8]"
+          >
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl border-2 border-[#F0E7DA] font-bold">
+            Annuler
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold"
+          >
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Enregistrer
+          </Button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function MoveStudentModal({
+  student,
+  classes,
+  onClose,
+  onMoved,
+  runAction,
+  actionLoading,
+}: {
+  student: StudentRow | null;
+  classes: ClassOption[];
+  onClose: () => void;
+  onMoved: () => void;
+  runAction: (key: string, student: StudentRow, extra?: any) => void;
+  actionLoading: string | null;
+}) {
+  const [targetClass, setTargetClass] = useState<string>("");
+  useEffect(() => {
+    if (student) setTargetClass(student.classroom_id);
+  }, [student]);
+
+  if (!student) return null;
+  const busy = actionLoading === "change-class" + student.id;
+  const otherClasses = classes.filter((c) => c.id !== student.classroom_id);
+
+  const handleMove = () => {
+    if (!targetClass || targetClass === student.classroom_id) {
+      toast({ title: "Info", description: "Sélectionnez une classe différente." });
+      return;
+    }
+    runAction("change-class", student, { classroomId: targetClass });
+  };
+
+  return (
+    <ModalShell title={`Changer de classe — ${student.first_name}`} onClose={onClose}>
+      <div className="space-y-4">
+        <p className="text-sm text-[#7A6A5E]">Classe actuelle : <span className="font-bold text-[#3B2416]">{student.classroom_name}</span></p>
+        <div>
+          <label className="block font-bold text-[#3B2416] text-sm mb-1">Nouvelle classe</label>
+          <select
+            value={targetClass}
+            onChange={(e) => setTargetClass(e.target.value)}
+            className="w-full border-2 border-[#F0E7DA] bg-white rounded-xl px-3 py-2.5 text-sm font-bold text-[#3B2416] focus:outline-none focus:border-[#7D6AF8]"
+          >
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {otherClasses.length === 0 && (
+          <p className="text-xs text-[#F59E0B] font-medium">Aucune autre classe disponible. Créez une classe depuis « Mes classes ».</p>
+        )}
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl border-2 border-[#F0E7DA] font-bold">
+            Annuler
+          </Button>
+          <Button onClick={handleMove} disabled={busy} className="flex-1 rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold">
+            {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowLeftRight className="w-4 h-4 mr-2" />}
+            Déplacer
+          </Button>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
 function StudentDrawer({
   student,
   onClose,
+  onEdit,
 }: {
   student: StudentRow | null;
   onClose: () => void;
+  onEdit: (s: StudentRow) => void;
 }) {
   return (
     <AnimatePresence>
       {student && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 z-40"
-            onClick={onClose}
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -773,8 +1034,7 @@ function StudentDrawer({
               <div className="flex flex-col items-center text-center mb-6">
                 <MascotAvatar mascot={student.mascot} size={96} />
                 <h3 className="text-2xl font-black text-[#3B2416] mt-3">
-                  {student.display_name ||
-                    `${student.first_name} ${student.last_name || ""}`.trim()}
+                  {student.display_name || `${student.first_name} ${student.last_name || ""}`.trim()}
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
                   <ClassBadge name={student.classroom_name} />
@@ -806,14 +1066,19 @@ function StudentDrawer({
                 <p className="font-bold text-[#3B2416]">{formatLastActivity(student.last_active)}</p>
               </div>
 
-              <div className="flex items-center gap-2 text-[#7A6A5E]">
+              <div className="flex items-center gap-2 text-[#7A6A5E] mb-6">
                 <Trophy className="w-4 h-4" />
                 <span className="text-sm font-medium">
-                  {student.badges.length > 0
-                    ? `Récompenses : ${student.badges.join(" ")}`
-                    : "Aucune récompense pour le moment."}
+                  {student.badges.length > 0 ? `Récompenses : ${student.badges.join(" ")}` : "Aucune récompense pour le moment."}
                 </span>
               </div>
+
+              <Button
+                onClick={() => onEdit(student)}
+                className="w-full rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold"
+              >
+                <Pencil className="w-4 h-4 mr-2" /> Modifier les informations
+              </Button>
             </div>
           </motion.div>
         </>

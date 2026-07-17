@@ -136,7 +136,7 @@ export async function PATCH(
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { display_name, mascot } = body;
+    const { display_name, mascot, classroom_id } = body;
 
     // 1. Récupérer l'élève
     const { data: student, error: stdErr } = await supabase
@@ -167,6 +167,34 @@ export async function PATCH(
     if (typeof display_name === "string") updateData.display_name = display_name.trim();
     if (mascot && ["awa", "lion", "robot"].includes(mascot)) updateData.mascot = mascot;
 
+    // 3b. Changer de classe (avec vérification de propriété)
+    if (typeof classroom_id === "string" && classroom_id && classroom_id !== student.classroom_id) {
+      const { data: targetClass, error: targetErr } = await supabase
+        .from("classrooms")
+        .select("id")
+        .eq("id", classroom_id)
+        .eq("account_id", account.id)
+        .is("archived_at", null)
+        .single();
+
+      if (targetErr || !targetClass) {
+        return NextResponse.json({ error: "Classe cible introuvable ou non autorisée." }, { status: 403 });
+      }
+
+      // Vérifier la limite de 60 élèves dans la classe cible
+      const { count: targetCount, error: countErr } = await supabase
+        .from("school_students")
+        .select("*", { count: "exact", head: true })
+        .eq("classroom_id", classroom_id)
+        .is("deleted_at", null);
+
+      if (!countErr && (targetCount || 0) >= 60) {
+        return NextResponse.json({ error: "La classe cible est déjà complète (60 élèves max)." }, { status: 422 });
+      }
+
+      updateData.classroom_id = classroom_id;
+    }
+
     const { data: updatedStudent, error: updateStdErr } = await supabase
       .from("school_students")
       .update(updateData)
@@ -182,6 +210,7 @@ export async function PATCH(
     const profileUpdate: Record<string, any> = {};
     if (updateData.display_name) profileUpdate.name = updateData.display_name;
     if (updateData.mascot) profileUpdate.mascot = updateData.mascot;
+    if (updateData.classroom_id) profileUpdate.classroom_id = updateData.classroom_id;
 
     if (Object.keys(profileUpdate).length > 0) {
       await supabase
