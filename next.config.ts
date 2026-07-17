@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: process.cwd(),
-  },
+  // Turbopack (build) a un bug connu avec middleware.ts à la racine sur Vercel
+  // (ENOENT middleware.js.nft.json). On désactive pour le build (webpack classique).
+  turbopack: false,
   images: {
     // Allow Supabase Storage (drawing/book assets) to be optimized by next/image
     remotePatterns: [
