@@ -1,36 +1,145 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Users, Star, BookOpen, Pencil } from 'lucide-react';
-import { ClassroomWithStats } from '@/types/school';
+"use client";
+import React from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { Users, Eye, Share2, MoreHorizontal } from "lucide-react";
+import { ClassroomWithStats } from "@/types/school";
+
+const CLASS_ILLUSTRATIONS = [
+  "/illustrations/school/class-1.png",
+  "/illustrations/school/class-2.png",
+  "/illustrations/school/class-3.png",
+  "/illustrations/school/class-4.png",
+  "/illustrations/school/class-5.png",
+  "/illustrations/school/class-6.png",
+];
 
 type ClassCardProps = {
   cls: ClassroomWithStats;
   onClick?: () => void;
+  onShare?: () => void;
+  index?: number;
 };
 
-export default function ClassCard({ cls, onClick }: ClassCardProps) {
+function formatLastActivity(dateStr: string | null): string {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const time = `${hours}:${minutes}`;
+
+  if (diffHours < 24) {
+    return `Aujourd'hui à ${time}`;
+  } else if (diffHours < 48) {
+    return `Hier à ${time}`;
+  } else {
+    return `${date.toLocaleDateString("fr-FR")} à ${time}`;
+  }
+}
+
+export default function ClassCard({ cls, onClick, onShare, index = 0 }: ClassCardProps) {
+  const illustrationSrc =
+    CLASS_ILLUSTRATIONS[(cls.illustration_index - 1) % CLASS_ILLUSTRATIONS.length];
+  
+  const progressColor = cls.completion_percentage >= 75 
+    ? "#10B981" 
+    : cls.completion_percentage >= 50 
+      ? "#FF9500" 
+      : "#F59E0B";
+
   return (
     <motion.div
-      className="p-5 bg-white/60 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition cursor-pointer"
-      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.35 }}
+      className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden group border border-[#F0E7DA]"
       onClick={onClick}
     >
-      <h4 className="text-lg font-medium text-gray-800 mb-2">{cls.name}</h4>
-      <p className="text-sm text-gray-600 mb-2">Code : {cls.class_code}</p>
-      <div className="flex flex-wrap gap-2 text-sm text-gray-700">
-        <span className="flex items-center">
-          <Users className="w-4 h-4 mr-1" />{cls.student_count} élèves
+      {/* Illustration header */}
+      <div className="relative h-[130px] bg-gradient-to-br from-[#FFF8E1] to-[#FFF0D4] overflow-hidden">
+        <Image
+          src={illustrationSrc}
+          alt={cls.name}
+          width={300}
+          height={130}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {/* Badge name */}
+        <span
+          className="inline-block px-3 py-1 rounded-lg text-white text-xs font-bold mb-2"
+          style={{ backgroundColor: cls.color_badge }}
+        >
+          {cls.name}
         </span>
-        <span className="flex items-center">
-          <Star className="w-4 h-4 mr-1" />{cls.active_today} actifs aujourd'hui
-        </span>
-        <span className="flex items-center">
-          <Pencil className="w-4 h-4 mr-1" />{cls.total_drawings} dessins
-        </span>
-        <span className="flex items-center">
-          <BookOpen className="w-4 h-4 mr-1" />{cls.total_books} livres
-        </span>
+
+        {/* Code */}
+        <p className="text-xs text-[#7A6A5E] font-medium mb-2">{cls.class_code}</p>
+
+        {/* Student count */}
+        <div className="flex items-center gap-1.5 text-sm text-[#3B2416] mb-3">
+          <Users className="w-3.5 h-3.5 text-[#7A6A5E]" />
+          <span className="font-medium">{cls.student_count} élèves</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-2">
+          <div className="flex items-center justify-between text-[11px] mb-1">
+            <span className="font-bold" style={{ color: progressColor }}>
+              {cls.completion_percentage}%
+            </span>
+            <span className="text-[#7A6A5E] font-medium">activités complétées</span>
+          </div>
+          <div className="w-full h-2 bg-[#F5F0EB] rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${cls.completion_percentage}%`,
+                backgroundColor: progressColor,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Last activity */}
+        <p className="text-[11px] text-[#7A6A5E] mb-3">
+          <span className="font-medium">Dernière activité</span>
+          <br />
+          {formatLastActivity(cls.last_activity_at)}
+        </p>
+
+        {/* Action icons */}
+        <div className="flex items-center gap-2 pt-2 border-t border-[#F5F0EB]">
+          <button
+            className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <Eye className="w-4 h-4 text-[#7A6A5E]" />
+          </button>
+          <button
+            className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare?.();
+            }}
+          >
+            <Share2 className="w-4 h-4 text-[#7A6A5E]" />
+          </button>
+          <button
+            className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="w-4 h-4 text-[#7A6A5E]" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );

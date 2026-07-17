@@ -4,10 +4,6 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSchoolStore } from '@/stores/school-store';
 import { Users, Star, BookOpen, Pencil } from 'lucide-react';
 
-export const metadata = {
-  title: 'Détail de la classe – École',
-};
-
 export default function ClassDetailPage() {
   const router = useRouter();
   const { id } = useParams() as { id: string };

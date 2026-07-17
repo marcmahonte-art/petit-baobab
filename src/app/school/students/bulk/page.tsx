@@ -1,13 +1,9 @@
+"use client";
 import React, { useState } from 'react';
 import { useSchoolStore } from '@/stores/school-store';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-
-export const metadata = {
-  title: "Importation en masse d'élèves – École",
-};
 
 export default function BulkImportPage() {
   const { classes, addStudentsBulk, loading } = useSchoolStore();
@@ -48,28 +44,38 @@ export default function BulkImportPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="max-w-2xl mx-auto p-6 space-y-6 bg-white rounded-2xl border border-[#F0E7DA] shadow-sm mt-8">
       <h1 className="text-2xl font-bold text-gray-800">Importation en masse d'élèves</h1>
-      {error && <p className="text-red-600">{error}</p>}
-      <div>
-        <label className="block mb-2 font-medium">Classe cible</label>
-        <Select onValueChange={setSelectedClassId} value={selectedClassId}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Sélectionner une classe" />
-          </SelectTrigger>
-          <SelectContent>
-            {classes.map((cls) => (
-              <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {error && <p className="text-red-600 text-sm font-semibold">{error}</p>}
+      
+      <div className="space-y-2">
+        <label className="block font-bold text-[#3B2416]">Classe cible</label>
+        <select
+          value={selectedClassId}
+          onChange={(e) => setSelectedClassId(e.target.value)}
+          className="w-full border-2 border-[#F0E7DA] bg-white rounded-xl p-3 focus:outline-none focus:border-[#7D6AF8] transition-colors"
+        >
+          <option value="">Sélectionner une classe</option>
+          {classes.map((cls) => (
+            <option key={cls.id} value={cls.id}>
+              {cls.name} ({cls.class_code})
+            </option>
+          ))}
+        </select>
       </div>
-      <div>
-        <label className="block mb-2 font-medium">Fichier JSON des élèves</label>
-        <input type="file" accept="application/json" onChange={handleFileChange} className="border rounded p-2 w-full" />
+
+      <div className="space-y-2">
+        <label className="block font-bold text-[#3B2416]">Fichier JSON des élèves</label>
+        <input 
+          type="file" 
+          accept="application/json" 
+          onChange={handleFileChange} 
+          className="border-2 border-[#F0E7DA] rounded-xl p-3 w-full bg-white focus:outline-none focus:border-[#7D6AF8]" 
+        />
       </div>
-      <Button onClick={handleImport} disabled={loading} className="w-full">
-        {loading ? 'Importation...' : 'Importer'}
+
+      <Button onClick={handleImport} disabled={loading} className="w-full py-6 font-bold text-base rounded-xl">
+        {loading ? 'Importation...' : 'Importer les élèves'}
       </Button>
     </div>
   );

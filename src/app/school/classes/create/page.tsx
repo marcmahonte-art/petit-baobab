@@ -1,12 +1,9 @@
+"use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '@/stores/school-store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
-export const metadata = {
-  title: 'Créer une classe – École',
-};
 
 export default function CreateClassPage() {
   const [name, setName] = useState('');

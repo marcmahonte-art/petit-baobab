@@ -28,6 +28,7 @@ export type StudentActivityAction =
   | "drawing_created"
   | "book_created"
   | "badge_earned"
+  | "activity_completed"
   | "login";
 
 export interface StudentActivity {
@@ -49,6 +50,11 @@ export interface ClassroomWithStats extends Classroom {
   active_today: number;
   total_drawings: number;
   total_books: number;
+  // Champs enrichis pour le nouveau design
+  completion_percentage: number;
+  last_activity_at: string | null;
+  color_badge: string;
+  illustration_index: number;
 }
 
 export interface StudentWithProfile extends SchoolStudent {
@@ -63,22 +69,36 @@ export interface StudentWithProfile extends SchoolStudent {
 export interface StudentActivityFeed extends StudentActivity {
   student_name: string;
   classroom_name: string;
+  // Champs enrichis
+  stars_earned: number;
+  action_detail: string;
+  action_label: string;
+  student_avatar: string | null;
 }
 
 export interface DashboardData {
+  teacher: {
+    name: string;
+    role: string;
+    avatar: string | null;
+  };
   stars: {
     balance: number;
     monthly_limit: number;
     consumed_this_month: number;
     renewal_date: string;
+    remaining: number;
   };
   classrooms: ClassroomWithStats[];
   recent_activity: StudentActivityFeed[];
   summary: {
+    total_classes: number;
     total_students: number;
     active_today: number;
     total_drawings: number;
+    total_coloriages: number;
     total_books: number;
+    stars_earned_this_week: number;
   };
 }
 
