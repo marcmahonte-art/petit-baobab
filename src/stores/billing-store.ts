@@ -80,10 +80,11 @@ export const useBillingStore = create<BillingState>((set, get) => ({
     }
   },
 
-  fetchPlans: async () => {
+  fetchPlans: async (scope?: "parent" | "school") => {
     set({ isLoadingPlans: true, error: null })
     try {
-      const res = await fetch("/api/billing/plans")
+      const query = scope ? `?scope=${scope}` : ""
+      const res = await fetch(`/api/billing/plans${query}`)
       if (!res.ok) throw new Error("Erreur lors du chargement des plans")
       const data = await res.json()
       set({ plans: data.plans })

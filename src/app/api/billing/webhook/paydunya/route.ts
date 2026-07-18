@@ -64,14 +64,32 @@ export async function POST(request: NextRequest) {
     // 4. Extraire les infos depuis custom_data de la réponse confirmée
     const customData = verified.custom_data || {};
     const accountId: string | undefined = customData.account_id;
+    const checkoutType: string | undefined = customData.type;
     const packId: string | undefined = customData.pack_id;
+    const planId: string | undefined = customData.plan_id;
     const stars = parseInt(String(customData.stars || "0"), 10);
 
     if (!accountId || stars <= 0) {
       return NextResponse.json({ error: "invalid_custom_data" }, { status: 400 });
     }
 
-    // 5. Créditer les étoiles via adjustStars (RPC atomique avec gestion
+    // 5. Si c'est un achat de PLAN : changer accounts.plan (distinct d'un pack).
+    if (checkoutType === "plan" && planId) {
+      const { error: planErr } = await supabase
+        .from("accounts")
+        .update({
+          plan: planId,
+          plan_renewed_at:
+            planId === "ecole_pro" ? new Date().toISOString() : null,
+        })
+        .eq("id", accountId);
+
+      if (planErr) {
+        return NextResponse.json({ error: planErr.message }, { status: 500 });
+      }
+    }
+
+    // 6. Créditer les étoiles via adjustStars (RPC atomique avec gestion
     //    d'idempotence par reference_id = invoiceToken)
     const result = await adjustStars(accountId, stars, STARS_REASONS.PURCHASE, invoiceToken);
 
@@ -79,7 +97,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error || "adjust_failed" }, { status: 500 });
     }
 
-    // 6. Persister la transaction dans la table payments (historique côté client)
+    // 7. Persister la transaction dans la table payments (historique côté client)
     await supabase.from("payments").upsert(
       {
         user_id: accountId,
@@ -89,6 +107,7 @@ export async function POST(request: NextRequest) {
         amount: verified.invoice?.total_amount || 0,
         currency: "XOF",
         status: "completed",
+        plan: planId || null,
         pack_id: packId || null,
         stars_earned: stars,
         payload: verified,

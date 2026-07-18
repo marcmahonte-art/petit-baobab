@@ -1,36 +1,38 @@
 // ============================================================
-// Petit Baobab — API Achat d'étoiles (checkout)
+// Petit Baobab — API Achat / changement de plan
 // ============================================================
-// POST /api/billing/checkout
+// POST /api/billing/subscribe
 //
-// NOTE (webhook) : aucun webhook (/api/billing/webhook) n'est créé
-// tant que le fournisseur de paiement n'est pas choisi. Une fois
-// celui-ci sélectionné (PayDunya, FedaPay, ...), le webhook devra
-// vérifier la signature de l'événement et appeler la fonction
-// existante `adjustStars(accountId, +stars, 'purchase', referenceId)`
-// pour créditer le solde. Le format des events et la vérification
-// diffèrent selon le fournisseur — à implémenter au moment venu.
+// Distinct du checkout de packs (/api/billing/checkout) :
+// ici on achète un PLAN (decouverte / super_baobab / ecole_pro),
+// ce qui modifie accounts.plan. Un achat de pack, lui, n'ajoute
+// que des étoiles sans toucher au plan.
 //
-// CAS ACTUEL (CAS B) : aucun agrégateur configuré → placeholder 503.
-// L'architecture est prête : PaymentProvider + getPaymentProvider().
+// Règles de ciblage :
+//  - ecole_pro est réservé aux comptes école (plan ecole_pro).
+//    Un particulier ne peut pas y souscrire.
+//  - decouverte / super_baobab sont réservés aux particuliers.
+//
+// CAS ACTUEL (CAS B) : aucun agrégateur configuré → placeholder 503,
+// symétrique au checkout des packs.
 
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getPaymentProvider } from "@/lib/payments";
-import { findPack, STARS_PACKS } from "@/lib/payments/types";
+import { findPlan, PAID_PLANS } from "@/lib/payments/types";
 
 export async function POST(request: Request) {
   try {
     const user = await getServerUser();
     if (!user) {
-      return NextResponse.json({ error: "Vous devez être connecté pour acheter des étoiles." }, { status: 401 });
+      return NextResponse.json({ error: "Vous devez être connecté pour souscrire à un plan." }, { status: 401 });
     }
 
     const supabase = await getSupabaseServer();
     const { data: account, error: accErr } = await supabase
       .from("accounts")
-      .select("id")
+      .select("id, plan")
       .eq("user_id", user.id)
       .single();
 
@@ -39,11 +41,19 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const packId = typeof body?.packId === "string" ? body.packId : "";
-    const pack = findPack(packId);
+    const planId = typeof body?.planId === "string" ? body.planId : "";
+    const plan = findPlan(planId);
 
-    if (!pack) {
-      return NextResponse.json({ error: "Pack invalide." }, { status: 400 });
+    if (!plan) {
+      return NextResponse.json({ error: "Plan invalide." }, { status: 400 });
+    }
+
+    // Ciblage : un particulier ne peut pas souscrire au plan école.
+    if (plan.schoolOnly && account.plan !== "ecole_pro") {
+      return NextResponse.json(
+        { error: "Ce plan est réservé aux structures scolaires." },
+        { status: 403 }
+      );
     }
 
     const provider = getPaymentProvider();
@@ -55,7 +65,7 @@ export async function POST(request: Request) {
           error: "Paiement en cours de configuration",
           available: false,
           message:
-            "L'achat d'étoiles sera disponible prochainement. Contactez-nous sur WhatsApp pour obtenir des étoiles.",
+            "La souscription aux plans sera disponible prochainement. Contactez-nous sur WhatsApp pour activer votre plan.",
         },
         { status: 503 }
       );
@@ -64,17 +74,17 @@ export async function POST(request: Request) {
     const origin = new URL(request.url).origin;
     const result = await provider.createCheckout({
       accountId: account.id,
-      type: "pack",
-      packId: pack.id,
-      amountXof: pack.price_xof,
-      stars: pack.stars,
+      type: "plan",
+      planId: plan.id,
+      amountXof: plan.price_xof,
+      stars: plan.stars,
       successUrl: `${origin}/parents?purchase=success`,
       cancelUrl: `${origin}/parents?purchase=cancel`,
     });
 
     return NextResponse.json({ available: true, checkoutUrl: result.checkoutUrl });
   } catch (error: any) {
-    console.error("Billing checkout API error:", error);
+    console.error("Billing subscribe API error:", error);
     return NextResponse.json(
       { error: "Une erreur est survenue lors de la préparation du paiement." },
       { status: 500 }
@@ -85,7 +95,7 @@ export async function POST(request: Request) {
 export async function GET() {
   return NextResponse.json({
     available: false,
-    packs: STARS_PACKS,
+    plans: PAID_PLANS,
     message:
       "Paiement disponible prochainement — Orange Money, Moov Money et carte bancaire",
   });

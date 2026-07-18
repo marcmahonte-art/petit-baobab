@@ -14,6 +14,7 @@ import { SubscriptionCard } from "@/components/billing/SubscriptionCard"
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus"
 import { PaymentHistory } from "@/components/billing/PaymentHistory"
 import { StarsActivity } from "@/components/billing/StarsActivity"
+import { RenewPlanButton } from "@/components/billing/RenewPlanButton"
 import Image from "next/image"
 
 type Tab = "subscription" | "payments" | "stars"
@@ -28,6 +29,8 @@ function BillingContent() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>("subscription")
   const [showBuyStars, setShowBuyStars] = useState(false)
+  const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null)
+  const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const {
     subscription,
     accountPlan,
@@ -40,8 +43,32 @@ function BillingContent() {
 
   useEffect(() => {
     fetchSubscription()
-    fetchPlans()
+    fetchPlans("parent")
   }, [])
+
+  const handleChoosePlan = async (planId: string) => {
+    setSubscribeError(null)
+    setSubscribingPlan(planId)
+    try {
+      const res = await fetch("/api/billing/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Erreur lors de la souscription.")
+      }
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      } else {
+        throw new Error("URL de paiement non reçue.")
+      }
+    } catch (err: any) {
+      setSubscribeError(err.message)
+      setSubscribingPlan(null)
+    }
+  }
 
   return (
     <motion.div
@@ -129,7 +156,7 @@ function BillingContent() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
                             className={cn(
-                              "relative rounded-[20px] border bg-white p-5 shadow-sm transition-shadow hover:shadow-md",
+                              "relative rounded-[20px] border bg-white p-5 shadow-sm transition-shadow hover:shadow-md flex flex-col",
                               isActive ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/10" : "border-[#EFE7DB]"
                             )}
                           >
@@ -156,10 +183,21 @@ function BillingContent() {
                                 </li>
                               ))}
                             </ul>
+                            <div className="mt-auto">
+                              <RenewPlanButton
+                                planId={plan.id}
+                                isActive={isActive}
+                                disabled={subscribingPlan !== null}
+                                onClick={() => handleChoosePlan(plan.id)}
+                              />
+                            </div>
                           </motion.div>
                         )
                       })}
                     </div>
+                    {subscribeError && (
+                      <p className="mt-3 text-xs font-bold text-red-600">{subscribeError}</p>
+                    )}
                   </div>
                 )}
               </>

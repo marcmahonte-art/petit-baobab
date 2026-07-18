@@ -6,9 +6,15 @@
 // n'importe quel agrégateur plus tard sans toucher aux routes
 // existantes ni à la logique de packs.
 
+export type CheckoutType = "pack" | "plan";
+
 export interface PaymentCheckoutParams {
   accountId: string;
-  packId: string;
+  type: CheckoutType;
+  /** Requis si type === "pack". */
+  packId?: string;
+  /** Requis si type === "plan". */
+  planId?: string;
   amountXof: number;
   stars: number;
   successUrl: string;
@@ -39,4 +45,28 @@ export const STARS_PACKS: StarsPack[] = [
 
 export function findPack(packId: string): StarsPack | undefined {
   return STARS_PACKS.find((p) => p.id === packId);
+}
+
+// Plans payants (abonnement ou achat unique). Distinct des packs : un achat
+// de plan modifie accounts.plan, alors qu'un pack n'ajoute que des étoiles.
+export type PlanKind = "one_time" | "monthly";
+
+export interface PaidPlan {
+  id: "decouverte" | "super_baobab" | "ecole_pro";
+  name: string;
+  stars: number;
+  price_xof: number;
+  kind: PlanKind;
+  /** true = réservé aux structures scolaires (enseignants). */
+  schoolOnly: boolean;
+}
+
+export const PAID_PLANS: PaidPlan[] = [
+  { id: "decouverte", name: "Découverte", stars: 100, price_xof: 2000, kind: "one_time", schoolOnly: false },
+  { id: "super_baobab", name: "Super Baobab", stars: 250, price_xof: 4500, kind: "monthly", schoolOnly: false },
+  { id: "ecole_pro", name: "École / Pro", stars: 1000, price_xof: 25000, kind: "monthly", schoolOnly: true },
+];
+
+export function findPlan(planId: string): PaidPlan | undefined {
+  return PAID_PLANS.find((p) => p.id === planId);
 }

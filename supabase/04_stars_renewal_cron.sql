@@ -19,8 +19,11 @@
 --   * Plan "ecole_pro"   : remise à 1000 étoiles à la date anniversaire
 --                          de plan_renewed_at (fenêtre glissante mensuelle),
 --                          puis plan_renewed_at avancé d'un mois.
---   * Les autres plans (decouverte, super_baobab) ne sont pas touchés ici
---     (leur renouvellement relève de la logique d'abonnement Stripe).
+--   * Plan "super_baobab": remise à 250 étoiles à la date anniversaire
+--                          de plan_renewed_at (fenêtre glissante mensuelle),
+--                          puis plan_renewed_at avancé d'un mois. Récurrent.
+--   * Plan "decouverte"  : paiement UNIQUE, 100 étoiles sans expiration.
+--                          Jamais renouvelé (pas de cumul, pas de fenêtre).
 -- ============================================================
 
 -- Fonction unique exécutée chaque jour à minuit GMT par pg_cron.
@@ -61,6 +64,21 @@ BEGIN
   UPDATE public.accounts
   SET plan_renewed_at = timezone('utc', now())
   WHERE plan = 'ecole_pro'
+    AND plan_renewed_at IS NULL;
+
+  -- 2b) Comptes SUPER_BAOBAB : renouvellement récurrent mensuel (250 étoiles),
+  --     symétrique à ecole_pro (fenêtre glissante via plan_renewed_at).
+  UPDATE public.accounts
+  SET stars_balance = 250,
+      plan_renewed_at = plan_renewed_at + interval '1 month'
+  WHERE plan = 'super_baobab'
+    AND plan_renewed_at IS NOT NULL
+    AND timezone('utc', now()) >= plan_renewed_at;
+
+  -- 3b) Initialiser plan_renewed_at pour les super_baobab qui n'en ont pas encore.
+  UPDATE public.accounts
+  SET plan_renewed_at = timezone('utc', now())
+  WHERE plan = 'super_baobab'
     AND plan_renewed_at IS NULL;
 
   RETURN v_processed;

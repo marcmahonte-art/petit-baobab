@@ -6,16 +6,17 @@ import { cn } from "@/lib/utils"
 interface RenewPlanButtonProps {
   planId: string
   isActive?: boolean
+  disabled?: boolean
   onClick?: () => void
 }
 
-export function RenewPlanButton({ planId, isActive, onClick }: RenewPlanButtonProps) {
+export function RenewPlanButton({ planId, isActive, disabled, onClick }: RenewPlanButtonProps) {
   return (
     <motion.button
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      disabled={isActive}
+      disabled={isActive || disabled}
       className={cn(
         "w-full h-[52px] rounded-[16px] font-extrabold text-[15px] cursor-pointer transition-all border-2",
         isActive
@@ -24,7 +25,8 @@ export function RenewPlanButton({ planId, isActive, onClick }: RenewPlanButtonPr
             ? "bg-[#16A34A] text-white border-[#16A34A] hover:bg-[#16A34A]/90 shadow-md"
             : planId === "super_baobab"
               ? "border-2 border-[#2563EB] text-[#2563EB] bg-transparent hover:bg-[#2563EB]/5"
-              : "border-2 border-[#6D4AFF] text-[#6D4AFF] bg-transparent hover:bg-[#6D4AFF]/5"
+              : "border-2 border-[#6D4AFF] text-[#6D4AFF] bg-transparent hover:bg-[#6D4AFF]/5",
+        disabled && !isActive && "opacity-60 cursor-not-allowed"
       )}
     >
       {isActive ? "Plan actuel" : "Choisir ce plan"}

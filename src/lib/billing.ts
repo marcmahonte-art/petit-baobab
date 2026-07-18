@@ -58,12 +58,17 @@ export interface Plan {
   id: PlanId
   name: string
   price: string
+  /** Texte de périodicité affiché après le prix, ex: "/ mois". Vide pour un paiement unique. */
   period: string
+  /** true = paiement unique (pas d'abonnement récurrent), ex: plan Découverte. */
+  oneTime?: boolean
   credits: number
   creditsLabel: string
   isPopular?: boolean
   features: string[]
   color: "purple" | "blue" | "green"
+  /** true = réservé aux structures scolaires (enseignants), jamais proposé au particulier. */
+  schoolOnly?: boolean
 }
 
 export const PLAN_LABELS: Record<PlanId, string> = {

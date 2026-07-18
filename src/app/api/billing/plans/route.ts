@@ -5,11 +5,12 @@ const PLANS = [
     id: "decouverte",
     name: "Découverte",
     price: "2000 FCFA",
-    period: "/ mois",
+    period: "",
+    oneTime: true,
     credits: 100,
-    creditsLabel: "étoiles incluses",
+    creditsLabel: "étoiles (sans expiration)",
     features: [
-      "100 étoiles par mois",
+      "100 étoiles sans expiration",
       "Dessin magique (contour simple)",
       "Livres de coloriage",
       "Support par email",
@@ -22,7 +23,7 @@ const PLANS = [
     price: "4500 FCFA",
     period: "/ mois",
     credits: 250,
-    creditsLabel: "étoiles incluses",
+    creditsLabel: "étoiles / mois",
     isPopular: true,
     features: [
       "250 étoiles par mois",
@@ -40,6 +41,7 @@ const PLANS = [
     period: "/ mois",
     credits: 1000,
     creditsLabel: "étoiles / mois",
+    schoolOnly: true,
     features: [
       "1 000 étoiles par mois",
       "Tous les styles de dessin",
@@ -52,6 +54,19 @@ const PLANS = [
   },
 ]
 
-export async function GET() {
-  return NextResponse.json({ success: true, plans: PLANS })
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  // scope=parent  -> on exclut les plans réservés aux écoles (ecole_pro)
+  // scope=school  -> on ne renvoie que les éléments pertinents pour une école
+  // (les écoles n'achètent que des packs, pas de plan ; on renvoie donc [] )
+  const scope = url.searchParams.get("scope")
+
+  let plans = PLANS
+  if (scope === "parent") {
+    plans = PLANS.filter((p) => !p.schoolOnly)
+  } else if (scope === "school") {
+    plans = []
+  }
+
+  return NextResponse.json({ success: true, plans })
 }
