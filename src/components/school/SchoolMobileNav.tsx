@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Menu, Home, Users, UserPlus, Palette, TrendingUp, Star, Settings, LogOut } from "lucide-react";
 
 const navItems = [
@@ -49,16 +49,18 @@ export default function SchoolMobileNav() {
                   const Icon = item.icon;
                   const isActive = pathname?.startsWith(item.href);
                   return (
-                    <Link key={item.href} href={item.href}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
-                        isActive
-                          ? "bg-[#7D6AF8]/10 text-[#7D6AF8] font-bold"
-                          : "text-[#7A6A5E] hover:bg-[#F5F0EB] font-medium"
-                      }`}
-                    >
-                      <Icon className="w-[18px] h-[18px]" />
-                      <span>{item.label}</span>
-                    </Link>
+                    <SheetClose key={item.href} asChild>
+                      <Link href={item.href}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                          isActive
+                            ? "bg-[#7D6AF8]/10 text-[#7D6AF8] font-bold"
+                            : "text-[#7A6A5E] hover:bg-[#F5F0EB] font-medium"
+                        }`}
+                      >
+                        <Icon className="w-[18px] h-[18px]" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SheetClose>
                   );
                 })}
               </nav>
