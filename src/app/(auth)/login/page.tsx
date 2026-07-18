@@ -24,6 +24,12 @@ function LoginFormContent() {
   const { lang } = useI18n()
   const { login, isLoading, error, user, account } = useAuthStore()
 
+  // Espace ciblé : family (parent) ou school (enseignant). Par défaut family.
+  const spaceParam = searchParams.get("space")
+  const [space, setSpace] = useState<"family" | "school">(
+    spaceParam === "school" ? "school" : "family"
+  )
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -59,6 +65,13 @@ function LoginFormContent() {
       }
     }
   }, [searchParams, lang])
+
+  const switchSpace = (next: "family" | "school") => {
+    setSpace(next)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("space", next)
+    router.replace(`/login?${params.toString()}`)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -128,6 +141,9 @@ function LoginFormContent() {
     }
   }
 
+  const isSchool = space === "school"
+  const signupHref = `/signup?space=${space}`
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -135,14 +151,40 @@ function LoginFormContent() {
       transition={{ duration: 0.45 }}
       className="w-full bg-white px-6 py-8 md:p-12 md:shadow-[0_24px_80px_rgba(0,0,0,0.08)] md:rounded-[32px] border border-gray-100/50"
     >
+      {/* Sélecteur d'espace : Parent / École */}
+      <div className="flex items-center gap-2 p-1 rounded-full bg-[#F5F0EB] mb-7">
+        <button
+          type="button"
+          onClick={() => switchSpace("family")}
+          className={`flex-1 h-11 rounded-full text-sm font-extrabold transition-all cursor-pointer ${
+            !isSchool ? "bg-white text-[#1C1C3A] shadow-sm" : "text-[#7A6A5E]"
+          }`}
+        >
+          {lang === "fr" ? "Espace parent" : "Parent space"}
+        </button>
+        <button
+          type="button"
+          onClick={() => switchSpace("school")}
+          className={`flex-1 h-11 rounded-full text-sm font-extrabold transition-all cursor-pointer ${
+            isSchool ? "bg-white text-[#1C1C3A] shadow-sm" : "text-[#7A6A5E]"
+          }`}
+        >
+          {lang === "fr" ? "Espace école" : "School space"}
+        </button>
+      </div>
+
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-[40px] font-extrabold text-[#1C1C3A] leading-tight mb-2.5 font-sans">
           {lang === "fr" ? "Se connecter" : "Sign In"}
         </h2>
         <p className="text-sm font-semibold text-[#64748B] leading-relaxed">
-          {lang === "fr"
-            ? "Ravi de vous revoir ! Connectez-vous pour gérer l'espace de votre enfant."
-            : "Nice to see you again! Log in to manage your child's space."}
+          {isSchool
+            ? lang === "fr"
+              ? "Bon retour ! Connectez-vous à l'espace enseignant de votre école."
+              : "Welcome back! Log in to your school teacher space."
+            : lang === "fr"
+              ? "Ravi de vous revoir ! Connectez-vous pour gérer l'espace de votre enfant."
+              : "Nice to see you again! Log in to manage your child's space."}
         </p>
       </div>
 
@@ -207,7 +249,11 @@ function LoginFormContent() {
           />
         </div>
 
-        <PrimaryButton type="submit" isLoading={isLoading} className="mt-4">
+        <PrimaryButton
+          type="submit"
+          isLoading={isLoading}
+          className={`mt-4 ${isSchool ? "!bg-[#1D9E75] !border-[#1D9E75] shadow-[0_4px_12px_rgba(29,158,117,0.15)] hover:shadow-[0_6px_20px_rgba(29,158,117,0.25)] focus:ring-[#1D9E75]/50" : ""}`}
+        >
           {lang === "fr" ? "Se connecter" : "Sign In"}
         </PrimaryButton>
       </form>
@@ -236,15 +282,15 @@ function LoginFormContent() {
 
       <div className="mt-8 text-center text-sm font-semibold text-[#64748B]">
         <span>{lang === "fr" ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</span>
-          <button
-            onClick={() => router.push(`/signup${searchParams.toString() ? `?${searchParams.toString()}` : ""}`)}
-            className="text-[#6D4CFF] hover:text-[#5A3EE0] font-extrabold hover:underline cursor-pointer"
-          >
-            {lang === "fr" ? "S'inscrire" : "Sign Up"}
-          </button>
-        </div>
+        <button
+          onClick={() => router.push(signupHref)}
+          className="text-[#6D4CFF] hover:text-[#5A3EE0] font-extrabold hover:underline cursor-pointer"
+        >
+          {lang === "fr" ? "S'inscrire" : "Sign Up"}
+        </button>
+      </div>
 
-        <NeedHelpLink />
+      <NeedHelpLink />
     </motion.div>
   )
 }

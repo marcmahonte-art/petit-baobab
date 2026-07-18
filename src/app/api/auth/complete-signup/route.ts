@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSupabaseSsrClient } from "@/lib/supabase-server"
-import { setAuthCookies } from "@/lib/auth"
+import { setAuthCookies, setRoleCookie } from "@/lib/auth"
 
 export async function GET(request: Request) {
   try {
@@ -26,6 +26,15 @@ export async function GET(request: Request) {
     }
 
     await setAuthCookies(data.session.access_token, data.session.refresh_token)
+
+    // Cookie de rôle : lire le plan du compte (free par défaut pour un nouveau).
+    const supabaseForRole = await getSupabaseSsrClient()
+    const { data: roleAccount } = await supabaseForRole
+      .from("accounts")
+      .select("plan")
+      .eq("user_id", data.user.id)
+      .single()
+    await setRoleCookie(roleAccount?.plan || "free")
 
     return NextResponse.redirect(`${origin}/parents`)
   } catch (err: any) {

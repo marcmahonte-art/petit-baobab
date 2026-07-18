@@ -90,8 +90,29 @@ export async function setAuthCookies(accessToken: string, refreshToken: string) 
  */
 export async function clearAuthCookies() {
   const cookieStore = await cookies()
+
   cookieStore.delete("sb-access-token")
   cookieStore.delete("sb-refresh-token")
+  cookieStore.delete("pb-role")
+}
+
+/**
+ * Pose un cookie public (non httpOnly) indiquant le rôle de l'espace :
+ * "parent" (plan free/decouverte/super_baobab) ou "teacher" (plan ecole_pro).
+ * Lu par le middleware et le header pour router sans rappel DB.
+ */
+export async function setRoleCookie(plan: string) {
+  const cookieStore = await cookies()
+  const role = plan === "ecole_pro" ? "teacher" : "parent"
+
+  const secure = process.env.NODE_ENV === "production"
+  cookieStore.set("pb-role", role, {
+    httpOnly: false,
+    secure,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+    path: "/",
+  })
 }
 
 /**

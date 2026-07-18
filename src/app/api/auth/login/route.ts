@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getSupabaseServer } from "@/lib/supabaseServer"
-import { setAuthCookies, adjustStars } from "@/lib/auth"
+import { setAuthCookies, setRoleCookie, adjustStars } from "@/lib/auth"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
@@ -181,6 +181,9 @@ export async function POST(request: Request) {
 
     // 4. Store session tokens in secure httpOnly cookies
     await setAuthCookies(session.access_token, session.refresh_token)
+
+    // 4b. Cookie de rôle (parent/teacher) pour le routage middleware/header
+    await setRoleCookie(account.plan)
 
     // 5. Return success payload
     return NextResponse.json({

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getSupabaseSsrClient } from "@/lib/supabase-server"
-import { setAuthCookies } from "@/lib/auth"
+import { setAuthCookies, setRoleCookie } from "@/lib/auth"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
@@ -61,8 +61,18 @@ export async function GET(request: Request) {
       .maybeSingle()
 
     if (existingProfile && existingAccount) {
-      // === EXISTING USER: proceed normally ===
-      await setAuthCookies(session.access_token, session.refresh_token)
+       // === EXISTING USER: proceed normally ===
+       await setAuthCookies(session.access_token, session.refresh_token)
+
+       // Cookie de rôle (parent/teacher) pour le routage middleware/header
+       const { data: roleAccount } = await authedClient
+         .from("accounts")
+         .select("plan")
+         .eq("user_id", user.id)
+         .single()
+       if (roleAccount) {
+         await setRoleCookie(roleAccount.plan || "free")
+       }
 
       // === REDIRECTION PAR RÔLE (Phase 4) ===
       // Respecter le choix mémorisé par l'utilisateur (persisté côté serveur).

@@ -26,7 +26,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const { email, password, ageConsent } = body
+    const { email, password, ageConsent, accountType } = body
+    const isSchool = accountType === "school"
 
     // 1. Validation of fields
     if (!email || typeof email !== "string" || !email.includes("@")) {
@@ -101,10 +102,25 @@ export async function POST(request: Request) {
         .eq("user_id", user.id)
         .single()
 
-      if (existingAccount) {
+       if (existingAccount) {
         accountId = existingAccount.id
         starsBalance = existingAccount.stars_balance
         plan = existingAccount.plan
+
+        // Inscription enseignant : basculer le plan sur ecole_pro d'emblée
+        // (nouveau compte, pas une montée en gamme). Le trigger on_plan_changed
+        // met à jour has_school_sub / has_family_sub.
+        if (isSchool && existingAccount.plan !== "ecole_pro") {
+          const { data: updated, error: updErr } = await authedClient
+            .from("accounts")
+            .update({ plan: "ecole_pro", default_space: "school" })
+            .eq("id", existingAccount.id)
+            .select("plan")
+            .single()
+          if (!updErr && updated) {
+            plan = updated.plan
+          }
+        }
       } else {
         // Trigger didn't run, execute manually
         // Insert public profile
@@ -123,7 +139,8 @@ export async function POST(request: Request) {
           .insert({
             user_id: user.id,
             stars_balance: 5,
-            plan: "free",
+            plan: isSchool ? "ecole_pro" : "free",
+            default_space: isSchool ? "school" : null,
           })
           .select()
           .single()
@@ -160,6 +177,7 @@ export async function POST(request: Request) {
         stars_balance: starsBalance,
         plan: plan,
       },
+      isSchool,
       message: "Compte créé ! 5 étoiles offertes pour commencer à créer. Un e-mail de confirmation vous a été envoyé.",
     })
   } catch (err: any) {

@@ -42,7 +42,7 @@ interface AuthState {
   isInitialized: boolean
 
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; multipleProfiles?: boolean }>
-  signup: (email: string, password: string, ageConsent: boolean) => Promise<{ success: boolean; message?: string; error?: string }>
+  signup: (email: string, password: string, ageConsent: boolean, accountType?: "family" | "school") => Promise<{ success: boolean; message?: string; error?: string; isSchool?: boolean }>
   logout: () => Promise<void>
   selectProfile: (profileId: string) => void
   setStarsBalance: (balance: number) => void
@@ -139,13 +139,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signup: async (email, password, ageConsent) => {
+  signup: async (email, password, ageConsent, accountType) => {
     set({ isLoading: true, error: null })
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, ageConsent }),
+        body: JSON.stringify({ email, password, ageConsent, accountType }),
       })
 
       const data = await res.json()
@@ -154,7 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       set({ isLoading: false })
-      return { success: true, message: data.message }
+      return { success: true, message: data.message, isSchool: data.isSchool }
     } catch (err: any) {
       set({ error: err.message, isLoading: false })
       return { success: false, error: err.message }

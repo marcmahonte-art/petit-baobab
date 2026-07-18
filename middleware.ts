@@ -17,12 +17,21 @@ export async function middleware(request: NextRequest) {
   const adultToken = request.cookies.get(ADULT_TOKEN)?.value;
   const studentToken = request.cookies.get(STUDENT_TOKEN)?.value;
 
-  // BLOC 1 — Protéger /school/dashboard (adultes uniquement)
+  // BLOC 1 — Protéger /school/dashboard (enseignants uniquement)
   if (pathname.startsWith("/school/dashboard")) {
     // Un élève ne peut JAMAIS y accéder, même avec son token.
     if (!adultToken) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
+      url.searchParams.set("space", "school");
+      return NextResponse.redirect(url);
+    }
+    // Routage par rôle : seul un compte enseignant (pb-role=teacher) peut
+    // accéder à l'espace école. Un parent est redirigé vers son espace.
+    const role = request.cookies.get("pb-role")?.value;
+    if (role && role !== "teacher") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/parents";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
