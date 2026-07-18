@@ -1,10 +1,20 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { PricingCard } from "./pricing-card"
+import StarPurchaseModal from "@/components/school/StarPurchaseModal"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
+const PLAN_PACK_MAP: Record<string, string> = {
+  "Découverte": "pack_100",
+  "Super Baobab": "pack_250",
+}
+
 export function PricingSection() {
+  const router = useRouter()
+  const [purchasePack, setPurchasePack] = useState<string | null>(null)
   const plans = [
     {
       name: "Découverte",
@@ -98,9 +108,23 @@ export function PricingSection() {
             isPopular={plan.isPopular}
             themeColor={plan.themeColor}
             index={idx}
+            onChoose={() => {
+              const packId = PLAN_PACK_MAP[plan.name]
+              if (packId) {
+                setPurchasePack(packId)
+              } else {
+                router.push("/parents/billing")
+              }
+            }}
           />
         ))}
       </div>
+
+      <StarPurchaseModal
+        open={purchasePack !== null}
+        onClose={() => setPurchasePack(null)}
+        preselectedPackId={purchasePack || undefined}
+      />
     </section>
   )
 }

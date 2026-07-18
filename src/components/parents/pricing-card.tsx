@@ -15,6 +15,7 @@ interface PricingCardProps {
   isPopular?: boolean
   themeColor: "purple" | "blue" | "green"
   index: number
+  onChoose?: () => void
 }
 
 export function PricingCard({
@@ -27,6 +28,7 @@ export function PricingCard({
   isPopular,
   themeColor,
   index,
+  onChoose,
 }: PricingCardProps) {
   const colorMap = {
     purple: {
@@ -123,6 +125,7 @@ export function PricingCard({
       <div className="w-full">
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
+            onClick={onChoose}
             className={cn(
               "w-full h-[52px] rounded-[16px] font-extrabold text-[15px] cursor-pointer transition-all",
               activeColors.btnOutline
