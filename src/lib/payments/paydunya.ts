@@ -1,6 +1,11 @@
 import { PaymentProvider, PaymentCheckoutParams, PaymentCheckoutResult, findPack } from "./types";
 
-const PD_BASE = "https://app.paydunya.com/api/v1";
+const MODE = process.env.PAYDUNYA_MODE === "live" ? "live" : "test";
+
+const BASE_URL =
+  MODE === "live"
+    ? "https://app.paydunya.com/api/v1"
+    : "https://app.paydunya.com/sandbox-api/v1";
 
 function getHeaders() {
   return {
@@ -20,7 +25,7 @@ export class PayDunyaProvider implements PaymentProvider {
     const body = {
       invoice: {
         total_amount: amountXof,
-        description: `Achat de ${stars} étoiles - Pack ${pack?.label || packId}`,
+        description: `Achat de ${stars} étoiles - ${pack?.label || packId}`,
         items: {
           item_0: {
             name: pack?.label || `${stars} étoiles`,
@@ -39,13 +44,13 @@ export class PayDunyaProvider implements PaymentProvider {
         stars: String(stars),
       },
       actions: {
-        callback_url: `${origin}/api/billing/webhook`,
+        callback_url: `${origin}/api/billing/webhook/paydunya`,
         return_url: successUrl,
         cancel_url: cancelUrl,
       },
     };
 
-    const res = await fetch(`${PD_BASE}/checkout-invoice/create`, {
+    const res = await fetch(`${BASE_URL}/checkout-invoice/create`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(body),
