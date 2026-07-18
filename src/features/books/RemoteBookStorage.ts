@@ -8,7 +8,7 @@ export class RemoteBookStorage implements BookStorage {
   async list(): Promise<SavedBook[]> {
     const studentSession = useAuthStore.getState().studentSession
     if (studentSession && studentSession.type === "student") {
-      const res = await fetch("/api/books/list")
+      const res = await fetch("/api/books?type=saved")
       if (!res.ok) {
         console.error("Error listing books via API:", await res.text())
         return []

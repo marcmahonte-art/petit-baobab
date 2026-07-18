@@ -59,7 +59,7 @@ export default function ClassDetailPage() {
       const data = await res.json();
       if (!res.ok) {
         const msg = data.message || data.error || "Impossible d'ajouter l'élève.";
-        toast({ title: 'Erreur', description: msg, variant: 'destructive' });
+        toast({ title: 'Erreur', description: msg });
         return;
       }
       toast({ title: 'Élève ajouté', description: `${firstName} a été ajouté(e) à la classe.` });
@@ -70,7 +70,7 @@ export default function ClassDetailPage() {
       fetchStudents(id);
       fetchClassDetail(id);
     } catch (err: any) {
-      toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
+      toast({ title: 'Erreur', description: err.message });
     } finally {
       setSaving(false);
     }

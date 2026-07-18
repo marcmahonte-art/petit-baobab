@@ -150,7 +150,7 @@ export class RemoteDrawingStorage implements DrawingStorage {
   async list() {
     const studentSession = useAuthStore.getState().studentSession
     if (studentSession && studentSession.type === "student") {
-      const res = await fetch("/api/drawings/list")
+      const res = await fetch("/api/drawings?type=saved")
       if (!res.ok) {
         console.error("Error listing drawings via API:", await res.text())
         return []

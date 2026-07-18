@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+﻿import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
@@ -115,7 +115,51 @@ export async function DELETE(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+
+  // GET /api/drawings?type=saved → liste des dessins sauvegardés
+  if (searchParams.get("type") === "saved") {
+    try {
+      const studentSession = await getStudentSession()
+      if (studentSession) {
+        const supabase = getSupabaseAdmin()
+        const { data, error } = await supabase
+          .from("saved_drawings")
+          .select("*")
+          .eq("profile_id", studentSession.profile_id)
+          .order("updated_at", { ascending: false })
+
+        if (error) {
+          console.error("GET /api/drawings?saved error:", error)
+          return NextResponse.json({ error: "Erreur de chargement des dessins." }, { status: 500 })
+        }
+        return NextResponse.json(data || [])
+      }
+
+      const supabase = await getSupabaseServer()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
+      }
+
+      const { data, error } = await supabase
+        .from("saved_drawings")
+        .select("*")
+        .order("updated_at", { ascending: false })
+
+      if (error) {
+        console.error("GET /api/drawings?saved error:", error)
+        return NextResponse.json({ error: "Erreur de chargement des dessins." }, { status: 500 })
+      }
+      return NextResponse.json(data || [])
+    } catch (err: any) {
+      console.error("GET /api/drawings?saved error:", err)
+      return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })
+    }
+  }
+
+  // GET /api/drawings (default) → liste des illustrations disponibles
   const categories = {
     animals: "animals",
     culture: "culture",
