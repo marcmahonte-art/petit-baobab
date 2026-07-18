@@ -1,6 +1,68 @@
 ﻿import { NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
+import { getSupabaseServer } from "@/lib/supabaseServer"
+import { getStudentSession } from "@/lib/auth/student-session"
+
+async function upsertDrawing(body: any, supabase: any) {
+  const { error } = await supabase
+    .from("saved_drawings")
+    .upsert({
+      id: body.id,
+      name: body.name,
+      model_name: body.modelName,
+      category: body.category,
+      origin: body.origin,
+      status: body.status,
+      profile_id: body.profileId,
+      created_at: body.createdAt,
+      updated_at: body.updatedAt,
+      is_colored: body.isColored,
+      image: body.image,
+      thumbnail: body.thumbnail,
+      template: body.template,
+      state: body.state,
+      progress: body.status || "in_progress",
+    })
+  if (error) throw error
+}
+
+export async function POST(request: Request) {
+  try {
+    let body: any
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 })
+    }
+    if (!body || !body.id || !body.profileId) {
+      return NextResponse.json({ error: "id et profileId sont obligatoires." }, { status: 400 })
+    }
+
+    // Detect auth: student JWT cookie takes priority, then parent session
+    const studentSession = await getStudentSession()
+    if (studentSession) {
+      if (body.profileId !== studentSession.profile_id) {
+        return NextResponse.json({ error: "Profil non autorisé." }, { status: 403 })
+      }
+      const supabase = getSupabaseAdmin()
+      await upsertDrawing(body, supabase)
+      return NextResponse.json(body)
+    }
+
+    const supabase = await getSupabaseServer()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
+    }
+    await upsertDrawing(body, supabase)
+    return NextResponse.json(body)
+  } catch (err: any) {
+    console.error("POST /api/drawings error:", err)
+    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })
+  }
+}
 
 export async function GET() {
   const categories = {

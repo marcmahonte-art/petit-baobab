@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Users, Eye, Share2, MoreHorizontal } from "lucide-react";
+import { Users, Eye, Share2, MoreHorizontal, Pencil, Archive, Trash2 } from "lucide-react";
 import { ClassroomWithStats } from "@/types/school";
 
 const CLASS_ILLUSTRATIONS = [
@@ -41,6 +42,9 @@ function formatLastActivity(dateStr: string | null): string {
 }
 
 export default function ClassCard({ cls, onClick, onShare, index = 0 }: ClassCardProps) {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const illustrationSrc =
     CLASS_ILLUSTRATIONS[(cls.illustration_index - 1) % CLASS_ILLUSTRATIONS.length];
   
@@ -120,7 +124,9 @@ export default function ClassCard({ cls, onClick, onShare, index = 0 }: ClassCar
             className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
+              router.push(`/school/classes/${cls.id}`);
             }}
+            title="Voir la classe"
           >
             <Eye className="w-4 h-4 text-[#7A6A5E]" />
           </button>
@@ -130,15 +136,47 @@ export default function ClassCard({ cls, onClick, onShare, index = 0 }: ClassCar
               e.stopPropagation();
               onShare?.();
             }}
+            title="Partager"
           >
             <Share2 className="w-4 h-4 text-[#7A6A5E]" />
           </button>
-          <button
-            className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <MoreHorizontal className="w-4 h-4 text-[#7A6A5E]" />
-          </button>
+          <div className="relative">
+            <button
+              className="p-1.5 rounded-lg hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(!menuOpen);
+              }}
+              title="Plus d'options"
+            >
+              <MoreHorizontal className="w-4 h-4 text-[#7A6A5E]" />
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 bottom-full mb-1 z-50 w-44 bg-white rounded-xl border border-[#F0E7DA] shadow-lg p-1.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-[#3B2416] hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+                  onClick={() => { setMenuOpen(false); router.push(`/school/classes/${cls.id}/edit`); }}
+                >
+                  <Pencil className="w-4 h-4" /> Modifier
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-[#3B2416] hover:bg-[#F5F0EB] transition-colors cursor-pointer"
+                  onClick={() => { setMenuOpen(false); /* archiver */ }}
+                >
+                  <Archive className="w-4 h-4" /> Archiver
+                </button>
+                <button
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                  onClick={() => { setMenuOpen(false); /* supprimer */ }}
+                >
+                  <Trash2 className="w-4 h-4" /> Supprimer
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

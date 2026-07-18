@@ -197,6 +197,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       monthlyCredits: session.starsBalance,
       monthlyUsed: 0,
     })
+    // Sync profile store pour que le header élève et les pages
+    // coloriage/livre puissent lire le nom et mascot de l'élève
+    useProfileStore.setState({
+      profiles: [
+        {
+          id: session.profileId,
+          name: session.name,
+          mascot: session.mascot,
+          language: "fr",
+          points: 0,
+          badges: [],
+          createdAt: Date.now(),
+        },
+      ],
+      activeProfileId: session.profileId,
+      plan: "ecole-pro",
+    })
   },
 
   clearStudentSession: () => {

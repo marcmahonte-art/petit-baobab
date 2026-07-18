@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Home,
@@ -9,9 +9,7 @@ import {
   UserPlus,
   Palette,
   TrendingUp,
-  BookOpen,
   Star,
-  MessageSquare,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -22,19 +20,27 @@ const navItems = [
   { href: "/school/students", label: "Mes élèves", icon: UserPlus },
   { href: "/school/activities", label: "Activités", icon: Palette },
   { href: "/school/progression", label: "Progression", icon: TrendingUp },
-  { href: "/school/livres", label: "Livres", icon: BookOpen },
   { href: "/school/etoiles", label: "Étoiles", icon: Star },
-  { href: "/school/messages", label: "Messages", icon: MessageSquare },
   { href: "/school/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export default function SchoolSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    router.push("/login");
+  };
 
   return (
     <nav className="flex flex-col h-full bg-white relative overflow-hidden">
-      {/* Logo */}
-      <div className="flex items-center gap-2 px-5 pt-6 pb-4">
+      {/* Logo → lien vers tableau de bord */}
+      <Link href="/school/dashboard" className="flex items-center gap-2 px-5 pt-6 pb-4">
         <Image
           src="/illustrations/logo-petit-baobab.webp"
           alt="Petit Baobab"
@@ -42,7 +48,7 @@ export default function SchoolSidebar() {
           height={45}
           className="w-auto h-[40px] object-contain"
         />
-      </div>
+      </Link>
 
       {/* Navigation items */}
       <ul className="flex-1 px-3 space-y-1 mt-2">
@@ -92,7 +98,10 @@ export default function SchoolSidebar() {
 
       {/* Déconnexion */}
       <div className="px-3 pb-4">
-        <button className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-50 hover:text-red-500 transition-all w-full font-medium cursor-pointer">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-50 hover:text-red-500 transition-all w-full font-medium cursor-pointer"
+        >
           <LogOut className="w-[18px] h-[18px]" />
           <span>Déconnexion</span>
         </button>

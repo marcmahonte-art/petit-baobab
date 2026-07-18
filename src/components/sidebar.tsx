@@ -27,8 +27,8 @@ export function Sidebar() {
   return (
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
       <div>
-        {/* Logo Section */}
-        <div className="h-[72px] md:h-[96px] flex items-center px-1">
+        {/* Logo Section → lien vers dashboard */}
+        <Link href="/dashboard" className="h-[72px] md:h-[96px] flex items-center px-1">
           <Image
             src="/illustrations/logo-petit-baobab.webp"
             alt="Petit Baobab"
@@ -37,7 +37,7 @@ export function Sidebar() {
             className="w-auto h-[42px] md:h-[56px] object-contain"
             priority
           />
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex flex-col gap-1.5 mt-2">

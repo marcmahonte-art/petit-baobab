@@ -2,6 +2,7 @@ import type { SavedBook } from "@/features/books/types"
 import type { BookStorage } from "@/features/books/storage"
 import { supabase } from "@/lib/supabaseClient"
 import { storageService } from "@/lib/storageService"
+import { useAuthStore } from "@/lib/auth-store"
 
 export class RemoteBookStorage implements BookStorage {
   async list(): Promise<SavedBook[]> {
@@ -38,6 +39,21 @@ export class RemoteBookStorage implements BookStorage {
   }
 
   async save(book: SavedBook): Promise<SavedBook> {
+    // Student session → go through the API route (bypasses RLS via service_role)
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch("/api/books", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(book),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Erreur serveur" }))
+        throw new Error(errData.error || "Erreur lors de la sauvegarde du livre.")
+      }
+      return book
+    }
+
     const { error } = await supabase
       .from("books")
       .upsert({

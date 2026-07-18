@@ -225,7 +225,7 @@ interface SchoolState {
   fetchClasses: () => Promise<void>;
   fetchClassDetail: (id: string) => Promise<void>;
   fetchStudents: (id: string) => Promise<void>;
-  createClass: (name: string, academicYear?: string) => Promise<void>;
+  createClass: (name: string, academicYear?: string, imageUrl?: string) => Promise<void>;
   openStudentDrawer: (studentId: string) => void;
   closeStudentDrawer: () => void;
   selectClassForShare: (cls: ClassroomWithStats | null) => void;
@@ -333,7 +333,7 @@ export const useSchoolStore = create<SchoolState>()(
             toast({ title: 'Erreur', description: 'Impossible de charger les élèves.' });
           }
         },
-        async createClass(name, academicYear) {
+        async createClass(name, academicYear, imageUrl) {
           try {
             set({ loading: true, error: null });
             const res = await fetch('/api/school/classroom', {
@@ -342,6 +342,7 @@ export const useSchoolStore = create<SchoolState>()(
               body: JSON.stringify({
                 name,
                 academic_year: academicYear ?? '2025-2026',
+                image_url: imageUrl || undefined,
               }),
             });
             if (!res.ok) {

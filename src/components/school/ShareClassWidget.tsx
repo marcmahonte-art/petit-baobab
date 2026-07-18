@@ -1,18 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Copy, Printer, Share2, Check } from "lucide-react";
+import { Copy, Printer, Share2, Check, Mail, MessageCircle } from "lucide-react";
 
 interface ShareClassWidgetProps {
   classCode: string;
   className: string;
 }
 
+const JOIN_URL = "https://petit-baobab.vercel.app/school";
+
 export default function ShareClassWidget({
   classCode,
   className,
 }: ShareClassWidgetProps) {
   const [copied, setCopied] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     try {
@@ -20,7 +24,6 @@ export default function ShareClassWidget({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
       const textarea = document.createElement("textarea");
       textarea.value = classCode;
       document.body.appendChild(textarea);
@@ -30,6 +33,46 @@ export default function ShareClassWidget({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Code de classe - ${className}</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+            h1 { font-size: 24px; margin-bottom: 8px; }
+            .code { font-size: 48px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; color: #3B2416; }
+            .url { font-size: 14px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>${className}</h1>
+          <p>Code de la classe :</p>
+          <div class="code">${classCode}</div>
+          <p class="url">${JOIN_URL}</p>
+          <p>Demandez à vos élèves de saisir ce code sur Petit Baobab.</p>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const handleShare = (method: "mail" | "whatsapp") => {
+    const subject = encodeURIComponent(`Code de la classe ${className}`);
+    const body = encodeURIComponent(
+      `Bonjour,\n\nVoici le code pour rejoindre la classe ${className} sur Petit Baobab :\n\nCode : ${classCode}\nLien : ${JOIN_URL}\n\nDemandez aux élèves de saisir ce code sur ${JOIN_URL} pour se connecter.\n\nMerci !`
+    );
+    if (method === "mail") {
+      window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+    } else {
+      window.open(`https://wa.me/?text=${body}`, "_blank");
+    }
+    setShowShareOptions(false);
   };
 
   return (
@@ -42,10 +85,10 @@ export default function ShareClassWidget({
       </p>
 
       {/* QR Code */}
-      <div className="flex justify-center mb-4">
+      <div ref={printRef} className="flex justify-center mb-4">
         <div className="bg-white p-3 rounded-xl border-2 border-[#F0E7DA]">
           <QRCodeSVG
-            value={`https://petitbaobab.com/join/${classCode}`}
+            value={`${JOIN_URL}?code=${classCode}`}
             size={120}
             bgColor="#FFFFFF"
             fgColor="#3B2416"
@@ -80,14 +123,42 @@ export default function ShareClassWidget({
             {copied ? "Copié !" : "Copier le code"}
           </span>
         </button>
-        <button className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer">
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer"
+        >
           <Printer className="w-4 h-4 text-[#7A6A5E]" />
           <span className="text-sm font-medium text-[#3B2416]">Imprimer</span>
         </button>
-        <button className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer">
-          <Share2 className="w-4 h-4 text-[#7A6A5E]" />
-          <span className="text-sm font-medium text-[#3B2416]">Partager</span>
-        </button>
+
+        {/* Partager with sub-options */}
+        <div className="relative">
+          <button
+            onClick={() => setShowShareOptions(!showShareOptions)}
+            className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer"
+          >
+            <Share2 className="w-4 h-4 text-[#7A6A5E]" />
+            <span className="text-sm font-medium text-[#3B2416]">Partager</span>
+          </button>
+          {showShareOptions && (
+            <div className="absolute left-0 right-0 top-0 z-10 bg-white rounded-xl border border-[#F0E7DA] shadow-lg p-1.5 space-y-0.5">
+              <button
+                onClick={() => handleShare("mail")}
+                className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer"
+              >
+                <Mail className="w-4 h-4 text-[#7A6A5E]" />
+                <span className="text-sm font-medium text-[#3B2416]">Partager par e-mail</span>
+              </button>
+              <button
+                onClick={() => handleShare("whatsapp")}
+                className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg hover:bg-[#F5F0EB] transition-colors text-left cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                <span className="text-sm font-medium text-[#3B2416]">Partager sur WhatsApp</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

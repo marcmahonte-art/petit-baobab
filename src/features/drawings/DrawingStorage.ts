@@ -1,6 +1,7 @@
 import type { SavedDrawing } from "@/features/drawings/types"
 import { supabase } from "@/lib/supabaseClient"
 import { storageService } from "@/lib/storageService"
+import { useAuthStore } from "@/lib/auth-store"
 
 const STORAGE_KEY = "petit-baobab.saved-drawings.v1"
 const DB_NAME = "petit-baobab-db"
@@ -179,6 +180,21 @@ export class RemoteDrawingStorage implements DrawingStorage {
   }
 
   async save(drawing: SavedDrawing) {
+    // Student session → go through the API route (bypasses RLS via service_role)
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch("/api/drawings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(drawing),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Erreur serveur" }))
+        throw new Error(errData.error || "Erreur lors de la sauvegarde du dessin.")
+      }
+      return drawing
+    }
+
     try {
       // 1. Try saving with the full schema (if the migration was run on Supabase)
       const { error } = await supabase
