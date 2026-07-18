@@ -290,6 +290,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             plan: normalizePlan(data.account?.plan || "free"),
           })
         }
+
+        // Renouvellement « lazy » des étoiles pour les comptes école/super_baobab
+        // dont la fenêtre mensuelle est dépassée (fallback au cron pg_cron).
+        const plan = data.account?.plan
+        if (plan === "ecole_pro" || plan === "super_baobab") {
+          fetch("/api/billing/renew", { method: "POST" })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((renew: any) => {
+              if (renew?.renewed && data.account) {
+                set((s) => ({
+                  account: s.account
+                    ? { ...s.account, stars_balance: renew.stars_balance }
+                    : s.account,
+                }))
+                useCreditStore.setState({ monthlyCredits: renew.stars_balance, monthlyUsed: 0 })
+              }
+            })
+            .catch(() => {})
+        }
       } else {
         set({ isInitialized: true })
       }

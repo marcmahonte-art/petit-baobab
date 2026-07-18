@@ -118,8 +118,8 @@ function SignupFormContent() {
       setSuccessMessage(
         result.message ||
           (lang === "fr"
-            ? "Compte créé ! Un e-mail de confirmation vous a été envoyé. 5 étoiles cadeaux vous attendent."
-            : "Account created! A confirmation email has been sent to you. 5 gift stars are waiting for you.")
+            ? "Compte créé ! Un e-mail de confirmation vous a été envoyé."
+            : "Account created! A confirmation email has been sent to you.")
       )
       setIsSuccess(true)
     } else {

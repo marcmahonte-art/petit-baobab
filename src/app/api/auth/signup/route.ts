@@ -111,14 +111,23 @@ export async function POST(request: Request) {
         // (nouveau compte, pas une montée en gamme). Le trigger on_plan_changed
         // met à jour has_school_sub / has_family_sub.
         if (isSchool && existingAccount.plan !== "ecole_pro") {
+          // Attribution immédiate du solde école (1000 étoiles) et initialisation
+          // de la fenêtre de renouvellement, pour que l'enseignant dispose
+          // directement de ses étoiles sans attendre le cron quotidien.
           const { data: updated, error: updErr } = await authedClient
             .from("accounts")
-            .update({ plan: "ecole_pro", default_space: "school" })
+            .update({
+              plan: "ecole_pro",
+              default_space: "school",
+              stars_balance: 1000,
+              plan_renewed_at: new Date().toISOString(),
+            })
             .eq("id", existingAccount.id)
-            .select("plan")
+            .select("plan, stars_balance")
             .single()
           if (!updErr && updated) {
             plan = updated.plan
+            starsBalance = updated.stars_balance
           }
         }
       } else {
@@ -138,9 +147,10 @@ export async function POST(request: Request) {
           .from("accounts")
           .insert({
             user_id: user.id,
-            stars_balance: 5,
+            stars_balance: isSchool ? 1000 : 5,
             plan: isSchool ? "ecole_pro" : "free",
             default_space: isSchool ? "school" : null,
+            plan_renewed_at: isSchool ? new Date().toISOString() : null,
           })
           .select()
           .single()
@@ -166,6 +176,10 @@ export async function POST(request: Request) {
       console.warn("Trigger failed or was missing, manual inserts executed. Details:", dbError)
     }
 
+    const successMessage = isSchool
+      ? "Compte École / Pro créé ! Votre espace enseignant est prêt et 1000 étoiles vous sont créditées pour démarrer. Un e-mail de confirmation vous a été envoyé."
+      : "Compte créé ! 5 étoiles offertes pour commencer à créer. Un e-mail de confirmation vous a été envoyé."
+
     return NextResponse.json({
       success: true,
       user: {
@@ -178,7 +192,7 @@ export async function POST(request: Request) {
         plan: plan,
       },
       isSchool,
-      message: "Compte créé ! 5 étoiles offertes pour commencer à créer. Un e-mail de confirmation vous a été envoyé.",
+      message: successMessage,
     })
   } catch (err: any) {
     console.error("Signup error:", err)
