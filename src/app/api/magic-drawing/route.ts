@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerUser, adjustStars, STARS_REASONS } from "@/lib/auth";
+import { getStudentSession } from "@/lib/auth/student-session";
 
 type MagicDrawingStyle =
   | "noir_blanc"
@@ -206,6 +208,16 @@ export async function POST(request: Request) {
       { error: "Veuillez sélectionner un profil enfant actif." },
       { status: 400 }
     );
+  }
+
+  if (sessionType === "student") {
+    const studentSession = await getStudentSession()
+    if (!studentSession) {
+      return NextResponse.json({ error: "Session élève invalide." }, { status: 401 })
+    }
+    if (profileId !== studentSession.profile_id) {
+      return NextResponse.json({ error: "Profil non autorisé." }, { status: 403 })
+    }
   }
 
   const cost = styleCosts[style];

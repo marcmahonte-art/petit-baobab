@@ -148,6 +148,35 @@ export class LocalDrawingStorage implements DrawingStorage {
 
 export class RemoteDrawingStorage implements DrawingStorage {
   async list() {
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch("/api/drawings/list")
+      if (!res.ok) {
+        console.error("Error listing drawings via API:", await res.text())
+        return []
+      }
+      const data = await res.json()
+      return (data || []).map((row: any) => {
+        const stateObj = typeof row.state === "object" && row.state !== null ? row.state as any : {}
+        return {
+          id: row.id,
+          name: row.name,
+          modelName: row.model_name,
+          category: row.category,
+          origin: (row.origin || stateObj.origin || "coloriage") as "coloriage" | "ia",
+          status: (row.status || stateObj.status || "in_progress") as "in_progress" | "completed" | "error",
+          profileId: row.profile_id || stateObj.profileId || "",
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          isColored: row.is_colored !== undefined ? row.is_colored : (stateObj.isColored ?? true),
+          image: row.image,
+          thumbnail: row.thumbnail,
+          template: row.template,
+          state: row.state,
+        }
+      })
+    }
+
     const { data, error } = await supabase
       .from("saved_drawings")
       .select("*")
@@ -260,6 +289,33 @@ export class RemoteDrawingStorage implements DrawingStorage {
   }
 
   async rename(id: string, name: string) {
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch("/api/drawings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name, profileId: studentSession.profileId }),
+      })
+      if (!res.ok) return null
+      const data = await res.json()
+      return {
+        id: data.id,
+        name: data.name,
+        modelName: data.modelName || "",
+        category: data.category || "",
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        origin: data.origin || "coloriage",
+        status: data.status || "in_progress",
+        profileId: data.profileId,
+        isColored: data.isColored ?? true,
+        image: data.image,
+        thumbnail: data.thumbnail,
+        template: data.template,
+        state: data.state,
+      }
+    }
+
     const { data, error } = await supabase
       .from("saved_drawings")
       .update({
@@ -295,6 +351,18 @@ export class RemoteDrawingStorage implements DrawingStorage {
   }
 
   async delete(id: string) {
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch(`/api/drawings?id=${id}&profileId=${studentSession.profileId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Erreur" }))
+        throw new Error(err.error || "Erreur lors de la suppression.")
+      }
+      return
+    }
+
     try {
       const { data, error: fetchError } = await supabase
         .from("saved_drawings")

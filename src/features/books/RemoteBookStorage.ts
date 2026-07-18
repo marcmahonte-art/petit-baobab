@@ -6,6 +6,36 @@ import { useAuthStore } from "@/lib/auth-store"
 
 export class RemoteBookStorage implements BookStorage {
   async list(): Promise<SavedBook[]> {
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch("/api/books/list")
+      if (!res.ok) {
+        console.error("Error listing books via API:", await res.text())
+        return []
+      }
+      const data = await res.json()
+      return (data || []).map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        subtitle: row.subtitle ?? "",
+        author: row.author ?? "",
+        childName: row.child_name ?? "",
+        cover: row.cover,
+        palette: row.palette,
+        style: row.style,
+        frame: row.frame,
+        format: row.format,
+        orientation: row.orientation,
+        pages: row.pages || [],
+        status: row.status,
+        pdfUrl: row.pdf_url ?? "",
+        coverImageUrl: row.cover_image_url ?? "",
+        profileId: row.profile_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      }))
+    }
+
     const { data, error } = await supabase
       .from("books")
       .select("*")
@@ -122,6 +152,18 @@ export class RemoteBookStorage implements BookStorage {
   }
 
   async delete(id: string): Promise<void> {
+    const studentSession = useAuthStore.getState().studentSession
+    if (studentSession && studentSession.type === "student") {
+      const res = await fetch(`/api/books?id=${id}&profileId=${studentSession.profileId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Erreur" }))
+        throw new Error(err.error || "Erreur lors de la suppression du livre.")
+      }
+      return
+    }
+
     try {
       const book = await this.getById(id)
       if (book) {

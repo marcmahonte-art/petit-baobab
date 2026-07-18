@@ -64,6 +64,57 @@ export async function POST(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+    const profileId = searchParams.get("profileId")
+
+    if (!id) {
+      return NextResponse.json({ error: "id est requis." }, { status: 400 })
+    }
+
+    const studentSession = await getStudentSession()
+    if (studentSession) {
+      if (profileId !== studentSession.profile_id) {
+        return NextResponse.json({ error: "Profil non autorisé." }, { status: 403 })
+      }
+      const supabase = getSupabaseAdmin()
+      const { error } = await supabase
+        .from("saved_drawings")
+        .delete()
+        .eq("id", id)
+        .eq("profile_id", studentSession.profile_id)
+
+      if (error) {
+        console.error("DELETE /api/drawings error:", error)
+        return NextResponse.json({ error: "Erreur lors de la suppression." }, { status: 500 })
+      }
+      return NextResponse.json({ success: true })
+    }
+
+    const supabase = await getSupabaseServer()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
+    }
+
+    const { error } = await supabase
+      .from("saved_drawings")
+      .delete()
+      .eq("id", id)
+
+    if (error) {
+      console.error("DELETE /api/drawings error:", error)
+      return NextResponse.json({ error: "Erreur lors de la suppression." }, { status: 500 })
+    }
+    return NextResponse.json({ success: true })
+  } catch (err: any) {
+    console.error("DELETE /api/drawings error:", err)
+    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })
+  }
+}
+
 export async function GET() {
   const categories = {
     animals: "animals",
