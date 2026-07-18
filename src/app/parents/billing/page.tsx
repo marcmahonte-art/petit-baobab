@@ -7,7 +7,8 @@ import { useBillingStore } from "@/stores/billing-store"
 import { Sidebar } from "@/components/sidebar"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { motion, AnimatePresence } from "framer-motion"
-import { CreditCard, Receipt, Star, ArrowLeft } from "lucide-react"
+import { CreditCard, Receipt, Star, ArrowLeft, ShoppingCart } from "lucide-react"
+import StarPurchaseModal from "@/components/school/StarPurchaseModal"
 import { cn } from "@/lib/utils"
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard"
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus"
@@ -26,6 +27,7 @@ const TABS: { id: Tab; label: string; icon: typeof CreditCard }[] = [
 function BillingContent() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>("subscription")
+  const [showBuyStars, setShowBuyStars] = useState(false)
   const {
     subscription,
     accountPlan,
@@ -182,17 +184,47 @@ function BillingContent() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
           >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-extrabold text-[#3B2416]">Acheter des étoiles</h3>
+                <p className="text-xs font-semibold text-[#7A6A5E]">
+                  Rechargez votre solde d'étoiles
+                </p>
+              </div>
+              <button
+                onClick={() => setShowBuyStars(true)}
+                className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-sm shadow-sm cursor-pointer transition-all"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Acheter
+              </button>
+            </div>
+
             {isLoadingSubscription ? (
               <div className="flex justify-center py-12">
                 <div className="w-8 h-8 border-4 border-[#6D4CFF] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <StarsActivity starsBalance={starsBalance} />
+              <>
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#EFE7DB] flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#FFF5CC] flex items-center justify-center">
+                    <Star className="w-6 h-6 text-[#FFB300] fill-[#FFB300]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-[#7A6A5E]">Solde actuel</p>
+                    <p className="text-xl font-extrabold text-[#3B2416]">{starsBalance} étoiles</p>
+                  </div>
+                </div>
+                <StarsActivity starsBalance={starsBalance} />
+              </>
             )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StarPurchaseModal open={showBuyStars} onClose={() => setShowBuyStars(false)} />
     </motion.div>
   )
 }
