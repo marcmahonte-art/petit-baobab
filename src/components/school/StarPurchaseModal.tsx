@@ -17,7 +17,6 @@ interface StarPurchaseModalProps {
 export default function StarPurchaseModal({ open, onClose, preselectedPackId }: StarPurchaseModalProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [autoTriggered, setAutoTriggered] = React.useState(false);
 
   const handlePurchase = async (packId: string) => {
     setLoading(packId);
@@ -43,15 +42,11 @@ export default function StarPurchaseModal({ open, onClose, preselectedPackId }: 
     }
   };
 
-  React.useEffect(() => {
-    if (open && preselectedPackId && !autoTriggered) {
-      setAutoTriggered(true);
-      handlePurchase(preselectedPackId);
-    }
-    if (!open) {
-      setAutoTriggered(false);
-    }
-  }, [open, preselectedPackId]);
+  if (!open) return null;
+
+  const packs = preselectedPackId
+    ? PACKS.filter((p) => p.id === preselectedPackId)
+    : PACKS;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -70,7 +65,7 @@ export default function StarPurchaseModal({ open, onClose, preselectedPackId }: 
         </p>
 
         <div className="space-y-3">
-          {PACKS.map((pack) => (
+          {packs.map((pack) => (
             <button
               key={pack.id}
               onClick={() => handlePurchase(pack.id)}
