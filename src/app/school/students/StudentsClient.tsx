@@ -460,7 +460,7 @@ export default function StudentsClient() {
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              onClick={() => router.push("/school/students/bulk")}
+              onClick={() => router.push("/school/students/add")}
               className="rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -509,7 +509,7 @@ export default function StudentsClient() {
             <p className="text-lg font-bold text-[#3B2416] mb-1">Aucun élève trouvé.</p>
             <p className="text-sm text-[#7A6A5E] mb-4">Essayez un autre filtre ou ajoutez de nouveaux élèves.</p>
             <Button
-              onClick={() => router.push("/school/students/bulk")}
+              onClick={() => router.push("/school/students/add")}
               className="rounded-xl bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -672,7 +672,7 @@ export default function StudentsClient() {
         <div className="bg-white rounded-2xl border border-[#F0E7DA] shadow-sm p-5">
           <h3 className="text-sm font-extrabold text-[#3B2416] mb-4">Actions rapides</h3>
           <div className="space-y-2">
-            <QuickAction label="Ajouter un élève" icon={<Plus className="w-4 h-4" />} color="#7D6AF8" onClick={() => router.push("/school/students/bulk")} />
+            <QuickAction label="Ajouter un élève" icon={<Plus className="w-4 h-4" />} color="#7D6AF8" onClick={() => router.push("/school/students/add")} />
             <QuickAction label="Importer" icon={<Upload className="w-4 h-4" />} color="#EC4899" onClick={() => router.push("/school/students/bulk")} />
             <QuickAction label="Imprimer la liste" icon={<Printer className="w-4 h-4" />} color="#3B82F6" onClick={() => window.print()} />
             <QuickAction label="Envoyer un message" icon={<MessageSquare className="w-4 h-4" />} color="#F59E0B" onClick={() => toast({ title: "Message", description: "Fonction à venir." })} />
