@@ -18,21 +18,26 @@
 // modifier.
 
 import { PaymentProvider } from "./types";
+import { PayDunyaProvider } from "./paydunya";
 
 function detectProvider(): PaymentProvider | null {
-  // Détection des variables d'environnement d'un agrégateur.
-  // Aucun fournisseur configuré pour l'instant → on retourne null.
-  const hasPaydunya = !!process.env.PAYDUNYA_API_KEY || !!process.env.PAYDUNYA_MASTER_KEY;
+  const hasPaydunya =
+    !!process.env.PAYDUNYA_MASTER_KEY &&
+    !!process.env.PAYDUNYA_PRIVATE_KEY &&
+    !!process.env.PAYDUNYA_TOKEN;
   const hasFedapay = !!process.env.FEDAPAY_API_KEY || !!process.env.FEDAPAY_SECRET_KEY;
   const hasCinetpay = !!process.env.CINETPAY_API_KEY || !!process.env.CINETPAY_SITE_ID;
 
-  if (!hasPaydunya && !hasFedapay && !hasCinetpay) {
+  if (hasPaydunya) {
+    return new PayDunyaProvider();
+  }
+
+  // FedaPay et CinetPay non encore implémentés
+  if (hasFedapay || hasCinetpay) {
+    console.warn("Payment provider detected but not yet implemented — returning null");
     return null;
   }
 
-  // Un fournisseur est configuré mais son adaptateur n'est pas
-  // encore implémenté : on retourne null et la route affiche le
-  // placeholder. Ne jamais deviner d'intégration ici.
   return null;
 }
 
