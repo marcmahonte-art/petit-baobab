@@ -113,7 +113,10 @@ export function PricingSection() {
               if (packId) {
                 setPurchasePack(packId)
               } else {
-                router.push("/parents/billing")
+                // Le plan École / Pro est réservé aux structures scolaires :
+                // on redirige vers la création de compte école plutôt que
+                // vers la facturation parent (où ce plan est filtré).
+                router.push("/signup?space=school")
               }
             }}
           />
