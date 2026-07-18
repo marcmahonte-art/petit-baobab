@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
     // 4. Extraire les infos depuis custom_data de la réponse confirmée
     const customData = verified.custom_data || {};
     const accountId: string | undefined = customData.account_id;
-    const checkoutType: string | undefined = customData.type;
     const packId: string | undefined = customData.pack_id;
     const planId: string | undefined = customData.plan_id;
     const stars = parseInt(String(customData.stars || "0"), 10);
@@ -73,8 +72,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "invalid_custom_data" }, { status: 400 });
     }
 
-    // 5. Si c'est un achat de PLAN : changer accounts.plan (distinct d'un pack).
-    if (checkoutType === "plan" && planId) {
+    // 5. Si c'est un achat de PLAN (plan_id présent) : changer accounts.plan.
+    if (planId) {
       const { error: planErr } = await supabase
         .from("accounts")
         .update({

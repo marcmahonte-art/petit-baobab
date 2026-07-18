@@ -19,7 +19,7 @@ interface BillingState {
 
   fetchSubscription: () => Promise<void>
   fetchPayments: (page?: number) => Promise<void>
-  fetchPlans: () => Promise<void>
+  fetchPlans: (scope?: "parent" | "school") => Promise<void>
   setPaymentsStatus: (status: string) => void
   setPaymentsSearch: (search: string) => void
 }

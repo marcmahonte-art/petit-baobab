@@ -1,4 +1,4 @@
-import { PaymentProvider, PaymentCheckoutParams, PaymentCheckoutResult, findPack } from "./types";
+import { PayDunyaCheckoutParams, PaymentCheckoutResult } from "./types";
 
 const MODE = process.env.PAYDUNYA_MODE === "live" ? "live" : "test";
 
@@ -16,26 +16,30 @@ function getHeaders() {
   };
 }
 
-export class PayDunyaProvider implements PaymentProvider {
-  async createCheckout(params: PaymentCheckoutParams): Promise<PaymentCheckoutResult> {
-    const { accountId, type, packId, planId, amountXof, stars, successUrl, cancelUrl } = params;
-    const pack = type === "pack" ? findPack(packId || "") : undefined;
-    const plan = type === "plan" ? findPlan(planId || "") : undefined;
-    const label = pack?.label || plan?.name || `${stars} étoiles`;
+/**
+ * Unique fournisseur de paiement de l'application. PayDunya gère
+ * Orange Money, Moov Money, les cartes bancaires et les autres
+ * méthodes exposées par la plateforme. Aucune sélection de
+ * fournisseur n'est nécessaire.
+ */
+export class PayDunyaProvider {
+  async createCheckout(
+    params: PayDunyaCheckoutParams
+  ): Promise<PaymentCheckoutResult> {
+    const { accountId, packId, planId, amountXof, stars, label, successUrl, cancelUrl } = params;
     const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://petit-baobab.vercel.app";
 
     const customData: Record<string, string> = {
       account_id: accountId,
-      type,
       stars: String(stars),
     };
-    if (type === "pack" && packId) customData.pack_id = packId;
-    if (type === "plan" && planId) customData.plan_id = planId;
+    if (packId) customData.pack_id = packId;
+    if (planId) customData.plan_id = planId;
 
     const body = {
       invoice: {
         total_amount: amountXof,
-        description: `Achat ${type === "plan" ? "du plan" : "de"} ${label}`,
+        description: `Achat ${label}`,
         items: {
           item_0: {
             name: label,
@@ -71,3 +75,5 @@ export class PayDunyaProvider implements PaymentProvider {
     return { checkoutUrl: data.response_text };
   }
 }
+
+export const payDunyaProvider = new PayDunyaProvider();

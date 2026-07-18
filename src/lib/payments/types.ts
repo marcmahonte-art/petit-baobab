@@ -1,32 +1,27 @@
 // ============================================================
-// Petit Baobab — Interface générique de paiement (Agrégateur)
+// Petit Baobab — Paiement (PayDunya uniquement)
 // ============================================================
-// Interface minimale que tout fournisseur (PayDunya, FedaPay,
-// CinetPay, Stripe, ...) devra implémenter. Permet de brancher
-// n'importe quel agrégateur plus tard sans toucher aux routes
-// existantes ni à la logique de packs.
+// PayDunya est le seul prestataire de paiement. Il prend en charge
+// Orange Money, Moov Money, les cartes bancaires et les autres
+// méthodes proposées par la plateforme. Aucune abstraction de
+// fournisseur n'est nécessaire.
 
-export type CheckoutType = "pack" | "plan";
-
-export interface PaymentCheckoutParams {
+export interface PayDunyaCheckoutParams {
   accountId: string;
-  type: CheckoutType;
-  /** Requis si type === "pack". */
+  /** Requis pour un achat de pack d'étoiles. */
   packId?: string;
-  /** Requis si type === "plan". */
+  /** Requis pour un achat / changement de plan. */
   planId?: string;
   amountXof: number;
   stars: number;
+  /** Libellé affiché sur la facture PayDunya. */
+  label: string;
   successUrl: string;
   cancelUrl: string;
 }
 
 export interface PaymentCheckoutResult {
   checkoutUrl: string;
-}
-
-export interface PaymentProvider {
-  createCheckout(params: PaymentCheckoutParams): Promise<PaymentCheckoutResult>;
 }
 
 // Packs d'étoiles disponibles (indépendants du fournisseur).

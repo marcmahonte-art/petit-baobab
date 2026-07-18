@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const { data: roleAccount } = await supabaseForRole
       .from("accounts")
       .select("plan")
-      .eq("user_id", data.user.id)
+      .eq("user_id", data.user!.id)
       .single()
     await setRoleCookie(roleAccount?.plan || "free")
 

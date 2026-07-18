@@ -3,21 +3,15 @@
 // ============================================================
 // POST /api/billing/checkout
 //
-// NOTE (webhook) : aucun webhook (/api/billing/webhook) n'est créé
-// tant que le fournisseur de paiement n'est pas choisi. Une fois
-// celui-ci sélectionné (PayDunya, FedaPay, ...), le webhook devra
-// vérifier la signature de l'événement et appeler la fonction
-// existante `adjustStars(accountId, +stars, 'purchase', referenceId)`
-// pour créditer le solde. Le format des events et la vérification
-// diffèrent selon le fournisseur — à implémenter au moment venu.
-//
-// CAS ACTUEL (CAS B) : aucun agrégateur configuré → placeholder 503.
-// L'architecture est prête : PaymentProvider + getPaymentProvider().
+// Crée une facture PayDunya pour un pack d'étoiles et renvoie
+// l'URL de paiement. Au retour du paiement, le webhook PayDunya
+// (/api/billing/webhook/paydunya) crédite le solde via
+// `adjustStars(accountId, +stars, 'purchase', referenceId)`.
 
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabaseServer";
-import { getPaymentProvider } from "@/lib/payments";
+import { payDunyaProvider } from "@/lib/payments";
 import { findPack, STARS_PACKS } from "@/lib/payments/types";
 
 export async function POST(request: Request) {
@@ -46,28 +40,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Pack invalide." }, { status: 400 });
     }
 
-    const provider = getPaymentProvider();
-
-    if (!provider) {
-      // CAS B : aucun agrégateur configuré
-      return NextResponse.json(
-        {
-          error: "Paiement en cours de configuration",
-          available: false,
-          message:
-            "L'achat d'étoiles sera disponible prochainement. Contactez-nous sur WhatsApp pour obtenir des étoiles.",
-        },
-        { status: 503 }
-      );
-    }
-
     const origin = new URL(request.url).origin;
-    const result = await provider.createCheckout({
+    const result = await payDunyaProvider.createCheckout({
       accountId: account.id,
-      type: "pack",
       packId: pack.id,
       amountXof: pack.price_xof,
       stars: pack.stars,
+      label: pack.label,
       successUrl: `${origin}/parents?purchase=success`,
       cancelUrl: `${origin}/parents?purchase=cancel`,
     });
@@ -84,9 +63,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   return NextResponse.json({
-    available: false,
+    available: true,
     packs: STARS_PACKS,
-    message:
-      "Paiement disponible prochainement — Orange Money, Moov Money et carte bancaire",
+    message: "Paiement via PayDunya — Orange Money, Moov Money et carte bancaire",
   });
 }
