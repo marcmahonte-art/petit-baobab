@@ -45,7 +45,7 @@ export function ColoringHeader({ onDownload, onPrint, onOpenDrawings }: Coloring
   return (
     <header className="min-h-[68px] md:h-[80px] flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 select-none shrink-0 w-full py-1.5 md:py-0">
       <div className="flex flex-row items-center gap-[12px] md:gap-[24px] w-full md:w-auto justify-between md:justify-start">
-        <Link href="/dashboard" className="flex-1 sm:flex-initial sm:w-[120px] md:w-[140px] h-[44px] md:h-[52px] rounded-full border border-[#EFE7DB] text-[#3B2416] bg-white hover:bg-neutral-50 shadow-sm flex items-center justify-center gap-1.5 xs:gap-2.5 transition-all duration-180 hover:scale-[1.02] font-bold text-xs md:text-sm lg:text-base cursor-pointer">
+        <Link href="/dashboardstudent" className="flex-1 sm:flex-initial sm:w-[120px] md:w-[140px] h-[44px] md:h-[52px] rounded-full border border-[#EFE7DB] text-[#3B2416] bg-white hover:bg-neutral-50 shadow-sm flex items-center justify-center gap-1.5 xs:gap-2.5 transition-all duration-180 hover:scale-[1.02] font-bold text-xs md:text-sm lg:text-base cursor-pointer">
           <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-[#7A6A5E]" />
           <span>Retour</span>
         </Link>

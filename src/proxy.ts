@@ -31,6 +31,7 @@ export async function proxy(request: NextRequest) {
 
   const protectedPaths = [
     "/dashboard",
+    "/dashboardstudent",
     "/coloriage",
     "/magic-drawing",
     "/livres-de-coloriage",
