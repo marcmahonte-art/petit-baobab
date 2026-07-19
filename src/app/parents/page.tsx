@@ -10,7 +10,7 @@ import Image from "next/image"
 
 export default function ParentsSpace() {
   const router = useRouter()
-  const { user, isInitialized, checkSession } = useAuthStore()
+  const { user, account, isInitialized, checkSession } = useAuthStore()
 
   useEffect(() => {
     checkSession()
@@ -20,7 +20,11 @@ export default function ParentsSpace() {
     if (isInitialized && !user) {
       router.push("/login")
     }
-  }, [isInitialized, user, router])
+    // Un compte école (ecole_pro) ne doit jamais rester dans l'espace parent.
+    if (isInitialized && user && account?.plan === "ecole_pro") {
+      router.push("/school/dashboard")
+    }
+  }, [isInitialized, user, account, router])
 
   if (!isInitialized || !user) {
     return (
