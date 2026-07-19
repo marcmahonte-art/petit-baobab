@@ -32,6 +32,8 @@ function SignupFormContent() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [ageConsent, setAgeConsent] = useState(false)
+  const [schoolName, setSchoolName] = useState("")
+  const [schoolWhatsapp, setSchoolWhatsapp] = useState("")
 
   const [validationErrors, setValidationErrors] = useState<{
     email?: string
@@ -113,7 +115,14 @@ function SignupFormContent() {
     }
 
     // Call store signup
-    const result = await signup(email, password, ageConsent, accountType)
+    const result = await signup(
+      email,
+      password,
+      ageConsent,
+      accountType,
+      isSchool ? schoolName : undefined,
+      isSchool ? schoolWhatsapp : undefined
+    )
     if (result.success) {
       setSuccessMessage(
         result.message ||
@@ -269,6 +278,34 @@ function SignupFormContent() {
           disabled={isLoading}
           required
         />
+
+        {isSchool && (
+          <>
+            <InputField
+              id="school-name-input"
+              label={lang === "fr" ? "Nom de l'école" : "School name"}
+              type="text"
+              icon={Mail}
+              placeholder={lang === "fr" ? "École Primaire du Baobab" : "Baobab Primary School"}
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              disabled={isLoading}
+              required
+            />
+
+            <InputField
+              id="school-whatsapp-input"
+              label={lang === "fr" ? "Numéro WhatsApp de l'école" : "School WhatsApp number"}
+              type="tel"
+              icon={Mail}
+              placeholder={lang === "fr" ? "+229 00 00 00 00" : "+1 555 000 0000"}
+              value={schoolWhatsapp}
+              onChange={(e) => setSchoolWhatsapp(e.target.value)}
+              disabled={isLoading}
+              required
+            />
+          </>
+        )}
 
         <PasswordInput
           id="password-signup-input"

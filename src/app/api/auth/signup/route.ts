@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { email, password, ageConsent, accountType } = body
+    const { email, password, ageConsent, accountType, schoolName, schoolWhatsapp } = body
     const isSchool = accountType === "school"
 
     // 1. Validation of fields
@@ -122,6 +122,8 @@ export async function POST(request: Request) {
               default_space: "school",
               stars_balance: 1000,
               plan_renewed_at: new Date().toISOString(),
+              school_name: schoolName || null,
+              school_whatsapp: schoolWhatsapp || null,
             })
             .eq("id", existingAccount.id)
             .select("plan, stars_balance")
@@ -156,6 +158,8 @@ export async function POST(request: Request) {
             plan: isSchool ? "ecole_pro" : "free",
             default_space: isSchool ? "school" : null,
             plan_renewed_at: isSchool ? new Date().toISOString() : null,
+            school_name: isSchool ? schoolName || null : null,
+            school_whatsapp: isSchool ? schoolWhatsapp || null : null,
           })
           .select()
           .single()

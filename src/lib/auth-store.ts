@@ -42,7 +42,7 @@ interface AuthState {
   isInitialized: boolean
 
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; multipleProfiles?: boolean }>
-  signup: (email: string, password: string, ageConsent: boolean, accountType?: "family" | "school") => Promise<{ success: boolean; message?: string; error?: string; isSchool?: boolean }>
+  signup: (email: string, password: string, ageConsent: boolean, accountType?: "family" | "school", schoolName?: string, schoolWhatsapp?: string) => Promise<{ success: boolean; message?: string; error?: string; isSchool?: boolean }>
   logout: () => Promise<void>
   selectProfile: (profileId: string) => void
   setStarsBalance: (balance: number) => void
@@ -139,13 +139,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signup: async (email, password, ageConsent, accountType) => {
+  signup: async (email, password, ageConsent, accountType, schoolName, schoolWhatsapp) => {
     set({ isLoading: true, error: null })
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, ageConsent, accountType }),
+        body: JSON.stringify({ email, password, ageConsent, accountType, schoolName, schoolWhatsapp }),
       })
 
       const data = await res.json()
