@@ -13,7 +13,6 @@ import { useCreditStore } from "@/lib/credit-store"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
-import { useRealtimeStars } from "@/lib/hooks/useRealtimeStars"
 import Link from "next/link"
 
 const SCHOOL_GREEN = "#1D9E75"
@@ -34,9 +33,13 @@ export function Header() {
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
 
-  // ── Mode élève : header simplifié + MAJ temps réel du solde ──
+  // ── Mode élève : header simplifié ──
+  // NB : useRealtimeStars (WebSocket Supabase permanent) est volontairement
+  // désactivé pour l'espace élève : à grande charge (ex. 400 élèves
+  // connectés), chaque dashboard ouvrirait une connexion Realtime et
+  // saturerait le quota de Supabase. Le solde est déjà chargé via la
+  // session (login + restauration) et au montage des composants.
   if (studentSession && studentSession.type === "student") {
-    useRealtimeStars(studentSession.accountId)
     const mascotSrc =
       studentSession.mascot === "lion"
         ? "/illustrations/lion.webp"
