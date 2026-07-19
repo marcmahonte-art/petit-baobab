@@ -77,7 +77,7 @@ export function Sidebar() {
               Accédez à tout le contenu et fonctionnalités illimitées.
             </p>
           </div>
-          <Link href="/parents">
+          <Link href="/signup?space=family">
             <Button variant="premium" className="w-[110px] md:w-[120px] h-[34px] md:h-[38px] rounded-full text-[11px] md:text-xs font-bold bg-white text-[#3B2416] hover:bg-white/90 border-none shadow-sm cursor-pointer">
               Découvrir &gt;
             </Button>
