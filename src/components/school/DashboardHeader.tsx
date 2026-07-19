@@ -27,12 +27,14 @@ export default function DashboardHeader() {
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 bg-white rounded-2xl shadow-sm border border-[#F0E7DA]">
       {/* Greeting */}
-      <div className="min-w-0">
+       <div className="min-w-0">
         <h1 className="text-lg sm:text-xl font-extrabold text-[#3B2416] truncate">
           Bonjour, {teacher.name} ! 👋
         </h1>
         <p className="text-xs sm:text-sm text-[#7A6A5E] font-medium">
-          Bienvenue dans votre espace enseignant.
+          {teacher.school_name
+            ? teacher.school_name
+            : "Bienvenue dans votre espace enseignant."}
         </p>
       </div>
 

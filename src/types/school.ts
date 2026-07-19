@@ -81,6 +81,7 @@ export interface DashboardData {
     name: string;
     role: string;
     avatar: string | null;
+    school_name?: string | null;
   };
   stars: {
     balance: number;
