@@ -3,12 +3,17 @@
 import { useEffect } from "react"
 import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
-import { Sidebar } from "@/components/sidebar"
-import { ParentsPage } from "@/components/parents-page"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { Sidebar } from "@/app/dashboard/_components/sidebar"
+import { Header } from "@/app/dashboard/_components/header"
+import { HeroBanner } from "@/app/dashboard/_components/hero-banner"
+import { FeatureModules } from "@/app/dashboard/_components/feature-modules"
+import { RecentColorings } from "@/app/dashboard/_components/recent-colorings"
+import { ActivityPanel } from "@/app/dashboard/_components/activity-panel"
+import { RewardsCard } from "@/app/dashboard/_components/rewards-card"
+import { MobileBottomNav } from "@/app/dashboard/_components/mobile-bottom-nav"
 import Image from "next/image"
 
-export default function ParentSpace() {
+export default function DashboardPage() {
   const router = useRouter()
   const { user, account, isInitialized, checkSession } = useAuthStore()
 
@@ -20,7 +25,7 @@ export default function ParentSpace() {
     if (isInitialized && !user) {
       router.push("/login")
     }
-    // Un compte école (ecole_pro) ne doit jamais rester dans l'espace parent.
+    // Un compte école (ecole_pro) ne doit jamais rester dans cet espace.
     if (isInitialized && user && account?.plan === "ecole_pro") {
       router.push("/school/dashboard")
     }
@@ -47,7 +52,19 @@ export default function ParentSpace() {
         </div>
 
         <main className="flex flex-col gap-6 min-h-[calc(100vh-48px)]">
-          <ParentsPage />
+          <Header />
+
+          <HeroBanner />
+
+          <FeatureModules />
+
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_392px] gap-6">
+            <RecentColorings />
+            <div>
+              <ActivityPanel />
+              <RewardsCard />
+            </div>
+          </div>
         </main>
       </div>
 
