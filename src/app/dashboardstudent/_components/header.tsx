@@ -64,9 +64,13 @@ export function Header() {
           </div>
           <button
             onClick={async () => {
-              await fetch("/api/auth/student-logout", { method: "POST" })
+              try {
+                await fetch("/api/auth/student-logout", { method: "POST" })
+              } catch {
+                /* ignore */
+              }
               clearStudentSession()
-              router.push("/school")
+              window.location.href = "/school"
             }}
             className="flex items-center gap-1.5 text-sm font-bold text-[#7A6A5E] hover:text-[#1C1C3A] cursor-pointer bg-transparent border-none"
             aria-label="Se déconnecter"
