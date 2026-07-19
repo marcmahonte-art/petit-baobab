@@ -12,14 +12,11 @@
 //  - ecole_pro est réservé aux comptes école (plan ecole_pro).
 //    Un particulier ne peut pas y souscrire.
 //  - decouverte / super_baobab sont réservés aux particuliers.
-//
-// CAS ACTUEL (CAS B) : aucun agrégateur configuré → placeholder 503,
-// symétrique au checkout des packs.
 
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabaseServer";
-import { getPaymentProvider } from "@/lib/payments";
+import { createCheckout } from "@/lib/payments";
 import { findPlan, PAID_PLANS } from "@/lib/payments/types";
 
 export async function POST(request: Request) {
@@ -56,28 +53,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const provider = getPaymentProvider();
-
-    if (!provider) {
-      // CAS B : aucun agrégateur configuré
-      return NextResponse.json(
-        {
-          error: "Paiement en cours de configuration",
-          available: false,
-          message:
-            "La souscription aux plans sera disponible prochainement. Contactez-nous sur WhatsApp pour activer votre plan.",
-        },
-        { status: 503 }
-      );
-    }
-
     const origin = new URL(request.url).origin;
-    const result = await provider.createCheckout({
+    const result = await createCheckout({
       accountId: account.id,
-      type: "plan",
       planId: plan.id,
       amountXof: plan.price_xof,
       stars: plan.stars,
+      label: plan.name,
       successUrl: `${origin}/parents?purchase=success`,
       cancelUrl: `${origin}/parents?purchase=cancel`,
     });
@@ -94,9 +76,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   return NextResponse.json({
-    available: false,
+    available: true,
     plans: PAID_PLANS,
-    message:
-      "Paiement disponible prochainement — Orange Money, Moov Money et carte bancaire",
+    message: "Paiement via PayDunya — Orange Money, Moov Money et carte bancaire",
   });
 }
