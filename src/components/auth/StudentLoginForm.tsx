@@ -68,6 +68,7 @@ export function StudentLoginForm() {
           mascot: payload.mascot,
           profileId: payload.profile_id,
           classroomId: payload.classroom_id,
+          classroomName: payload.classroom_name,
           accountId: payload.account_id,
           starsBalance: payload.stars_balance,
         })

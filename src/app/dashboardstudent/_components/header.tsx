@@ -46,9 +46,10 @@ export function Header() {
 
     return (
       <header className="flex items-center justify-between gap-4 py-2 lg:h-[72px] px-4 lg:px-6 w-full bg-white border-b border-[#EFE7DB]">
-        <div className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-petit-baobab.svg" alt="Petit Baobab" className="h-8 w-auto" />
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-base md:text-lg font-extrabold text-[#3B2416] truncate">
+            {studentSession.classroomName || "Ma classe"}
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 h-10 px-3 rounded-full border border-[#FFE08A] bg-[#FFF5CC] text-[#3B2416]">

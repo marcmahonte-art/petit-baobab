@@ -27,6 +27,7 @@ export interface StudentSessionState {
   mascot: "awa" | "lion" | "robot"
   profileId: string
   classroomId: string
+  classroomName?: string
   accountId: string
   starsBalance: number
 }
@@ -190,7 +191,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setStudentSession: (session) => {
-    set({ studentSession: session })
+    // classroom_name peut arriver depuis StudentLoginResponse ou la session API
+    const classroomName =
+      (session as any).classroomName ?? (session as any).classroom_name
+    set({
+      studentSession: {
+        ...session,
+        classroomName: classroomName ?? session.classroomName,
+      },
+    })
     // Sync crédit store pour afficher le solde d'étoiles élève
     useCreditStore.setState({
       plan: "ecole-pro",

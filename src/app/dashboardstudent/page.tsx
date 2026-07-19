@@ -33,6 +33,7 @@ export default function KidDashboard() {
             mascot: s.mascot,
             profileId: s.profile_id,
             classroomId: s.classroom_id,
+            classroomName: s.classroom_name,
             accountId: s.account_id,
             starsBalance: s.stars_balance,
           })
