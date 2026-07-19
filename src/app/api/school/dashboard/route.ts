@@ -43,6 +43,7 @@ export async function GET() {
           name: teacherName,
           role: "Enseignant",
           avatar: null,
+          school_name: (account as any).school_name || null,
         },
         stars: {
           balance: account.stars_balance || 0,
@@ -295,6 +296,7 @@ export async function GET() {
         name: teacherName,
         role: "Enseignante",
         avatar: null,
+        school_name: (account as any).school_name || null,
       },
       stars: {
         balance: account.stars_balance || 0,

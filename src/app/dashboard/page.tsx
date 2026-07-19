@@ -1,14 +1,42 @@
+"use client"
+
+import { useEffect } from "react"
+import { useAuthStore } from "@/lib/auth-store"
+import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
-import { Header } from "@/components/header"
-import { HeroBanner } from "@/components/hero-banner"
-import { FeatureModules } from "@/components/feature-modules"
-import { RecentColorings } from "@/components/recent-colorings"
-import { ActivityPanel } from "@/components/activity-panel"
-import { RewardsCard } from "@/components/rewards-card"
+import { ParentsPage } from "@/components/parents-page"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import Image from "next/image"
 
-export default function KidDashboard() {
+export default function ParentSpace() {
+  const router = useRouter()
+  const { user, account, isInitialized, checkSession } = useAuthStore()
+
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
+
+  useEffect(() => {
+    if (isInitialized && !user) {
+      router.push("/login")
+    }
+    // Un compte école (ecole_pro) ne doit jamais rester dans l'espace parent.
+    if (isInitialized && user && account?.plan === "ecole_pro") {
+      router.push("/school/dashboard")
+    }
+  }, [isInitialized, user, account, router])
+
+  if (!isInitialized || !user) {
+    return (
+      <div className="min-h-screen bg-[#FFF9F2] flex items-center justify-center select-none">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-[#3B2416] border-t-transparent rounded-full animate-spin" />
+          <span className="text-[#3B2416] font-bold text-sm">Chargement de votre espace...</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#FFF9F2] relative overflow-hidden pb-16 lg:pb-24">
       <div className="mx-auto max-w-[1536px] lg:grid lg:grid-cols-[280px_1fr] lg:gap-8 lg:px-8 px-4 lg:py-6 pt-4 pb-24 lg:pb-6 relative z-10">
@@ -19,19 +47,7 @@ export default function KidDashboard() {
         </div>
 
         <main className="flex flex-col gap-6 min-h-[calc(100vh-48px)]">
-          <Header />
-
-          <HeroBanner />
-
-          <FeatureModules />
-
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_392px] gap-6">
-            <RecentColorings />
-            <div>
-              <ActivityPanel />
-              <RewardsCard />
-            </div>
-          </div>
+          <ParentsPage />
         </main>
       </div>
 

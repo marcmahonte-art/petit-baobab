@@ -2,10 +2,10 @@
 // Petit Baobab — Paiement (PayDunya uniquement)
 // ============================================================
 // Point d'entrée unique pour la création de paiements. PayDunya
-// est le seul prestataire configuré ; les routes d'API n'ont pas
-// besoin de résoudre un fournisseur.
+// est le seul prestataire configuré ; aucune sélection de
+// fournisseur n'est nécessaire.
 
-import { createCheckout } from "./paydunya";
+import { PayDunyaProvider, payDunyaProvider } from "./paydunya";
 
-export { createCheckout };
+export { PayDunyaProvider, payDunyaProvider };
 export * from "./types";

@@ -74,7 +74,7 @@ export function StudentLoginForm() {
 
         setStatus("success")
         confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } })
-        setTimeout(() => router.push("/dashboard"), 800)
+        setTimeout(() => router.push("/dashboardstudent"), 800)
       } catch {
         setError("Connexion impossible, réessaie dans quelques secondes")
         setStatus("idle")

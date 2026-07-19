@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getSupabaseServer } from "@/lib/supabaseServer"
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 import { adjustStars, STARS_REASONS } from "@/lib/auth"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { email, password, ageConsent, accountType } = body
+    const { email, password, ageConsent, accountType, schoolName, schoolWhatsapp } = body
     const isSchool = accountType === "school"
 
     // 1. Validation of fields
@@ -108,23 +109,38 @@ export async function POST(request: Request) {
         plan = existingAccount.plan
 
         // Inscription enseignant : basculer le plan sur ecole_pro d'emblée
-        // (nouveau compte, pas une montée en gamme). Le trigger on_plan_changed
-        // met à jour has_school_sub / has_family_sub.
+        // (nouveau compte, pas une montée en gamme). On passe par le client
+        // admin (service role) car la politique RLS peut interdire à l'utilisateur
+        // de modifier son propre plan. Le trigger on_plan_changed met à jour
+        // has_school_sub / has_family_sub.
         if (isSchool && existingAccount.plan !== "ecole_pro") {
-          const { data: updated, error: updErr } = await authedClient
+          const admin = getSupabaseAdmin()
+          const { data: updated, error: updErr } = await admin
             .from("accounts")
-            .update({ plan: "ecole_pro", default_space: "school" })
+            .update({
+              plan: "ecole_pro",
+              default_space: "school",
+              stars_balance: 1000,
+              plan_renewed_at: new Date().toISOString(),
+              school_name: schoolName || null,
+              school_whatsapp: schoolWhatsapp || null,
+            })
             .eq("id", existingAccount.id)
-            .select("plan")
+            .select("plan, stars_balance")
             .single()
-          if (!updErr && updated) {
+          if (updErr) {
+            console.error("Failed to set ecole_pro plan:", updErr)
+          } else if (updated) {
             plan = updated.plan
+            starsBalance = updated.stars_balance
           }
         }
       } else {
-        // Trigger didn't run, execute manually
+        // Trigger didn't run, execute manually (via client admin pour
+        // garantir le plan ecole_pro même si la RLS restreint l'utilisateur).
+        const admin = getSupabaseAdmin()
         // Insert public profile
-        await authedClient
+        await admin
           .from("profiles")
           .insert({
             id: user.id,
@@ -134,26 +150,33 @@ export async function POST(request: Request) {
           .select()
 
         // Insert parent account
-        const { data: newAccount, error: accErr } = await authedClient
+        const { data: newAccount, error: accErr } = await admin
           .from("accounts")
           .insert({
             user_id: user.id,
-            stars_balance: 5,
+            stars_balance: isSchool ? 1000 : 5,
             plan: isSchool ? "ecole_pro" : "free",
             default_space: isSchool ? "school" : null,
+            plan_renewed_at: isSchool ? new Date().toISOString() : null,
+            school_name: isSchool ? schoolName || null : null,
+            school_whatsapp: isSchool ? schoolWhatsapp || null : null,
           })
           .select()
           .single()
 
         if (accErr) throw accErr
         accountId = newAccount.id
+        if (isSchool) {
+          starsBalance = 1000
+          plan = "ecole_pro"
+        }
 
         // Insert stars transaction
-        await adjustStars(accountId, 5, STARS_REASONS.SIGNUP_BONUS, null, authedClient)
+        await adjustStars(accountId, 5, STARS_REASONS.SIGNUP_BONUS, null, admin)
 
         // Insert first child profile
         const emailName = getDisplayNameFromEmail(user.email || "")
-        await authedClient
+        await admin
           .from("child_profiles")
           .insert({
             account_id: accountId,
@@ -165,6 +188,10 @@ export async function POST(request: Request) {
     } catch (dbError) {
       console.warn("Trigger failed or was missing, manual inserts executed. Details:", dbError)
     }
+
+    const successMessage = isSchool
+      ? "Compte École / Pro créé ! Votre espace enseignant est prêt et 1000 étoiles vous sont créditées pour démarrer. Un e-mail de confirmation vous a été envoyé."
+      : "Compte créé ! 5 étoiles offertes pour commencer à créer. Un e-mail de confirmation vous a été envoyé."
 
     return NextResponse.json({
       success: true,
@@ -178,7 +205,7 @@ export async function POST(request: Request) {
         plan: plan,
       },
       isSchool,
-      message: "Compte créé ! 5 étoiles offertes pour commencer à créer. Un e-mail de confirmation vous a été envoyé.",
+      message: successMessage,
     })
   } catch (err: any) {
     console.error("Signup error:", err)

@@ -10,7 +10,10 @@ const ADULT_TOKEN = "sb-access-token";
 const STUDENT_TOKEN = "sb-student-token";
 
 // Routes enfant accessibles aux élèves (token étudiant) ou aux adultes
-const CHILD_ROUTES = ["/dashboard", "/coloriage", "/magic-drawing", "/livres-de-coloriage", "/mes-livres", "/parametres"];
+const CHILD_ROUTES = ["/dashboard", "/dashboardstudent", "/coloriage", "/magic-drawing", "/livres-de-coloriage", "/mes-livres", "/parametres"];
+
+// Route parent (adulte uniquement) : un élève y est renvoyé vers son espace.
+const PARENT_ROUTES = ["/dashboard"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -40,6 +43,15 @@ export async function middleware(request: NextRequest) {
   // BLOC 2 — Routes enfant : adulte OU élève
   const isChildRoute = CHILD_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));
   if (isChildRoute) {
+    // /dashboard est l'espace PARENT : un élève (token étudiant, pas adulte)
+    // doit être renvoyé vers son espace dédié /dashboardstudent.
+    const isParentRoute = PARENT_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));
+    if (isParentRoute && !adultToken && studentToken) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboardstudent";
+      return NextResponse.redirect(url);
+    }
+
     if (!adultToken) {
       if (studentToken) {
         // Décoder le JWT élève pour injecter les identifiants nécessaires en aval
@@ -69,6 +81,7 @@ export const config = {
   matcher: [
     "/school/dashboard/:path*",
     "/dashboard/:path*",
+    "/dashboardstudent/:path*",
     "/coloriage/:path*",
     "/magic-drawing/:path*",
     "/livres-de-coloriage/:path*",

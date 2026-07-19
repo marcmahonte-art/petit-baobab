@@ -34,7 +34,7 @@ export default async function SelectSpacePage() {
   // Pas les deux flags → rediriger selon le plan
   if (!account || !account.has_family_sub || !account.has_school_sub) {
     if (account?.has_school_sub) redirect("/school/dashboard");
-    redirect("/dashboard");
+    redirect("/dashboardstudent");
   }
 
   const displayName = user.email ? user.email.split("@")[0] : "Cher utilisateur";

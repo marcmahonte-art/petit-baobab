@@ -11,7 +11,7 @@
 import { NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
 import { getSupabaseServer } from "@/lib/supabaseServer";
-import { createCheckout } from "@/lib/payments";
+import { payDunyaProvider } from "@/lib/payments";
 import { findPack, STARS_PACKS } from "@/lib/payments/types";
 
 export async function POST(request: Request) {
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     const origin = new URL(request.url).origin;
-    const result = await createCheckout({
+    const result = await payDunyaProvider.createCheckout({
       accountId: account.id,
       packId: pack.id,
       amountXof: pack.price_xof,
