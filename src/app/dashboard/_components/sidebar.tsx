@@ -1,24 +1,19 @@
 "use client"
 
-import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Users, Settings, Star, CreditCard } from "lucide-react"
+import { Home, Users, Star, CreditCard } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { commonNavItems, settingsNavItem } from "@/components/child-dashboard"
 
 const navItems = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
-  { icon: Palette, label: "Coloriage", href: "/coloriage" },
-  { icon: Sparkles, label: "Dessin magique", href: "/magic-drawing" },
-  { icon: BookOpen, label: "Livres de coloriage", href: "/livres-de-coloriage" },
-  { icon: Bookmark, label: "Mes livres", href: "/mes-livres" },
-  { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
-  { icon: Bookmark, label: "Histoires", href: "#" },
-  { icon: Tent, label: "Activités", href: "#" },
+  ...commonNavItems,
   { icon: Users, label: "Espace parents", href: "/parents" },
   { icon: CreditCard, label: "Facturation", href: "/parents/billing" },
-  { icon: Settings, label: "Paramètres", href: "/parametres" },
+  settingsNavItem,
 ]
 
 export function Sidebar() {

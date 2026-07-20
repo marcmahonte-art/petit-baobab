@@ -1,4 +1,4 @@
-import { FeatureCard } from "@/components/feature-card"
+import { FeatureCard } from "@/components/child-dashboard/feature-card"
 
 const features = [
   { title: "Coloriage", illustration: "/illustrations/lion.webp", topColor: "#C5BCFF", bottomColor: "#8067F8", href: "/coloriage", imgW: 130, imgH: 130 },

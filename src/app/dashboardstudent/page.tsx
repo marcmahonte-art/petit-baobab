@@ -3,12 +3,7 @@
 import { useEffect, useState } from "react"
 import { Sidebar } from "@/app/dashboardstudent/_components/sidebar"
 import { Header } from "@/app/dashboardstudent/_components/header"
-import { HeroBanner } from "@/app/dashboardstudent/_components/hero-banner"
-import { FeatureModules } from "@/app/dashboardstudent/_components/feature-modules"
-import { RecentColorings } from "@/app/dashboardstudent/_components/recent-colorings"
-import { ActivityPanel } from "@/app/dashboardstudent/_components/activity-panel"
-import { RewardsCard } from "@/app/dashboardstudent/_components/rewards-card"
-import { MobileBottomNav } from "@/app/dashboardstudent/_components/mobile-bottom-nav"
+import { HeroBanner, FeatureModules, RecentColorings, ActivityPanel, RewardsCard, MobileBottomNav } from "@/components/child-dashboard"
 import Image from "next/image"
 import { useAuthStore } from "@/lib/auth-store"
 
@@ -85,7 +80,7 @@ export default function KidDashboard() {
         </main>
       </div>
 
-      <MobileBottomNav />
+      <MobileBottomNav homeHref="/dashboardstudent" />
 
       {/* Decorative Grassy Footer Background */}
       <div className="absolute bottom-0 left-0 right-0 w-full z-0 hidden lg:block select-none pointer-events-none">

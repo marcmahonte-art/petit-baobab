@@ -5,12 +5,7 @@ import { useAuthStore } from "@/lib/auth-store"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/app/dashboard/_components/sidebar"
 import { Header } from "@/app/dashboard/_components/header"
-import { HeroBanner } from "@/app/dashboard/_components/hero-banner"
-import { FeatureModules } from "@/app/dashboard/_components/feature-modules"
-import { RecentColorings } from "@/app/dashboard/_components/recent-colorings"
-import { ActivityPanel } from "@/app/dashboard/_components/activity-panel"
-import { RewardsCard } from "@/app/dashboard/_components/rewards-card"
-import { MobileBottomNav } from "@/app/dashboard/_components/mobile-bottom-nav"
+import { HeroBanner, FeatureModules, RecentColorings, ActivityPanel, RewardsCard, MobileBottomNav } from "@/components/child-dashboard"
 import Image from "next/image"
 
 export default function DashboardPage() {

@@ -5,16 +5,21 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-const navItems = [
-  { icon: Home, label: "Accueil", href: "/dashboardstudent", active: true },
-  { icon: Palette, label: "Coloriage", href: "/coloriage" },
-  { icon: Sparkles, label: "Magique", href: "/magic-drawing" },
-  { icon: Gamepad2, label: "Jeux", href: "#" },
-  { icon: Bookmark, label: "Histoires", href: "#" },
-]
+interface MobileBottomNavProps {
+  /** Lien du bouton "Accueil". Défaut : "/dashboard" */
+  homeHref?: string
+}
 
-export function MobileBottomNav() {
+export function MobileBottomNav({ homeHref = "/dashboard" }: MobileBottomNavProps) {
   const pathname = usePathname()
+
+  const navItems = [
+    { icon: Home, label: "Accueil", href: homeHref, active: true },
+    { icon: Palette, label: "Coloriage", href: "/coloriage" },
+    { icon: Sparkles, label: "Magique", href: "/magic-drawing" },
+    { icon: Gamepad2, label: "Jeux", href: "#" },
+    { icon: Bookmark, label: "Histoires", href: "#" },
+  ]
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-14 md:h-16 bg-white border-t border-[#F0E7DA] flex items-center justify-around px-2 z-50">
