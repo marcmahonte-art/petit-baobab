@@ -25,7 +25,7 @@ export function ColoringHeader({ onDownload, onPrint, onOpenDrawings }: Coloring
   const router = useRouter()
   const { profiles, activeProfileId, switchProfile } = useProfileStore()
   const studentSession = useAuthStore((s) => s.studentSession)
-  const backHref = studentSession ? "/dashboard" : "/dashboardstudent"
+  const backHref = studentSession ? "/dashboardstudent" : "/dashboard"
   const [showDropdown, setShowDropdown] = useState(false)
   const [profileName, setProfileName] = useState("Awa")
   const [profileAge] = useState("6 ans")
