@@ -275,7 +275,7 @@ function LoginFormContent() {
 
         <button
           type="button"
-          onClick={() => router.push("/school")}
+          onClick={() => router.push("/student-login")}
           className="w-full h-11 md:h-14 rounded-full bg-transparent border-2 border-[#E8E8EF] hover:border-[#7D6AF8] text-[#1C1C3A] font-bold text-sm md:text-base transition-colors cursor-pointer"
         >
           {lang === "fr" ? "Connexion élève (code de classe) →" : "Student login (class code) →"}

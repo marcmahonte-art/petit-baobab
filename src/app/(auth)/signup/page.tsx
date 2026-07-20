@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useAuthStore } from "@/lib/auth-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { supabase } from "@/lib/supabaseClient"
@@ -18,6 +18,7 @@ import { NeedHelpLink } from "@/components/auth/NeedHelpLink"
 
 function SignupFormContent() {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { lang } = useI18n()
   const { signup, isLoading } = useAuthStore()
@@ -71,7 +72,8 @@ function SignupFormContent() {
     setAccountType(next)
     const params = new URLSearchParams(searchParams.toString())
     params.set("space", next)
-    router.replace(`/signup?${params.toString()}`)
+    const newUrl = `${pathname}?${params.toString()}`
+    window.history.replaceState(null, "", newUrl)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
