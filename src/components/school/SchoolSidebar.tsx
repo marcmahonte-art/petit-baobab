@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { useAuthStore } from "@/lib/auth-store";
 import {
   Home,
   Users,
@@ -27,13 +28,10 @@ const navItems = [
 export default function SchoolSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore
-    }
+    await logout();
     router.push("/login?space=school");
   };
 

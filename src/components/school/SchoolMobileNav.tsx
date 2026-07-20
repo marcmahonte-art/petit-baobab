@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { useAuthStore } from "@/lib/auth-store";
 import { Menu, X, Home, Users, UserPlus, Palette, TrendingUp, Star, Settings, LogOut } from "lucide-react";
 
 const navItems = [
@@ -19,13 +20,14 @@ export default function SchoolMobileNav() {
   const [isOpen, setIsOpen] = React.useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
 
   const handleLogout = async () => {
-    try { await fetch("/api/auth/logout", { method: "POST" }); } catch { /* ignore */ }
+    await logout();
     router.push("/login?space=school");
   };
 
