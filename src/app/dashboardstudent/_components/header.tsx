@@ -259,7 +259,7 @@ export function Header() {
           onClick={async () => {
             setShowProfileDropdown(false)
             await logout()
-            router.push("/login")
+            router.push("/school")
           }}
           className="text-xs font-bold text-[#FF5E83] hover:bg-[#FF5E83]/10 p-2 rounded-xl transition-colors block text-left w-full border-none bg-transparent cursor-pointer"
         >

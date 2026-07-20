@@ -34,7 +34,7 @@ export default function SchoolSidebar() {
     } catch {
       // ignore
     }
-    router.push("/login");
+    router.push("/login?space=school");
   };
 
   return (

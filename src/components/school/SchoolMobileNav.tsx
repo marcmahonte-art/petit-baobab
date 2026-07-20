@@ -26,7 +26,7 @@ export default function SchoolMobileNav() {
 
   const handleLogout = async () => {
     try { await fetch("/api/auth/logout", { method: "POST" }); } catch { /* ignore */ }
-    router.push("/login");
+    router.push("/login?space=school");
   };
 
   return (

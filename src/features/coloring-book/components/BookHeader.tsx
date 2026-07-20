@@ -89,7 +89,7 @@ export function BookHeader() {
               <DropdownMenuItem
                 onClick={async () => {
                   await logout()
-                  router.push("/login")
+                  router.push("/login?space=family")
                 }}
                 className="rounded-xl font-bold text-sm text-[#FF5E83]"
               >
