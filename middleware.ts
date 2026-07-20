@@ -43,6 +43,15 @@ export async function middleware(request: NextRequest) {
   // BLOC 2 — Routes enfant : adulte OU élève
   const isChildRoute = CHILD_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));
   if (isChildRoute) {
+    // /dashboardstudent est EXCLUSIVEMENT l'espace élève : un parent
+    // (token adulte) ne doit jamais y atterrir. S'il y va (URL saisie,
+    // bouton Accueil résiduel, etc.), on le renvoie vers /dashboard.
+    if (pathname === "/dashboardstudent" && adultToken) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
     // /dashboard est l'espace PARENT : un élève (token étudiant, pas adulte)
     // doit être renvoyé vers son espace dédié /dashboardstudent.
     const isParentRoute = PARENT_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));

@@ -261,6 +261,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const data = await res.json()
       if (data.authenticated && data.user) {
+        // Un parent (user authentifié) ne doit JAMAIS conserver une
+        // session élève résiduelle : on vide studentSession pour éviter
+        // que le header bascule en mode élève (bouton Quitter, etc.).
+        set({ studentSession: null })
+
         if (data.accessToken && data.refreshToken) {
           // Silently set session; ignore errors (token might be expired, will redirect to login)
           await supabase.auth.setSession({
