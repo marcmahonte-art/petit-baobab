@@ -66,6 +66,12 @@ export async function getServerUser() {
 export async function setAuthCookies(accessToken: string, refreshToken: string) {
   const cookieStore = await cookies()
 
+  // Purge toute session élève résiduelle : un login parent doit écraser
+  // un éventuel cookie sb-student-token (connexion élève précédente)
+  // pour éviter la cohabitation des deux sessions.
+  cookieStore.delete("sb-student-token")
+  cookieStore.delete("sb-student-session-active")
+
   const secure = process.env.NODE_ENV === "production"
 
   cookieStore.set("sb-access-token", accessToken, {
@@ -94,6 +100,11 @@ export async function clearAuthCookies() {
   cookieStore.delete("sb-access-token")
   cookieStore.delete("sb-refresh-token")
   cookieStore.delete("pb-role")
+  // Toujours purge aussi la session élève résiduelle pour éviter qu'un
+  // cookie sb-student-token (connexion élève précédente) ne cohabite
+  // avec la session parent et ne prenne le dessus sur /dashboardstudent.
+  cookieStore.delete("sb-student-token")
+  cookieStore.delete("sb-student-session-active")
 }
 
 /**
