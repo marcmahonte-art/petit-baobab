@@ -26,6 +26,17 @@ describe("middleware — protection des routes", () => {
     expect(res.headers.get("location")).toContain("/login");
   });
 
+  it("/school/dashboard avec sb-access-token + pb-role=parent résiduel → 200 (NE PAS rediriger vers /parents)", async () => {
+    // Cas de bug rencontré : un compte école se connecte, mais un cookie
+    // pb-role=parent résiduel (session famille précédente) traîne.
+    // Le middleware ne doit PAS rediriger vers /parents — la page
+    // /school/dashboard lit account.plan et gère le routage elle-même.
+    const res = await middleware(
+      makeReq("/school/dashboard", { "sb-access-token": "adult-jwt", "pb-role": "parent" })
+    );
+    expect(res.headers.get("location")).toBeNull();
+  });
+
   it("/school/dashboard avec sb-access-token → 200 (passe)", async () => {
     const res = await middleware(makeReq("/school/dashboard", { "sb-access-token": "adult-jwt" }));
     expect(res.headers.get("location")).toBeNull();
