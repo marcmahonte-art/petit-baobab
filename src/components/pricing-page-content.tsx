@@ -6,13 +6,10 @@ import { PricingCard } from "@/components/parents/pricing-card";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-// Section tarifs de la landing page.
-// Contenu textuel identique à /parents (PricingSection), mais les boutons
-// redirigent vers l'inscription (pas de modale d'achat session-requise,
-// car la landing est publique).
-export function LandingPricing() {
+// Contenu tarifs complet, réutilisable sur la page dédiée /tarification
+// et sur la landing (bloc d'accroche). Texte identique à /parents.
+export function PricingPageContent() {
   const router = useRouter();
-  const [showSchool, setShowSchool] = useState(false);
 
   const plans = [
     {
@@ -37,7 +34,7 @@ export function LandingPricing() {
       credits: "250",
       creditsLabel: "étoiles incluses / mois",
       features: [
-        "250 étoilles à utiliser par mois",
+        "250 étoiles à utiliser par mois",
         "Disponible en 1 mois (4 500 FCFA) ou 9 mois (40 500 FCFA)",
         "Tous les styles de dessin",
         "Livres",
@@ -54,7 +51,7 @@ export function LandingPricing() {
       credits: "1 000",
       creditsLabel: "étoiles / mois",
       features: [
-        "1 000 étoilles renouvelées chaque mois",
+        "1 000 étoiles renouvelées chaque mois",
         "Tous les styles de dessin",
         "Livres et jeux complets",
         "Téléchargement illimité",
@@ -74,7 +71,7 @@ export function LandingPricing() {
   };
 
   return (
-    <section className="relative w-full rounded-[28px] border border-[#E5E7EB] bg-white p-6 md:p-10 shadow-lg select-none my-8">
+    <section className="relative w-full rounded-[28px] border border-[#E5E7EB] bg-white p-6 md:p-10 shadow-lg select-none">
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
