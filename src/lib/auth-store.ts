@@ -80,7 +80,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || "Identifiants incorrects.")
+        const msg = data?.error || `Erreur ${res.status} lors de la connexion.`
+        set({ error: msg, isLoading: false })
+        return { success: false, error: msg }
       }
 
       if (data.accessToken && data.refreshToken) {
@@ -151,7 +153,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || "Une erreur est survenue lors de l'inscription.")
+        const msg = data?.error || `Erreur ${res.status} lors de l'inscription.`
+        set({ error: msg, isLoading: false })
+        return { success: false, error: msg }
       }
 
       // Populate store state if the API returned auth data

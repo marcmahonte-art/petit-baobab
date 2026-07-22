@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n-provider"
 import { supabase } from "@/lib/supabaseClient"
 import { motion } from "framer-motion"
 import { Mail } from "lucide-react"
+import { logger } from "@/lib/logger"
+import { getSiteUrl } from "@/lib/site"
 
 import { AuthLayout } from "@/components/auth/AuthLayout"
 import { InputField } from "@/components/auth/InputField"
@@ -109,7 +111,8 @@ function LoginFormContent() {
       } else if (result.multipleProfiles) {
         router.push("/parents/select-profile")
       } else {
-        router.push("/parents")
+        // Espace famille : /dashboard est le tableau de bord parent canonique.
+        router.push("/dashboard")
       }
     } else {
       setSubmitError(result.error || (lang === "fr" ? "Identifiants de connexion incorrects." : "Incorrect login credentials."))
@@ -126,7 +129,7 @@ function LoginFormContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?accountType=${space}`,
+          redirectTo: `${getSiteUrl()}/api/auth/callback?accountType=${space === "school" ? "school" : "family"}`,
         },
       })
       if (error) {

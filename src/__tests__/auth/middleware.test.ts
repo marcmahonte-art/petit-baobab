@@ -31,9 +31,9 @@ describe("middleware — protection des routes", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("/dashboard avec sb-student-token valide → 200 (passe, sans redirection)", async () => {
+  it("/dashboard avec sb-student-token (sans token adulte) → redirect /dashboardstudent (sécurité : l'élève ne voit pas le dashboard parent)", async () => {
     const res = await middleware(makeReq("/dashboard", { "sb-student-token": "student-jwt" }));
-    expect(res.headers.get("location")).toBeNull();
+    expect(res.headers.get("location")).toContain("/dashboardstudent");
   });
 
   it("/dashboard sans aucun token → redirect /school", async () => {

@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n-provider"
 import { supabase } from "@/lib/supabaseClient"
 import { motion } from "framer-motion"
 import { Mail, CheckCircle2 } from "lucide-react"
+import { logger } from "@/lib/logger"
+import { getSiteUrl } from "@/lib/site"
 
 import { AuthLayout } from "@/components/auth/AuthLayout"
 import { InputField } from "@/components/auth/InputField"
@@ -153,7 +155,7 @@ function SignupFormContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback?accountType=${accountType}`,
+          redirectTo: `${getSiteUrl()}/api/auth/callback?accountType=${accountType === "school" ? "school" : "family"}`,
         },
       })
       if (error) {
