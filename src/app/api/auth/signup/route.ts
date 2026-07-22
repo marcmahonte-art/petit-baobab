@@ -22,17 +22,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Consentement requis." }, { status: 400 })
   }
 
+  console.error("SIGNUP_DEBUG starting...")
+
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 
+  console.error("SIGNUP_DEBUG calling signUp...")
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { locale: "fr" } },
   })
 
+  console.error("SIGNUP_DEBUG returned", JSON.stringify({ hasData: !!authData, hasError: !!authError, hasUser: !!authData?.user }))
+
   if (authError) {
+    let errProps: string[] = []
+    try { errProps = Object.getOwnPropertyNames(authError) } catch (e) {}
+    let errStr = "{}"
+    try { errStr = JSON.stringify(authError) } catch (e) { errStr = String(authError) }
+    console.error("SIGNUP_AUTH_ERROR", JSON.stringify({ props: errProps, message: (authError as any).message, status: (authError as any).status, name: (authError as any).name, full: errStr }))
     return NextResponse.json({ error: authError.message }, { status: 400 })
   }
 
