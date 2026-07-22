@@ -1,21 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { PricingCard } from "./pricing-card"
-import StarPurchaseModal from "@/components/school/StarPurchaseModal"
-import SuperBaobabModal from "@/components/parents/SuperBaobabModal"
-import { motion } from "framer-motion"
-import Image from "next/image"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { PricingCard } from "@/components/parents/pricing-card";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
-const PLAN_PACK_MAP: Record<string, string> = {
-  "Découverte": "pack_100",
-}
+// Section tarifs de la landing page.
+// Contenu textuel identique à /parents (PricingSection), mais les boutons
+// redirigent vers l'inscription (pas de modale d'achat session-requise,
+// car la landing est publique).
+export function LandingPricing() {
+  const router = useRouter();
+  const [showSchool, setShowSchool] = useState(false);
 
-export function PricingSection() {
-  const router = useRouter()
-  const [purchasePack, setPurchasePack] = useState<string | null>(null)
-  const [showSuperBaobabModal, setShowSuperBaobabModal] = useState(false)
   const plans = [
     {
       name: "Découverte",
@@ -39,7 +37,7 @@ export function PricingSection() {
       credits: "250",
       creditsLabel: "étoiles incluses / mois",
       features: [
-        "250 étoiles à utiliser par mois",
+        "250 étoilles à utiliser par mois",
         "Disponible en 1 mois (4 500 FCFA) ou 9 mois (40 500 FCFA)",
         "Tous les styles de dessin",
         "Livres",
@@ -56,7 +54,7 @@ export function PricingSection() {
       credits: "1 000",
       creditsLabel: "étoiles / mois",
       features: [
-        "1 000 étoiles renouvelées chaque mois",
+        "1 000 étoilles renouvelées chaque mois",
         "Tous les styles de dessin",
         "Livres et jeux complets",
         "Téléchargement illimité",
@@ -65,10 +63,18 @@ export function PricingSection() {
       ],
       themeColor: "green" as const,
     },
-  ]
+  ];
+
+  const handleChoose = (name: string) => {
+    if (name === "École / Pro") {
+      router.push("/signup?space=school");
+    } else {
+      router.push("/signup?space=family");
+    }
+  };
 
   return (
-    <section className="relative w-full rounded-[28px] border border-[#E5E7EB] bg-white p-6 md:p-10 shadow-lg select-none">
+    <section className="relative w-full rounded-[28px] border border-[#E5E7EB] bg-white p-6 md:p-10 shadow-lg select-none my-8">
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -94,7 +100,7 @@ export function PricingSection() {
         </p>
       </div>
 
-      {/* Cards List - Desktop 3 cols, Tablet 2 cols, Mobile flex-col or slider */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center">
         {plans.map((plan, idx) => (
           <PricingCard
@@ -105,35 +111,13 @@ export function PricingSection() {
             credits={plan.credits}
             creditsLabel={plan.creditsLabel}
             features={plan.features}
-            isPopular={plan.isPopular}
+            isPopular={("isPopular" in plan) ? plan.isPopular : false}
             themeColor={plan.themeColor}
             index={idx}
-            onChoose={() => {
-              if (plan.name === "Super Baobab") {
-                setShowSuperBaobabModal(true)
-                return
-              }
-              const packId = PLAN_PACK_MAP[plan.name]
-              if (packId) {
-                setPurchasePack(packId)
-              } else {
-                router.push("/signup?space=school")
-              }
-            }}
+            onChoose={() => handleChoose(plan.name)}
           />
         ))}
       </div>
-
-      <StarPurchaseModal
-        open={purchasePack !== null}
-        onClose={() => setPurchasePack(null)}
-        preselectedPackId={purchasePack || undefined}
-      />
-
-      <SuperBaobabModal
-        open={showSuperBaobabModal}
-        onClose={() => setShowSuperBaobabModal(false)}
-      />
     </section>
-  )
+  );
 }

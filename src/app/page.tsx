@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, X, Star } from "lucide-react"
+import { LandingPricing } from "@/components/landing-pricing"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -331,45 +332,13 @@ export default function LandingPage() {
       </section>
       {/* END: HowItWorks */}
 
-      {/* BEGIN: CreateBookBanner */}
+      {/* BEGIN: Pricing */}
       <section id="pricing" className="py-12 px-6">
-        <div className="max-w-7xl mx-auto bg-amber-50 rounded-[40px] p-8 md:p-12 overflow-hidden border border-amber-100 shadow-xl shadow-amber-900/5">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            
-            <div className="md:w-1/3 flex justify-center md:justify-start items-end md:self-stretch -mb-4 md:-mb-12 md:-ml-12">
-              <img
-                alt="Enfants lisant"
-                className="w-full max-w-[340px] md:max-w-[440px] drop-shadow-xl object-contain align-bottom"
-                src="/illustrations/Deux%20enfants%20lisant%20ensemble.webp"
-              />
-            </div>
-
-            <div className="md:w-1/3 text-center md:text-left">
-              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
-                <Star className="w-6 h-6 text-[#FFB300] fill-[#FFB300]" />
-                <h2 className="text-3xl font-extrabold">Crée ton propre livre de coloriage</h2>
-              </div>
-              <p className="text-gray-600 mb-8">Un livre unique, à ton image. Parfait pour s'amuser, apprendre et offrir !</p>
-              <button
-                onClick={handleCTA}
-                className="px-8 py-3 bg-[#6D4CFF] text-white font-bold rounded-[8px] hover:scale-105 transition-transform cursor-pointer"
-              >
-                Créer mon livre
-              </button>
-            </div>
-
-            <div className="md:w-1/3 flex justify-center items-center">
-              <img
-                alt="Collection de livres"
-                className="w-full max-w-[340px] md:max-w-[400px] drop-shadow-xl object-contain"
-                src="/illustrations/Collection-livres.webp"
-              />
-            </div>
-
-          </div>
+        <div className="max-w-7xl mx-auto">
+          <LandingPricing />
         </div>
       </section>
-      {/* END: CreateBookBanner */}
+      {/* END: Pricing */}
 
       {/* BEGIN: Testimonials */}
       <section id="testimonials" className="py-24 px-6 bg-white/30">
