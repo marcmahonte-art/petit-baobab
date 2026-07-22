@@ -15,11 +15,11 @@ const MOCK_DASHBOARD: DashboardData = {
     avatar: null,
   },
   stars: {
-    balance: 740,
+    balance: 0,
     monthly_limit: 1000,
-    consumed_this_month: 260,
-    renewal_date: "2025-07-01T00:00:00Z",
-    remaining: 180,
+    consumed_this_month: 0,
+    renewal_date: null,
+    remaining: 0,
     account_id: "acc-1",
   },
   classrooms: [
