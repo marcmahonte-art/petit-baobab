@@ -41,9 +41,7 @@ export async function POST(request: Request) {
       const res = await admin.auth.admin.createUser({
         email,
         password,
-        // Pas de email_confirm: true → l'utilisateur reçoit un e-mail de
-        // confirmation Supabase (envoyé via le SMTP Resend configuré). Il doit
-        // cliquer le lien avant de pouvoir se connecter.
+        email_confirm: true,
         user_metadata: { locale: "fr" },
       });
       authData = res.data;
