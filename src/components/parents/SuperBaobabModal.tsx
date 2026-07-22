@@ -9,7 +9,7 @@ interface SuperBaobabModalProps {
 }
 
 export default function SuperBaobabModal({ open, onClose }: SuperBaobabModalProps) {
-  const [months, setMonths] = useState<1 | 9>(1);
+  const [months, setMonths] = useState<3 | 9>(3);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,11 +72,11 @@ export default function SuperBaobabModal({ open, onClose }: SuperBaobabModalProp
 
         {/* Duration Options */}
         <div className="space-y-3.5 mb-6">
-          {/* Option 1: 1 Mois */}
+          {/* Option 1: 3 Mois */}
           <div
-            onClick={() => setMonths(1)}
+            onClick={() => setMonths(3)}
             className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-              months === 1
+              months === 3
                 ? "border-[#6D4CFF] bg-[#F8F5FF] shadow-sm"
                 : "border-[#E2E8F0] bg-white hover:border-[#CBD5E1]"
             }`}
@@ -84,19 +84,19 @@ export default function SuperBaobabModal({ open, onClose }: SuperBaobabModalProp
             <div className="flex items-center gap-3">
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  months === 1 ? "border-[#6D4CFF] bg-[#6D4CFF]" : "border-[#94A3B8]"
+                  months === 3 ? "border-[#6D4CFF] bg-[#6D4CFF]" : "border-[#94A3B8]"
                 }`}
               >
-                {months === 1 && <div className="w-2 h-2 rounded-full bg-white" />}
+                {months === 3 && <div className="w-2 h-2 rounded-full bg-white" />}
               </div>
               <div>
-                <p className="text-sm font-extrabold text-[#1C1C3A]">1 Mois</p>
-                <p className="text-xs font-semibold text-[#64748B]">250 étoiles incluses</p>
+                <p className="text-sm font-extrabold text-[#1C1C3A]">3 Mois</p>
+                <p className="text-xs font-semibold text-[#64748B]">750 étoiles incluses</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-extrabold text-[#1C1C3A]">4 500 FCFA</p>
-              <p className="text-[10px] font-bold text-[#64748B]">4 500 FCFA / mois</p>
+              <p className="text-lg font-extrabold text-[#1C1C3A]">13 500 FCFA</p>
+              <p className="text-[10px] font-bold text-[#64748B]">4 500 FCFA × 3 mois</p>
             </div>
           </div>
 
