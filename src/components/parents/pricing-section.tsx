@@ -4,17 +4,18 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { PricingCard } from "./pricing-card"
 import StarPurchaseModal from "@/components/school/StarPurchaseModal"
+import SuperBaobabModal from "@/components/parents/SuperBaobabModal"
 import { motion } from "framer-motion"
 import Image from "next/image"
 
 const PLAN_PACK_MAP: Record<string, string> = {
   "Découverte": "pack_100",
-  "Super Baobab": "pack_250",
 }
 
 export function PricingSection() {
   const router = useRouter()
   const [purchasePack, setPurchasePack] = useState<string | null>(null)
+  const [showSuperBaobabModal, setShowSuperBaobabModal] = useState(false)
   const plans = [
     {
       name: "Découverte",
@@ -34,15 +35,15 @@ export function PricingSection() {
     {
       name: "Super Baobab",
       price: "4 500 FCFA",
-      period: "Paiement unique",
+      period: "/ mois (1 ou 9 mois)",
       credits: "250",
-      creditsLabel: "étoiles incluses",
+      creditsLabel: "étoiles incluses / mois",
       features: [
-        "250 étoiles à utiliser quand vous voulez",
+        "250 étoiles à utiliser par mois",
+        "Disponible en 1 mois (4 500 FCFA) ou 9 mois (40 500 FCFA)",
         "Tous les styles de dessin",
         "Livres",
         "Téléchargement de vos créations",
-        "Aucun délai d'expiration",
         "Meilleur rapport qualité / prix",
       ],
       isPopular: true,
@@ -94,7 +95,6 @@ export function PricingSection() {
       </div>
 
       {/* Cards List - Desktop 3 cols, Tablet 2 cols, Mobile flex-col or slider */}
-      {/* We can use standard grid with tailwind layout: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center">
         {plans.map((plan, idx) => (
           <PricingCard
@@ -109,13 +109,14 @@ export function PricingSection() {
             themeColor={plan.themeColor}
             index={idx}
             onChoose={() => {
+              if (plan.name === "Super Baobab") {
+                setShowSuperBaobabModal(true)
+                return
+              }
               const packId = PLAN_PACK_MAP[plan.name]
               if (packId) {
                 setPurchasePack(packId)
               } else {
-                // Le plan École / Pro est réservé aux structures scolaires :
-                // on redirige vers la création de compte école plutôt que
-                // vers la facturation parent (où ce plan est filtré).
                 router.push("/signup?space=school")
               }
             }}
@@ -128,6 +129,12 @@ export function PricingSection() {
         onClose={() => setPurchasePack(null)}
         preselectedPackId={purchasePack || undefined}
       />
+
+      <SuperBaobabModal
+        open={showSuperBaobabModal}
+        onClose={() => setShowSuperBaobabModal(false)}
+      />
     </section>
   )
+}
 }

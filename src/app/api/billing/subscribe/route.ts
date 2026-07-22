@@ -39,6 +39,7 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}));
     const planId = typeof body?.planId === "string" ? body.planId : "";
+    const requestedMonths = typeof body?.months === "number" && [1, 9].includes(body.months) ? body.months : 1;
     const plan = findPlan(planId);
 
     if (!plan) {
@@ -53,13 +54,18 @@ export async function POST(request: Request) {
       );
     }
 
+    const months = plan.id === "super_baobab" ? requestedMonths : 1;
+    const amountXof = plan.price_xof * months;
+    const stars = plan.stars * months;
+    const label = `${plan.name} (${months} ${months > 1 ? "mois - Année Scolaire" : "mois"})`;
+
     const origin = new URL(request.url).origin;
     const result = await payDunyaProvider.createCheckout({
       accountId: account.id,
       planId: plan.id,
-      amountXof: plan.price_xof,
-      stars: plan.stars,
-      label: plan.name,
+      amountXof,
+      stars,
+      label,
       successUrl: `${origin}/parents?purchase=success`,
       cancelUrl: `${origin}/parents?purchase=cancel`,
     });
