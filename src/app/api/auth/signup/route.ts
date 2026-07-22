@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 import { adjustStars, STARS_REASONS } from "@/lib/auth"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
 function getDisplayNameFromEmail(email: string): string {
   if (!email) return "Mon Enfant"
@@ -34,18 +30,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Consentement requis." }, { status: 400 })
   }
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = getSupabaseAdmin()
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
-    options: { data: { locale: "fr" } },
+    email_confirm: true,
+    user_metadata: { locale: "fr" },
   })
 
   if (authError) {
-    return NextResponse.json({ error: authError.message }, { status: 400 })
+    return NextResponse.json({ error: `Auth: ${authError.message || JSON.stringify(authError)}` }, { status: 400 })
   }
 
   const user = authData.user
@@ -53,7 +48,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Impossible de créer l'utilisateur." }, { status: 500 })
   }
 
-  const admin = getSupabaseAdmin()
   let accountId = ""
   let starsBalance = isSchool ? 1000 : 5
   let plan = isSchool ? "ecole_pro" : "free"
@@ -101,7 +95,7 @@ export async function POST(request: Request) {
     account: { id: accountId, stars_balance: starsBalance, plan },
     isSchool,
     message: isSchool
-      ? "Compte École créé ! E-mail de confirmation envoyé."
-      : "Compte créé ! E-mail de confirmation envoyé.",
+      ? "Compte École créé !"
+      : "Compte créé !",
   })
 }
