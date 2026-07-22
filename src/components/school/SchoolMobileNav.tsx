@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/auth-store";
-import { Menu, X, Home, Users, UserPlus, Palette, TrendingUp, Star, Settings, LogOut } from "lucide-react";
+import { Menu, X, Home, Users, UserPlus, Palette, TrendingUp, Star, Receipt, Settings, LogOut } from "lucide-react";
 
 const navItems = [
   { href: "/school/dashboard", label: "Tableau de bord", icon: Home },
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/school/activities", label: "Activités",        icon: Palette },
   { href: "/school/progression",label: "Progression",     icon: TrendingUp },
   { href: "/school/etoiles",   label: "Étoiles",          icon: Star },
+  { href: "/school/facturation",label: "Facturation",     icon: Receipt },
   { href: "/school/parametres",label: "Paramètres",       icon: Settings },
 ];
 

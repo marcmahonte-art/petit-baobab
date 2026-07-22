@@ -11,6 +11,7 @@ import {
   Palette,
   TrendingUp,
   Star,
+  Receipt,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/school/activities", label: "Activités", icon: Palette },
   { href: "/school/progression", label: "Progression", icon: TrendingUp },
   { href: "/school/etoiles", label: "Étoiles", icon: Star },
+  { href: "/school/facturation", label: "Facturation", icon: Receipt },
   { href: "/school/parametres", label: "Paramètres", icon: Settings },
 ];
 
