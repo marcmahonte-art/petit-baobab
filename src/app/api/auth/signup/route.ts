@@ -3,6 +3,10 @@ import { getSupabaseServer } from "@/lib/supabaseServer"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 import { setAuthCookies, setRoleCookie, adjustStars, STARS_REASONS } from "@/lib/auth"
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+
 function getDisplayNameFromEmail(email: string): string {
   if (!email) return "Mon Enfant"
   const username = email.split("@")[0]
@@ -49,6 +53,12 @@ export async function POST(request: Request) {
     }
 
     // 2. Sign up with Supabase Auth
+    console.error("[SIGNUP_DEBUG] ENV CHECK:", JSON.stringify({
+      hasUrl: !!supabaseUrl,
+      hasAnonKey: !!supabaseAnonKey,
+      hasServiceKey: !!serviceRoleKey,
+      urlPrefix: supabaseUrl?.substring(0, 20),
+    }))
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -181,13 +191,15 @@ export async function POST(request: Request) {
       message: successMessage,
     })
   } catch (err: any) {
-    console.error("Signup error full:", err)
-    console.error("Signup error JSON:", JSON.stringify(err, Object.getOwnPropertyNames(err)))
-    const errorMsg = typeof err === "object" && err !== null
-      ? JSON.stringify(err)
-      : String(err)
+    const errInfo = typeof err === "object" && err !== null
+      ? Object.getOwnPropertyNames(err).reduce((acc: any, k) => {
+          try { acc[k] = String(err[k]) } catch (e) { acc[k] = "<unstringifiable>" }
+          return acc
+        }, {})
+      : { raw: String(err) }
+    console.error("[SIGNUP_DEBUG] Catch error keys:", JSON.stringify(errInfo))
     return NextResponse.json(
-      { error: errorMsg || "Une erreur interne est survenue lors de l'inscription." },
+      { error: JSON.stringify(errInfo) },
       { status: 500 }
     )
   }
