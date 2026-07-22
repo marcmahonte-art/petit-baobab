@@ -29,14 +29,11 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set("space", "school");
       return NextResponse.redirect(url);
     }
-    // Routage par rôle : seul un compte enseignant (pb-role=teacher) peut
-    // accéder à l'espace école. Un parent est redirigé vers son espace.
-    const role = request.cookies.get("pb-role")?.value;
-    if (role && role !== "teacher") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/parents";
-      return NextResponse.redirect(url);
-    }
+    // Le routage par rôle (école vs parent) est géré côté serveur par la
+    // page /school/dashboard elle-même (elle lit account.plan et redirige
+    // un compte non-école vers /parents). On ne se fie PAS au cookie
+    // pb-role ici : il n'est pas toujours posé (login email/mdp) et peut
+    // être résiduel, ce qui redirigeait à tort une école vers /parents.
     return NextResponse.next();
   }
 
