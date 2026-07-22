@@ -96,8 +96,16 @@ export default function StarPurchaseModal({ open, onClose, preselectedPackId }: 
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200">
-            <p className="text-xs font-bold text-red-600">{error}</p>
+          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-center">
+            <p className="text-xs font-bold text-red-600 mb-2">{error}</p>
+            {error.includes("connecté") && (
+              <a
+                href="/login?redirect=/parents"
+                className="inline-block px-4 py-2 bg-[#6D4CFF] text-white text-xs font-bold rounded-lg hover:bg-[#5A3EE0] transition-colors"
+              >
+                Se connecter maintenant
+              </a>
+            )}
           </div>
         )}
 
