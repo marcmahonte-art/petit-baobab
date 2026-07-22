@@ -181,9 +181,13 @@ export async function POST(request: Request) {
       message: successMessage,
     })
   } catch (err: any) {
-    console.error("Signup error:", err)
+    console.error("Signup error full:", err)
+    console.error("Signup error JSON:", JSON.stringify(err, Object.getOwnPropertyNames(err)))
+    const errorMsg = typeof err === "object" && err !== null
+      ? JSON.stringify(err)
+      : String(err)
     return NextResponse.json(
-      { error: err.message || "Une erreur interne est survenue lors de l'inscription." },
+      { error: errorMsg || "Une erreur interne est survenue lors de l'inscription." },
       { status: 500 }
     )
   }
