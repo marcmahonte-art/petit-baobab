@@ -9,12 +9,10 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import { motion, AnimatePresence } from "framer-motion"
 import { CreditCard, Receipt, Star, ArrowLeft, ShoppingCart } from "lucide-react"
 import StarPurchaseModal from "@/components/school/StarPurchaseModal"
-import { cn } from "@/lib/utils"
 import { SubscriptionCard } from "@/components/billing/SubscriptionCard"
 import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus"
 import { PaymentHistory } from "@/components/billing/PaymentHistory"
 import { StarsActivity } from "@/components/billing/StarsActivity"
-import { RenewPlanButton } from "@/components/billing/RenewPlanButton"
 import Image from "next/image"
 
 type Tab = "subscription" | "payments" | "stars"
@@ -29,46 +27,17 @@ function BillingContent() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>("subscription")
   const [showBuyStars, setShowBuyStars] = useState(false)
-  const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null)
-  const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const {
     subscription,
     accountPlan,
     starsBalance,
     isLoadingSubscription,
     fetchSubscription,
-    fetchPlans,
-    plans,
   } = useBillingStore()
 
   useEffect(() => {
     fetchSubscription()
-    fetchPlans("parent")
   }, [])
-
-  const handleChoosePlan = async (planId: string) => {
-    setSubscribeError(null)
-    setSubscribingPlan(planId)
-    try {
-      const res = await fetch("/api/billing/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || data.error || "Erreur lors de la souscription.")
-      }
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl
-      } else {
-        throw new Error("URL de paiement non reçue.")
-      }
-    } catch (err: any) {
-      setSubscribeError(err.message)
-      setSubscribingPlan(null)
-    }
-  }
 
   return (
     <motion.div
@@ -143,63 +112,6 @@ function BillingContent() {
                   accountPlan={accountPlan}
                 />
 
-                {plans.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-extrabold text-[#3B2416] mb-4">Nos offres</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {plans.map((plan, i) => {
-                        const isActive = accountPlan === plan.id
-                        return (
-                          <motion.div
-                            key={plan.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className={cn(
-                              "relative rounded-[20px] border bg-white p-5 shadow-sm transition-shadow hover:shadow-md flex flex-col",
-                              isActive ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/10" : "border-[#EFE7DB]"
-                            )}
-                          >
-                            {isActive && (
-                              <div className="absolute -top-2.5 right-4 px-3 py-0.5 rounded-full bg-[#6D4CFF] text-white text-[10px] font-extrabold">
-                                Actuel
-                              </div>
-                            )}
-                            <h4 className="text-base font-extrabold text-[#3B2416] mb-1">{plan.name}</h4>
-                            <p className="text-2xl font-extrabold text-[#3B2416] mb-3">
-                              {plan.price}
-                              <span className="text-xs font-semibold text-[#7A6A5E]"> {plan.period}</span>
-                            </p>
-                            <div className="flex items-center gap-1.5 mb-4">
-                              <span className="text-sm font-bold text-[#7A6A5E]">{plan.credits}</span>
-                              <Star className="w-3.5 h-3.5 text-[#FFB300] fill-[#FFB300]" />
-                              <span className="text-xs font-semibold text-[#7A6A5E]">{plan.creditsLabel}</span>
-                            </div>
-                            <ul className="flex flex-col gap-2 mb-5">
-                              {plan.features.map((f, fi) => (
-                                <li key={fi} className="flex items-start gap-2 text-xs font-semibold text-[#64748B]">
-                                  <span className="text-green-500 mt-0.5">✓</span>
-                                  {f}
-                                </li>
-                              ))}
-                            </ul>
-                            <div className="mt-auto">
-                              <RenewPlanButton
-                                planId={plan.id}
-                                isActive={isActive}
-                                disabled={subscribingPlan !== null}
-                                onClick={() => handleChoosePlan(plan.id)}
-                              />
-                            </div>
-                          </motion.div>
-                        )
-                      })}
-                    </div>
-                    {subscribeError && (
-                      <p className="mt-3 text-xs font-bold text-red-600">{subscribeError}</p>
-                    )}
-                  </div>
-                )}
               </>
             )}
           </motion.div>
