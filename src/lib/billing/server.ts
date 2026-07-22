@@ -61,7 +61,7 @@ export async function getBillingData(): Promise<BillingData | null> {
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("id, plan, stars_balance, plan_started_at, plan_expires_at, renewal_enabled")
+    .select("id, plan, stars_balance, plan_renewed_at, created_at")
     .eq("user_id", user.id)
     .single();
 
@@ -143,9 +143,13 @@ export async function getBillingData(): Promise<BillingData | null> {
       id: account.id,
       plan: account.plan,
       stars_balance: account.stars_balance,
-      plan_started_at: account.plan_started_at,
-      plan_expires_at: account.plan_expires_at,
-      renewal_enabled: account.renewal_enabled ?? true,
+      // Schéma réel de `accounts` : pas de plan_started_at / plan_expires_at /
+      // renewal_enabled. On dérive depuis created_at / plan_renewed_at.
+      plan_started_at: account.created_at,
+      plan_expires_at: account.plan_renewed_at
+        ? new Date(new Date(account.plan_renewed_at).getTime() + 30 * 24 * 3600 * 1000).toISOString()
+        : null,
+      renewal_enabled: account.plan !== "free" && account.plan !== "decouverte",
     },
     subscription: subscriptionRes.data
       ? {
