@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
     const packId: string | undefined = customData.pack_id;
     const planId: string | undefined = customData.plan_id;
     const stars = parseInt(String(customData.stars || "0"), 10);
+    const months = parseInt(String(customData.months || "1"), 10);
 
     if (!accountId || stars <= 0) {
       return NextResponse.json({ error: "invalid_custom_data" }, { status: 400 });
@@ -77,11 +78,17 @@ export async function POST(request: NextRequest) {
     if (planId) {
       const updates: Record<string, any> = {
         plan: planId,
-        plan_renewed_at: planId === "ecole_pro" ? new Date().toISOString() : null,
       };
 
       if (planId === "ecole_pro") {
+        const renewDate = new Date();
+        renewDate.setMonth(renewDate.getMonth() + Math.max(1, months));
+        updates.plan_renewed_at = renewDate.toISOString();
         updates.stars_balance = 0;
+      } else if (planId === "super_baobab") {
+        const renewDate = new Date();
+        renewDate.setMonth(renewDate.getMonth() + Math.max(1, months));
+        updates.plan_renewed_at = renewDate.toISOString();
       }
 
       const { error: planErr } = await supabase

@@ -18,6 +18,8 @@ export interface PayDunyaCheckoutParams {
   label: string;
   successUrl: string;
   cancelUrl: string;
+  /** Nombre de mois d'abonnement (1, 3 ou 9). */
+  months?: number;
 }
 
 export interface PaymentCheckoutResult {

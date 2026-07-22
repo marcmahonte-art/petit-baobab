@@ -464,6 +464,28 @@ function HelpSection() {
 
 export default function FacturationClient() {
   const [showBuyStars, setShowBuyStars] = useState(false)
+  const [renewMonths, setRenewMonths] = useState<1 | 3 | 9>(1)
+  const [subscribing, setSubscribing] = useState(false)
+
+  const handleRenew = async () => {
+    setSubscribing(true)
+    try {
+      const res = await fetch("/api/billing/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: "ecole_pro", months: renewMonths }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Erreur")
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      }
+    } catch (err: any) {
+      console.error(err)
+    } finally {
+      setSubscribing(false)
+    }
+  }
   const {
     subscription,
     accountPlan,
@@ -646,12 +668,34 @@ export default function FacturationClient() {
               <p className="text-sm font-bold text-[#3B2416]">Automatique</p>
             </div>
           </div>
+          <div className="flex items-center gap-2 p-1 rounded-full bg-[#F5F0EB] w-fit mb-3">
+            {([1, 3, 9] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setRenewMonths(m)}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  renewMonths === m ? "bg-white text-[#3B2416] shadow-sm" : "text-[#7A6A5E] hover:text-[#3B2416]"
+                }`}
+              >
+                {m} {m > 1 ? "mois" : "mois"}
+                {m > 1 && (
+                  <span className="ml-1 text-[10px] text-[#7D6AF8]">
+                    {(25000 * m).toLocaleString("fr-FR")} FCFA
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
           <div className="flex gap-2">
             <button className="flex items-center gap-1.5 h-[42px] px-5 rounded-full border border-[#F0E7DA] text-sm font-bold text-[#7A6A5E] hover:bg-[#F5F0EB] transition-colors cursor-pointer">
               Modifier le plan
             </button>
-            <button className="flex items-center gap-1.5 h-[42px] px-5 rounded-full bg-[#7D6AF8] text-white text-sm font-bold hover:bg-[#6552E8] transition-colors cursor-pointer">
-              Renouveler
+            <button
+              onClick={handleRenew}
+              disabled={subscribing}
+              className="flex items-center gap-1.5 h-[42px] px-5 rounded-full bg-[#7D6AF8] text-white text-sm font-bold hover:bg-[#6552E8] transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {subscribing ? "Redirection..." : "Renouveler"}
             </button>
           </div>
         </motion.div>

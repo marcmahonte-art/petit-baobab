@@ -26,7 +26,7 @@ export class PayDunyaProvider {
   async createCheckout(
     params: PayDunyaCheckoutParams
   ): Promise<PaymentCheckoutResult> {
-    const { accountId, packId, planId, amountXof, stars, label, successUrl, cancelUrl } = params;
+    const { accountId, packId, planId, amountXof, stars, label, successUrl, cancelUrl, months } = params;
     const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://petit-baobab.vercel.app";
 
     const customData: Record<string, string> = {
@@ -35,6 +35,7 @@ export class PayDunyaProvider {
     };
     if (packId) customData.pack_id = packId;
     if (planId) customData.plan_id = planId;
+    if (months) customData.months = String(months);
 
     const body = {
       invoice: {
