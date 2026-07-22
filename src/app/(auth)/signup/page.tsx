@@ -153,8 +153,7 @@ function SignupFormContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-          data: { accountType },
+          redirectTo: `${window.location.origin}/api/auth/callback?accountType=${accountType}`,
         },
       })
       if (error) {

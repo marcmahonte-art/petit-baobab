@@ -35,6 +35,8 @@ export async function GET(request: Request) {
       )
     }
 
+    const isSchool = searchParams.get("accountType") === "school"
+
     const supabase = await getSupabaseSsrClient()
     const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code)
 
@@ -45,8 +47,6 @@ export async function GET(request: Request) {
 
     const session = authData.session
     const user = authData.user
-    const accountTypeFromMeta = user.user_metadata?.accountType || "family"
-    const isSchool = accountTypeFromMeta === "school"
 
     const authedClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
