@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}));
     const planId = typeof body?.planId === "string" ? body.planId : "";
-    const requestedMonths = typeof body?.months === "number" && [1, 9].includes(body.months) ? body.months : 1;
+    const requestedMonths = typeof body?.months === "number" && [3, 9].includes(body.months) ? body.months : 3;
     const plan = findPlan(planId);
 
     if (!plan) {

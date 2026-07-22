@@ -187,18 +187,24 @@ function SignupFormContent() {
         </div>
 
         <h2 className="text-3xl font-extrabold text-[#1C1C3A] leading-tight mb-4">
-          {lang === "fr" ? "Vérifiez votre boîte mail !" : "Check your mailbox!"}
+          {isSchool
+            ? (lang === "fr" ? "Compte École créé !" : "School Account Created!")
+            : (lang === "fr" ? "Compte créé !" : "Account Created!")}
         </h2>
         <p className="text-sm font-semibold text-[#64748B] leading-relaxed mb-8">
-          {successMessage}
+          {isSchool
+            ? (lang === "fr" ? "Votre compte école a été créé et activé avec succès." : "Your school account has been successfully created and activated.")
+            : (lang === "fr" ? "Votre compte parent a été créé et activé avec succès." : "Your parent account has been successfully created and activated.")}
         </p>
 
         <PrimaryButton
           onClick={() =>
-            router.push(`/login?space=${accountType}${accountType === "school" ? "&school_signup=1" : ""}`)
+            router.push(isSchool ? "/school/dashboard" : "/parents")
           }
         >
-          {lang === "fr" ? "Retour à la connexion" : "Back to Sign In"}
+          {isSchool
+            ? (lang === "fr" ? "Accéder au tableau de bord" : "Go to Dashboard")
+            : (lang === "fr" ? "Accéder à l'espace parent" : "Go to Parent Space")}
         </PrimaryButton>
       </motion.div>
     )

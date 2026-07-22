@@ -42,10 +42,16 @@ function LoginFormContent() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      const next = searchParams.get("next") || "/parents"
-      router.push(next)
+      const next = searchParams.get("next")
+      if (next) {
+        router.push(next)
+      } else if (account?.plan === "ecole_pro" || space === "school") {
+        router.push("/school/dashboard")
+      } else {
+        router.push("/parents")
+      }
     }
-  }, [user, router, searchParams])
+  }, [user, account, space, router, searchParams])
 
   // Read redirect error parameters if any
   useEffect(() => {

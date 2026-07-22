@@ -158,23 +158,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, error: msg }
       }
 
-      // Populate store state if the API returned auth data
-      if (data.user && data.account) {
-        set({
-          user: data.user,
-          account: data.account,
-          isLoading: false,
-        })
-
-        if (data.account) {
-          useCreditStore.setState({
-            plan: normalizePlan(data.account.plan),
-            monthlyCredits: data.account.stars_balance,
-            monthlyUsed: 0,
+      // Automatically log the user in to establish cookies and valid session
+      const loginResult = await get().login(email, password)
+      if (!loginResult.success) {
+        // Fallback: if auto-login fails, still populate state if returned
+        if (data.user && data.account) {
+          set({
+            user: data.user,
+            account: data.account,
+            isLoading: false,
           })
+        } else {
+          set({ isLoading: false })
         }
-      } else {
-        set({ isLoading: false })
       }
 
       return { success: true, message: data.message, isSchool: data.isSchool }
