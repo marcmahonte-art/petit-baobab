@@ -14,6 +14,7 @@ import { SubscriptionStatus } from "@/components/billing/SubscriptionStatus"
 import { PaymentHistory } from "@/components/billing/PaymentHistory"
 import { StarsActivity } from "@/components/billing/StarsActivity"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 
 type Tab = "subscription" | "payments" | "stars"
 

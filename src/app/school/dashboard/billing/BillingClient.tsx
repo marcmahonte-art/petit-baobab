@@ -24,6 +24,7 @@ import type { BillingData } from "@/lib/billing/server";
 import { PLAN_LABELS, TRANSACTION_LABELS, TRANSACTION_ICONS } from "@/lib/billing";
 import StarPurchaseModal from "@/components/school/StarPurchaseModal";
 import ChangePlanDialog from "@/components/school/billing/ChangePlanDialog";
+import SubscribeDialog from "@/components/school/billing/SubscribeDialog";
 
 const STATUS_BADGES: Record<string, { label: string; color: string }> = {
   success: { label: "Payé", color: "bg-green-100 text-green-700" },
@@ -45,6 +46,7 @@ function fmtXof(n: number): string {
 export default function BillingClient({ data }: { data: BillingData }) {
   const [showBuyStars, setShowBuyStars] = useState(false);
   const [showChangePlan, setShowChangePlan] = useState(false);
+  const [showSubscribe, setShowSubscribe] = useState(false);
 
   const { account, subscription, payments, starsTransactions, invoices, monthlyConsumption, amountPaidThisMonth } = data;
   const planName = PLAN_LABELS[(account?.plan as keyof typeof PLAN_LABELS) || "free"] || account?.plan || "École Pro";
@@ -75,6 +77,15 @@ export default function BillingClient({ data }: { data: BillingData }) {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {starsBalance === 0 && (
+            <button
+              onClick={() => setShowSubscribe(true)}
+              className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#16A34A] text-white text-sm font-bold hover:bg-[#15803D] shadow-sm transition-all cursor-pointer"
+            >
+              <Star className="w-4 h-4" />
+              S&apos;abonner
+            </button>
+          )}
           <button
             onClick={() => setShowBuyStars(true)}
             className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#7D6AF8] text-white text-sm font-bold hover:bg-[#6552E8] shadow-sm transition-all cursor-pointer"
@@ -205,6 +216,7 @@ export default function BillingClient({ data }: { data: BillingData }) {
 
       <StarPurchaseModal open={showBuyStars} onClose={() => setShowBuyStars(false)} />
       <ChangePlanDialog open={showChangePlan} onClose={() => setShowChangePlan(false)} currentPlan={account?.plan || "free"} />
+      <SubscribeDialog open={showSubscribe} onClose={() => setShowSubscribe(false)} currentPlan={account?.plan} />
     </div>
   );
 }
