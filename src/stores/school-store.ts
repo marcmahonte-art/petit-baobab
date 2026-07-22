@@ -18,7 +18,7 @@ const MOCK_DASHBOARD: DashboardData = {
     balance: 0,
     monthly_limit: 1000,
     consumed_this_month: 0,
-    renewal_date: null,
+    renewal_date: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
     remaining: 0,
     account_id: "acc-1",
   },

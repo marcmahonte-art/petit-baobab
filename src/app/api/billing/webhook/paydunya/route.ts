@@ -75,13 +75,18 @@ export async function POST(request: NextRequest) {
 
     // 5. Si c'est un achat de PLAN (plan_id présent) : changer accounts.plan.
     if (planId) {
+      const updates: Record<string, any> = {
+        plan: planId,
+        plan_renewed_at: planId === "ecole_pro" ? new Date().toISOString() : null,
+      };
+
+      if (planId === "ecole_pro") {
+        updates.stars_balance = 0;
+      }
+
       const { error: planErr } = await supabase
         .from("accounts")
-        .update({
-          plan: planId,
-          plan_renewed_at:
-            planId === "ecole_pro" ? new Date().toISOString() : null,
-        })
+        .update(updates)
         .eq("id", accountId);
 
       if (planErr) {
