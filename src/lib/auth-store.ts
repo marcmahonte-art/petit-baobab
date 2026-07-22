@@ -154,7 +154,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(data.error || "Une erreur est survenue lors de l'inscription.")
       }
 
-      set({ isLoading: false })
+      // Populate store state if the API returned auth data
+      if (data.user && data.account) {
+        set({
+          user: data.user,
+          account: data.account,
+          isLoading: false,
+        })
+
+        if (data.account) {
+          useCreditStore.setState({
+            plan: normalizePlan(data.account.plan),
+            monthlyCredits: data.account.stars_balance,
+            monthlyUsed: 0,
+          })
+        }
+      } else {
+        set({ isLoading: false })
+      }
+
       return { success: true, message: data.message, isSchool: data.isSchool }
     } catch (err: any) {
       set({ error: err.message, isLoading: false })

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getSupabaseSsrClient } from "@/lib/supabase-server"
-import { setAuthCookies, setRoleCookie } from "@/lib/auth"
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
+import { setAuthCookies, setRoleCookie, adjustStars, STARS_REASONS } from "@/lib/auth"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
@@ -15,11 +16,15 @@ function getDisplayNameFromEmail(email: string): string {
     .join(" ")
 }
 
+function getRedirectPath(plan: string, defaultSpace: string | null): string {
+  if (plan === "ecole_pro") return "/school/dashboard"
+  return defaultSpace === "school" ? "/school/dashboard" : "/parents"
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get("code")
-    const next = searchParams.get("next") || "/parents"
 
     if (!code) {
       const error = searchParams.get("error")
@@ -40,133 +45,74 @@ export async function GET(request: Request) {
 
     const session = authData.session
     const user = authData.user
+    const accountTypeFromMeta = user.user_metadata?.accountType || "family"
+    const isSchool = accountTypeFromMeta === "school"
 
     const authedClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
       global: { headers: { Authorization: `Bearer ${session.access_token}` } },
     })
 
-    // Check if user already has a profile (existing user)
-    const { data: existingProfile } = await authedClient
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle()
+    let plan = "free"
+    let defaultSpace: string | null = null
 
-    // Check if account exists
+    // Check if user already has an account
     const { data: existingAccount } = await authedClient
       .from("accounts")
-      .select("id")
+      .select("plan, default_space")
       .eq("user_id", user.id)
       .maybeSingle()
 
-    if (existingProfile && existingAccount) {
-       // === EXISTING USER: proceed normally ===
-       await setAuthCookies(session.access_token, session.refresh_token)
-
-       // Cookie de rôle (parent/teacher) pour le routage middleware/header
-       const { data: roleAccount } = await authedClient
-         .from("accounts")
-         .select("plan")
-         .eq("user_id", user.id)
-         .single()
-       if (roleAccount) {
-         await setRoleCookie(roleAccount.plan || "free")
-       }
-
-      // === REDIRECTION PAR RÔLE (Phase 4) ===
-      // Respecter le choix mémorisé par l'utilisateur (persisté côté serveur).
-      let redirectTo = next
+    if (existingAccount) {
+      plan = existingAccount.plan
+      defaultSpace = existingAccount.default_space
+    } else {
+      // NEW USER: create records via admin client (bypasses RLS)
+      const admin = getSupabaseAdmin()
+      plan = isSchool ? "ecole_pro" : "free"
+      defaultSpace = isSchool ? "school" : null
 
       try {
-        const { data: account } = await authedClient
+        await admin
+          .from("profiles")
+          .insert({ id: user.id, email: user.email ?? null, locale: "fr" })
+          .select()
+          .maybeSingle()
+
+        const { data: newAccount, error: createAccErr } = await admin
           .from("accounts")
-          .select("plan, has_family_sub, has_school_sub, default_space")
-          .eq("user_id", user.id)
+          .insert({
+            user_id: user.id,
+            stars_balance: isSchool ? 1000 : 5,
+            plan,
+            default_space: defaultSpace,
+          })
+          .select()
           .single()
 
-        if (account) {
-          const isSchool = account.has_school_sub === true
-          const isFamily = account.has_family_sub === true
-
-          // Choix mémorisé côté serveur (colonne accounts.default_space),
-          // persistant (contrairement au localStorage illisible ici).
-          const remembered = account.default_space
-
-          if (isSchool && isFamily) {
-            // Les deux → écran de choix (ou choix mémorisé)
-            redirectTo = remembered === "school"
-              ? "/school/dashboard"
-              : remembered === "family"
-                ? "/dashboard"
-                : "/select-space"
-          } else if (isSchool) {
-            redirectTo = "/school/dashboard"
-          } else {
-            redirectTo = "/dashboard"
-          }
+        if (createAccErr || !newAccount) {
+          throw createAccErr || new Error("Failed to create account")
         }
-      } catch (roleErr) {
-        // En cas d'erreur, on garde la redirection par défaut (safe)
-        console.error("Role redirect lookup failed:", roleErr)
+
+        await adjustStars(newAccount.id, 5, STARS_REASONS.SIGNUP_BONUS, null, admin)
+
+        if (!isSchool) {
+          const cleanName = getDisplayNameFromEmail(user.email || "")
+          await admin
+            .from("child_profiles")
+            .insert({ account_id: newAccount.id, name: cleanName, mascot: "awa", pin_required: false })
+        }
+      } catch (dbError) {
+        console.error("Failed to create new user records:", dbError)
       }
-
-      return NextResponse.redirect(`${origin}${redirectTo}`)
     }
 
-    // === NEW USER: create account, send verification email ===
-    try {
-      // Create profile
-      await authedClient
-        .from("profiles")
-        .insert({ id: user.id, email: user.email ?? null, locale: "fr" })
-        .select()
-        .maybeSingle()
+    // Set auth cookies and redirect to the correct dashboard
+    await setAuthCookies(session.access_token, session.refresh_token)
+    await setRoleCookie(plan)
 
-      // Create account
-      const { data: newAccount, error: createAccErr } = await authedClient
-        .from("accounts")
-        .insert({ user_id: user.id, stars_balance: 5, plan: "free" })
-        .select()
-        .single()
-
-      if (createAccErr || !newAccount) {
-        throw createAccErr || new Error("Failed to create parent account")
-      }
-
-      // Stars bonus
-      await authedClient
-        .from("stars_transactions")
-        .insert({ account_id: newAccount.id, amount: 5, reason: "signup_bonus" })
-
-      // Child profile
-      const cleanName = getDisplayNameFromEmail(user.email || "")
-      await authedClient
-        .from("child_profiles")
-        .insert({ account_id: newAccount.id, name: cleanName, mascot: "awa", pin_required: false })
-    } catch (dbError) {
-      console.warn("Database fallback in OAuth callback had an error:", dbError)
-    }
-
-    // Sign out of the SSR session (we don't want to set cookies yet)
-    await supabase.auth.signOut()
-
-    // Send a magic link to the user's email for verification
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: user.email!,
-      options: {
-        emailRedirectTo: `${origin}/api/auth/complete-signup`,
-      },
-    })
-
-    if (otpError) {
-      console.error("Failed to send verification email:", otpError)
-    }
-
-    // Redirect to check-email page
-    const checkEmailUrl = new URL(`${origin}/auth/check-email`)
-    checkEmailUrl.searchParams.set("email", user.email || "")
-    return NextResponse.redirect(checkEmailUrl.toString())
+    const redirectTo = getRedirectPath(plan, defaultSpace)
+    return NextResponse.redirect(`${origin}${redirectTo}`)
   } catch (err: any) {
     console.error("OAuth callback generic error:", err)
     const { origin } = new URL(request.url)

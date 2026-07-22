@@ -127,6 +127,7 @@ function LoginFormContent() {
         provider,
         options: {
           redirectTo: `${window.location.origin}/api/auth/callback`,
+          data: { accountType: space },
         },
       })
       if (error) {

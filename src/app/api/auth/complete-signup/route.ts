@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       .from("accounts")
       .select("plan")
       .eq("user_id", data.user!.id)
-      .single()
+      .maybeSingle()
     await setRoleCookie(roleAccount?.plan || "free")
 
     return NextResponse.redirect(`${origin}/parents`)

@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 import { getSupabaseServer } from "@/lib/supabaseServer"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
-import { adjustStars, STARS_REASONS } from "@/lib/auth"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+import { setAuthCookies, setRoleCookie, adjustStars, STARS_REASONS } from "@/lib/auth"
 
 function getDisplayNameFromEmail(email: string): string {
   if (!email) return "Mon Enfant"
@@ -53,7 +49,6 @@ export async function POST(request: Request) {
     }
 
     // 2. Sign up with Supabase Auth
-    // Note: Locale meta-data can be passed to auth metadata
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -79,42 +74,26 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create an explicitly authenticated client if a session was returned
-    const accessToken = authData.session?.access_token
-    const authedClient = accessToken
-      ? createClient(supabaseUrl, supabaseAnonKey, {
-          auth: { persistSession: false },
-          global: {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          },
-        })
-      : supabase
-
-    // 3. Sync Fallback (If the database trigger is not installed, we create these records manually)
+    // 3. Create account records via admin client (bypasses RLS, works even when email confirmation is pending)
+    const admin = getSupabaseAdmin()
     let accountId = ""
-    let starsBalance = 5
-    let plan = "free"
+    let starsBalance = isSchool ? 1000 : 5
+    let plan = isSchool ? "ecole_pro" : "free"
 
     try {
-      // Check if trigger has already created the profile & account
-      const { data: existingAccount } = await authedClient
+      // Check if trigger already created the account
+      const { data: existingAccount } = await admin
         .from("accounts")
         .select("id, stars_balance, plan")
         .eq("user_id", user.id)
-        .single()
+        .maybeSingle()
 
-       if (existingAccount) {
+      if (existingAccount) {
         accountId = existingAccount.id
         starsBalance = existingAccount.stars_balance
         plan = existingAccount.plan
 
-        // Inscription enseignant : basculer le plan sur ecole_pro d'emblée
-        // (nouveau compte, pas une montée en gamme). On passe par le client
-        // admin (service role) car la politique RLS peut interdire à l'utilisateur
-        // de modifier son propre plan. Le trigger on_plan_changed met à jour
-        // has_school_sub / has_family_sub.
         if (isSchool && existingAccount.plan !== "ecole_pro") {
-          const admin = getSupabaseAdmin()
           const { data: updated, error: updErr } = await admin
             .from("accounts")
             .update({
@@ -136,26 +115,19 @@ export async function POST(request: Request) {
           }
         }
       } else {
-        // Trigger didn't run, execute manually (via client admin pour
-        // garantir le plan ecole_pro même si la RLS restreint l'utilisateur).
-        const admin = getSupabaseAdmin()
-        // Insert public profile
+        // Create profile
         await admin
           .from("profiles")
-          .insert({
-            id: user.id,
-            email: user.email!,
-            locale: "fr",
-          })
+          .insert({ id: user.id, email: user.email!, locale: "fr" })
           .select()
 
-        // Insert parent account
+        // Create account
         const { data: newAccount, error: accErr } = await admin
           .from("accounts")
           .insert({
             user_id: user.id,
-            stars_balance: isSchool ? 1000 : 5,
-            plan: isSchool ? "ecole_pro" : "free",
+            stars_balance: starsBalance,
+            plan: plan,
             default_space: isSchool ? "school" : null,
             plan_renewed_at: isSchool ? new Date().toISOString() : null,
             school_name: isSchool ? schoolName || null : null,
@@ -166,27 +138,35 @@ export async function POST(request: Request) {
 
         if (accErr) throw accErr
         accountId = newAccount.id
-        if (isSchool) {
-          starsBalance = 1000
-          plan = "ecole_pro"
-        }
 
-        // Insert stars transaction
+        // Stars transaction
         await adjustStars(accountId, 5, STARS_REASONS.SIGNUP_BONUS, null, admin)
 
-        // Insert first child profile
-        const emailName = getDisplayNameFromEmail(user.email || "")
-        await admin
-          .from("child_profiles")
-          .insert({
-            account_id: accountId,
-            name: emailName,
-            mascot: "awa",
-            pin_required: false,
-          })
+        // Default child profile (family only)
+        if (!isSchool) {
+          const emailName = getDisplayNameFromEmail(user.email || "")
+          await admin
+            .from("child_profiles")
+            .insert({
+              account_id: accountId,
+              name: emailName,
+              mascot: "awa",
+              pin_required: false,
+            })
+        }
       }
     } catch (dbError) {
-      console.warn("Trigger failed or was missing, manual inserts executed. Details:", dbError)
+      console.error("Failed to sync account records:", dbError)
+      return NextResponse.json(
+        { error: "Erreur lors de la création du compte. Veuillez réessayer." },
+        { status: 500 }
+      )
+    }
+
+    // 4. Set auth cookies if session was returned
+    if (authData.session) {
+      await setAuthCookies(authData.session.access_token, authData.session.refresh_token)
+      await setRoleCookie(plan)
     }
 
     const successMessage = isSchool
@@ -195,15 +175,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-      account: {
-        id: accountId,
-        stars_balance: starsBalance,
-        plan: plan,
-      },
+      user: { id: user.id, email: user.email },
+      account: { id: accountId, stars_balance: starsBalance, plan },
       isSchool,
       message: successMessage,
     })
