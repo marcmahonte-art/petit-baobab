@@ -51,7 +51,7 @@ export default function LandingPage() {
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
             <a className="hover:text-[#6D4CFF] transition-colors" href="#">Accueil</a>
-            <a className="hover:text-[#6D4CFF] transition-colors" href="#pricing">Tarifs</a>
+            <a className="hover:text-[#6D4CFF] transition-colors" href="/tarification">Tarifs</a>
             <a className="hover:text-[#6D4CFF] transition-colors" href="#testimonials">À propos</a>
           </nav>
 
@@ -79,7 +79,7 @@ export default function LandingPage() {
               <SheetContent side="right" className="bg-background pt-16 w-[290px]">
                 <nav className="flex flex-col gap-6 mt-8">
                   <a href="#" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">Accueil</a>
-                  <a href="#pricing" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">Tarifs</a>
+                  <a href="/tarification" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">Tarifs</a>
                   <a href="#testimonials" className="text-[15px] font-semibold text-[#1A1A2E] hover:text-[#6D4CFF] transition-colors">À propos</a>
                 </nav>
                 <div className="absolute bottom-8 left-6 right-6 flex flex-col gap-3">

@@ -32,7 +32,7 @@ import {
 const navLinks = [
   { label: "Accueil", href: "#hero" },
   { label: "Fonctionnalités", href: "#features" },
-  { label: "Tarifs", href: "#pricing" },
+  { label: "Tarifs", href: "/tarification" },
   { label: "À propos", href: "#about" },
 ]
 
