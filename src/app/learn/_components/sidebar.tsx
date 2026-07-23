@@ -22,7 +22,8 @@ const navItemsParent = [
 const navItemsStudent = [
   { icon: Home, label: "Accueil", href: HOME_HREF },
   ...commonNavItems,
-  settingsNavItem,
+  // En espace apprenant, Paramètres pointe vers /learn/parametres (sidebar élève)
+  { ...settingsNavItem, href: "/learn/parametres" },
 ]
 
 export function Sidebar() {

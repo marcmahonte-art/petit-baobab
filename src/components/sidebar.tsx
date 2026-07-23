@@ -9,12 +9,12 @@ import { usePathname } from "next/navigation"
 import { commonNavItems, settingsNavItem } from "@/components/child-dashboard"
 import { useLearnSession } from "@/app/learn/_components/learn-session"
 
-const navItems = [
+const navItemsBase = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
   ...commonNavItems,
   { icon: Users, label: "Espace parents", href: "/parents" },
   { icon: CreditCard, label: "Facturation", href: "/parents/billing" },
-  settingsNavItem,
+  // settingsNavItem est ajouté dynamiquement plus bas (href dépend du rôle)
 ]
 
 export function Sidebar() {
@@ -26,11 +26,15 @@ export function Sidebar() {
   const { role } = useLearnSession()
   const isStudent = role === "student"
 
-  const visibleNavItems = isStudent
-    ? navItems.filter(
-        (i) => i.label !== "Espace parents" && i.label !== "Facturation"
-      )
-    : navItems
+  // Lien Paramètres : en espace apprenant → /learn/parametres (sous learn/layout,
+  // donc sidebar élève). Hors espace apprenant (parent/école) → /parametres.
+  const settingsItem = { ...settingsNavItem, href: isStudent ? "/learn/parametres" : "/parametres" }
+
+  const navItems = isStudent
+    ? navItemsBase
+        .filter((i) => i.label !== "Espace parents" && i.label !== "Facturation")
+        .concat(settingsItem)
+    : navItemsBase.concat(settingsItem)
 
   return (
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
@@ -49,7 +53,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-col gap-1.5 mt-2">
-          {visibleNavItems.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href === "/" && pathname === null)
             return (
               <Link
