@@ -45,8 +45,12 @@ export default function ClassCard({ cls, onClick, onShare, index = 0 }: ClassCar
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // illustration_index peut être null/undefined en DB (classe créée sans ce champ)
+  // → fallback sur la position de la carte pour toujours afficher une image.
+  const rawIndex = typeof cls.illustration_index === "number" ? cls.illustration_index : 0;
+  const safeIndex = rawIndex > 0 ? rawIndex : (index + 1);
   const illustrationSrc =
-    CLASS_ILLUSTRATIONS[(cls.illustration_index - 1) % CLASS_ILLUSTRATIONS.length];
+    CLASS_ILLUSTRATIONS[(safeIndex - 1) % CLASS_ILLUSTRATIONS.length];
   
   const progressColor = cls.completion_percentage >= 75 
     ? "#10B981" 
