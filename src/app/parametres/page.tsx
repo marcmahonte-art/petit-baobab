@@ -25,11 +25,15 @@ const mascottes = [
   { id: "awa", name: "Awa", desc: "La petite fille curieuse", image: "/illustrations/avatar-awa.png" },
   { id: "lion", name: "Bébé Lion", desc: "Le roi courageux de la savane", image: "/illustrations/avatar-lion.png" },
   { id: "robot", name: "Baobab Robot", desc: "Le robot ami de la nature", image: "/illustrations/avatar-robot.png" },
+  { id: "fleur", name: "Fleur", desc: "La petite fleur joyeuse", image: "" },
+  { id: "militaire", name: "Militaire", desc: "Le soldat courageux", image: "" },
+  { id: "dinosaure", name: "Dinosaure", desc: "Le dinosaure explorateur", image: "" },
 ]
 
 export default function ParametresPage() {
   // State variables with local storage support
   const [childName, setChildName] = useState("Awa")
+  const [childAge, setChildAge] = useState("6")
   const [selectedMascot, setSelectedMascot] = useState("awa")
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [sfxEnabled, setSfxEnabled] = useState(true)
@@ -42,6 +46,7 @@ export default function ParametresPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("pb_child_name")
+      const storedAge = localStorage.getItem("pb_child_age")
       const storedMascot = localStorage.getItem("pb_mascot")
       const storedMusic = localStorage.getItem("pb_music")
       const storedSfx = localStorage.getItem("pb_sfx")
@@ -51,6 +56,7 @@ export default function ParametresPage() {
 
       setTimeout(() => {
         if (storedName) setChildName(storedName)
+        if (storedAge) setChildAge(storedAge)
         if (storedMascot) setSelectedMascot(storedMascot)
         if (storedMusic) setMusicEnabled(storedMusic === "true")
         if (storedSfx) setSfxEnabled(storedSfx === "true")
@@ -64,6 +70,7 @@ export default function ParametresPage() {
   // Save settings handler
   const handleSave = () => {
     localStorage.setItem("pb_child_name", childName)
+    localStorage.setItem("pb_child_age", childAge)
     localStorage.setItem("pb_mascot", selectedMascot)
     localStorage.setItem("pb_music", String(musicEnabled))
     localStorage.setItem("pb_sfx", String(sfxEnabled))
@@ -136,6 +143,21 @@ export default function ParametresPage() {
                     />
                   </div>
 
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-black text-[#7A6A5E] uppercase tracking-wider">
+                      Âge de l&apos;enfant
+                    </label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={18}
+                      value={childAge}
+                      onChange={(e) => setChildAge(e.target.value)}
+                      placeholder="Ex: 6"
+                      className="rounded-xl border-[#F0E7DA] h-12 px-4 text-sm font-bold text-[#3B2416] bg-[#FFF9F2]/30 focus-visible:ring-[#7D6AF8]"
+                    />
+                  </div>
+
                   <div className="flex flex-col gap-3">
                     <label className="text-xs font-black text-[#7A6A5E] uppercase tracking-wider">
                       Choisis ta Mascotte
@@ -157,7 +179,7 @@ export default function ParametresPage() {
                           >
                             <div className="relative w-16 h-16 rounded-full overflow-hidden bg-[#FFF9F2] border border-[#F0E7DA] mb-2 flex items-center justify-center">
                               <div className="text-2xl select-none">
-                                {m.id === "awa" ? "👧🏾" : m.id === "lion" ? "🦁" : "🤖"}
+                                {m.id === "awa" ? "👧🏾" : m.id === "lion" ? "🦁" : m.id === "robot" ? "🤖" : m.id === "fleur" ? "🌸" : m.id === "militaire" ? "💂" : m.id === "dinosaure" ? "🦕" : "🤖"}
                               </div>
                             </div>
                             <span className="font-extrabold text-sm text-[#261B4B]">{m.name}</span>
