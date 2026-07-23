@@ -17,13 +17,13 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { href: "/school/dashboard", label: "Tableau de bord", icon: Home, isMain: true },
+  { href: "/school/dashboard", label: "Tableau de bord", icon: Home, isMain: true, exact: true },
   { href: "/school/classes", label: "Mes classes", icon: Users },
   { href: "/school/students", label: "Mes élèves", icon: UserPlus },
   { href: "/school/activities", label: "Activités", icon: Palette },
   { href: "/school/progression", label: "Progression", icon: TrendingUp },
   { href: "/school/etoiles", label: "Étoiles", icon: Star },
-  { href: "/school/facturation", label: "Facturation", icon: Receipt },
+  { href: "/school/dashboard/billing", label: "Facturation", icon: Receipt },
   { href: "/school/parametres", label: "Paramètres", icon: Settings },
 ];
 
@@ -54,7 +54,9 @@ export default function SchoolSidebar() {
       <ul className="flex-1 px-3 space-y-1 mt-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname?.startsWith(item.href);
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname?.startsWith(item.href);
 
           if (item.isMain) {
             return (

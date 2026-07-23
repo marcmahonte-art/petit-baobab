@@ -77,15 +77,13 @@ export default function BillingClient({ data }: { data: BillingData }) {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {starsBalance === 0 && (
-            <button
-              onClick={() => setShowSubscribe(true)}
-              className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#16A34A] text-white text-sm font-bold hover:bg-[#15803D] shadow-sm transition-all cursor-pointer"
-            >
-              <Star className="w-4 h-4" />
-              S&apos;abonner
-            </button>
-          )}
+          <button
+            onClick={() => setShowSubscribe(true)}
+            className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#16A34A] text-white text-sm font-bold hover:bg-[#15803D] shadow-sm transition-all cursor-pointer"
+          >
+            <Star className="w-4 h-4" />
+            S&apos;abonner
+          </button>
           <button
             onClick={() => setShowBuyStars(true)}
             className="flex items-center gap-1.5 h-[44px] px-5 rounded-full bg-[#7D6AF8] text-white text-sm font-bold hover:bg-[#6552E8] shadow-sm transition-all cursor-pointer"
