@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export const HeroSection: React.FC = () => {
   return (
@@ -18,16 +19,18 @@ export const HeroSection: React.FC = () => {
       {/* Content wrapper */}
       <div className="relative z-10 w-full flex flex-col h-full">
         
-        {/* Top Brand Logo */}
+        {/* Top Brand Logo (cliquable → accueil) */}
         <div className="self-start mb-6 w-full">
-          <Image
-            src="/illustrations/logo-petit-baobab.svg"
-            alt="Logo Petit Baobab"
-            width={500}
-            height={167}
-            className="w-auto h-32 md:h-48 lg:h-56 object-contain max-w-full"
-            priority
-          />
+          <Link href="/" aria-label="Accueil Petit Baobab" className="inline-block w-fit">
+            <Image
+              src="/illustrations/logo-petit-baobab.svg"
+              alt="Logo Petit Baobab"
+              width={500}
+              height={167}
+              className="w-auto h-32 md:h-48 lg:h-56 object-contain max-w-full"
+              priority
+            />
+          </Link>
         </div>
 
       </div>
