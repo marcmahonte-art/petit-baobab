@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { MobileBottomNav } from "@/components/child-dashboard/mobile-bottom-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"

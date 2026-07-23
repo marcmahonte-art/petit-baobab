@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { MobileBottomNav } from "@/components/child-dashboard/mobile-bottom-nav"
 import { SavedBooksGallery } from "@/components/saved-books/SavedBooksGallery"
 import { bookService } from "@/features/books"
 import type { SavedBook, CoverTemplate, CoverPalette, BookStyle, BookFrame, BookFormat, BookOrientation } from "@/features/books/types"

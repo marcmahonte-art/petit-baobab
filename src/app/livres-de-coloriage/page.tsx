@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/sidebar"
 import { ColoringBooksPage } from "@/components/coloring-books-page"
-import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { MobileBottomNav } from "@/components/child-dashboard/mobile-bottom-nav"
 import Image from "next/image"
 
 export default function LivresDeColoriage() {
