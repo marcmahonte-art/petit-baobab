@@ -81,7 +81,7 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<string | nu
 
     const details = [
       { label: "Plan / Pack", value: data.plan || data.packLabel || "Achat d'étoiles" },
-      { label: "Étoiles", value: `${data.starsEarned} ★` },
+      { label: "Étoiles", value: `${data.starsEarned} \u2605` },
       { label: "Statut", value: "Payé" },
     ]
 

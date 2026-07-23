@@ -100,7 +100,7 @@ export function ColoringPage() {
     setActiveSavedDrawingId(savedResult.id)
     setSaved(true)
     setGalleryRefreshKey((key) => key + 1)
-    showToast('✅ Dessin enregistré dans Mes dessins.')
+    showToast('Dessin enregistré dans Mes dessins.')
 
     if (snapshot.state.filledZones >= 6 && profileId) {
       useProfileStore.getState().addPoints(profileId, 10)

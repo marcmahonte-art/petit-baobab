@@ -5,6 +5,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n-provider";
 import { PricingPageContent } from "@/components/pricing-page-content";
+import { Sparkles } from "lucide-react";
 
 export default function TarificationPage() {
   const router = useRouter();
@@ -76,7 +77,7 @@ export default function TarificationPage() {
             Nos formules
           </h1>
           <p className="text-[15px] md:text-[18px] font-bold text-[#F59E0B] mt-3">
-            Des étoiles pour créer sans limites — au prix juste. ✨
+            Des étoiles pour créer sans limites — au prix juste. <Sparkles className="w-5 h-5 inline text-[#F59E0B]" />
           </p>
         </div>
 

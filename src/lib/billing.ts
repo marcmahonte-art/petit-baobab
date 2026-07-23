@@ -92,14 +92,14 @@ export const TRANSACTION_LABELS: Record<TransactionReason, string> = {
 }
 
 export const TRANSACTION_ICONS: Record<TransactionReason, string> = {
-  generation: "🎨",
-  livre: "📚",
-  purchase: "💳",
-  reward: "🏆",
-  bonus: "🎉",
-  signup_bonus: "🎁",
-  refund: "↩️",
-  daily_reset: "🔄",
-  subscription_renewal: "⭐",
-  admin_grant: "🎁",
+  generation: "Palette",
+  livre: "Book",
+  purchase: "CreditCard",
+  reward: "Trophy",
+  bonus: "Sparkles",
+  signup_bonus: "Gift",
+  refund: "Undo",
+  daily_reset: "RefreshCw",
+  subscription_renewal: "Star",
+  admin_grant: "Gift",
 }

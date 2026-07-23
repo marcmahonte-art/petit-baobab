@@ -463,7 +463,7 @@ function TransactionsTimeline({ transactions }: { transactions: BillingData["sta
             <div className="space-y-1">
               {items.map((t, i) => {
                 const reasonLabel = TRANSACTION_LABELS[(t.reason as keyof typeof TRANSACTION_LABELS)] || t.reason;
-                const icon = TRANSACTION_ICONS[(t.reason as keyof typeof TRANSACTION_ICONS)] || "⭐";
+                const icon = TRANSACTION_ICONS[(t.reason as keyof typeof TRANSACTION_ICONS)] || "Star";
                 return (
                   <motion.div
                     key={t.id}
@@ -483,7 +483,7 @@ function TransactionsTimeline({ transactions }: { transactions: BillingData["sta
                     </div>
                     <span className={`text-sm font-extrabold shrink-0 ${t.amount > 0 ? "text-green-600" : "text-red-500"}`}>
                       {t.amount > 0 ? "+" : ""}
-                      {t.amount}★
+                      {t.amount}
                     </span>
                   </motion.div>
                 );

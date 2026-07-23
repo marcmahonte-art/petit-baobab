@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, School } from "lucide-react";
 import { useSchoolStore } from "@/stores/school-store";
 import ClassCard from "./ClassCard";
 
@@ -39,7 +39,7 @@ export default function ClassesGrid({ onShareClass }: ClassesGridProps) {
   if (classrooms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl border-2 border-dashed border-[#F0E7DA] text-center min-h-[300px]">
-        <span className="text-4xl mb-3">🏫</span>
+        <School className="w-10 h-10 mb-3 text-[#7A6A5E]" />
         <h3 className="text-base font-extrabold text-[#3B2416]">
           Aucune classe active
         </h3>

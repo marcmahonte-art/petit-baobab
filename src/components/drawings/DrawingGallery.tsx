@@ -62,7 +62,7 @@ export function DrawingGallery({ refreshKey, onOpen }: DrawingGalleryProps) {
     }
 
     useBookStore.getState().setSelectedImages((prev) => [...prev, drawing.id])
-    alert(`✅ "${drawing.name}" a été ajouté à votre livre !`)
+    alert(`"${drawing.name}" a été ajouté à votre livre !`)
   }
 
   return (

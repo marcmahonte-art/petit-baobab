@@ -13,10 +13,10 @@ export interface NavItem {
  * (Espace parents, Facturation côté parent uniquement).
  */
 export const commonNavItems: NavItem[] = [
-  { icon: Palette, label: "Coloriage", href: "/coloriage" },
-  { icon: Sparkles, label: "Dessin magique", href: "/magic-drawing" },
-  { icon: BookOpen, label: "Livres de coloriage", href: "/livres-de-coloriage" },
-  { icon: Bookmark, label: "Mes livres", href: "/mes-livres" },
+  { icon: Palette, label: "Coloriage", href: "/learn/coloriage" },
+  { icon: Sparkles, label: "Dessin magique", href: "/learn/magic-drawing" },
+  { icon: BookOpen, label: "Livres de coloriage", href: "/learn/livres-de-coloriage" },
+  { icon: Bookmark, label: "Mes livres", href: "/learn/mes-livres" },
   { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },

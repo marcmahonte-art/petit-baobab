@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { PricingCard } from "@/components/parents/pricing-card";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { Smile } from "lucide-react";
 
 // Contenu tarifs complet, réutilisable sur la page dédiée /tarification
 // et sur la landing (bloc d'accroche). Texte identique à /parents.
@@ -93,7 +94,7 @@ export function PricingPageContent() {
           Choisissez le plan qui vous convient
         </h2>
         <p className="text-[16px] md:text-[18px] font-bold text-[#F59E0B] mt-2 flex items-center gap-1">
-          Plus de créations, plus de styles, plus de possibilités ! 😊
+          Plus de créations, plus de styles, plus de possibilités ! <Smile className="w-5 h-5 inline text-[#F59E0B]" />
         </p>
       </div>
 

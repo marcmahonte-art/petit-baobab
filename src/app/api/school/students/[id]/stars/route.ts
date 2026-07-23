@@ -93,8 +93,8 @@ export async function POST(
       amount,
       message:
         amount > 0
-          ? `+${(amount)} ⭐ attribuées.`
-          : `${Math.abs(amount)} ⭐ retirées.`,
+          ? `+${(amount)} étoile(s) attribuée(s).`
+          : `${Math.abs(amount)} étoile(s) retirée(s).`,
     });
   } catch (error: any) {
     console.error("Stars award API error:", error);

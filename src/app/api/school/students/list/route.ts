@@ -129,9 +129,9 @@ export async function GET() {
 
       // Badges dérivés de la gamification
       const badges: string[] = [];
-      if (studentDrawings.length >= 1) badges.push("🎨");
-      if (studentBooks.length >= 1) badges.push("📚");
-      if (studentActivities.length >= 1) badges.push("⭐");
+      if (studentDrawings.length >= 1) badges.push("dessin");
+      if (studentBooks.length >= 1) badges.push("livre");
+      if (studentActivities.length >= 1) badges.push("actif");
 
       return {
         id: s.id,

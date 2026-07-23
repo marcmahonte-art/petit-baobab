@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Bell, Globe, Menu, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
+import { Search, Bell, Globe, Menu, ChevronDown, Star, Settings, Users, LogOut, Palette, Book, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -97,10 +97,10 @@ export function Header() {
 
   // Notifications mock data
   const [unreadNotifications, setUnreadNotifications] = useState([
-    { id: 1, text: "🎨 Félicitations ! Tu as gagné le badge Super Artiste !" },
-    { id: 2, text: "📚 Ton livre de coloriage est prêt à être téléchargé !" },
-    { id: 3, text: "✨ Nouveau dessin magique disponible." },
-  ])
+    { id: 1, text: "Félicitations ! Tu as gagné le badge Super Artiste !", icon: "Palette" },
+    { id: 2, text: "Ton livre de coloriage est prêt à être téléchargé !", icon: "Book" },
+    { id: 3, text: "Nouveau dessin magique disponible.", icon: "Sparkles" },
+  ] as { id: number; text: string; icon: string }[])
 
   useEffect(() => {
     if (activeProfile) {

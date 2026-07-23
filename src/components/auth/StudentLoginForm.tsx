@@ -110,7 +110,7 @@ export function StudentLoginForm() {
           <CheckCircle className="w-11 h-11 text-[#1D9E75]" />
         </motion.div>
         <p className="text-xl md:text-2xl font-extrabold text-[#1C1C3A]">
-          Bonjour {firstName.trim()} ! 🎉
+          Bonjour {firstName.trim()} !
         </p>
       </div>
     )

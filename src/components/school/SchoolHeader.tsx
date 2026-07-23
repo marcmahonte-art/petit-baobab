@@ -21,7 +21,7 @@ export default function SchoolHeader({
       {/* Greeting */}
       <div>
         <h1 className="text-xl font-extrabold text-[#3B2416]">
-          Bonjour, {teacherName} ! 👋
+          Bonjour, {teacherName} !
         </h1>
         <p className="text-sm text-[#7A6A5E] font-medium">
           Bienvenue dans votre espace enseignant.

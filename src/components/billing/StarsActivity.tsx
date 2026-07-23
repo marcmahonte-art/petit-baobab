@@ -2,9 +2,21 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Star, ChevronDown, Filter } from "lucide-react"
+import {
+  Star,
+  ChevronDown,
+  Filter,
+  Palette,
+  Book,
+  CreditCard,
+  Trophy,
+  Sparkles,
+  Gift,
+  Undo,
+  RefreshCw,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
-import { TRANSACTION_LABELS, TRANSACTION_ICONS } from "@/lib/billing"
+import { TRANSACTION_LABELS } from "@/lib/billing"
 import type { StarsTransaction, TransactionType } from "@/lib/billing"
 
 type FilterType = "all" | "credit" | "debit"
@@ -25,9 +37,13 @@ function groupByDate(transactions: StarsTransaction[]): Record<string, StarsTran
   return groups
 }
 
+const ICON_MAP: Record<string, typeof Star> = {
+  Palette, Book, CreditCard, Trophy, Sparkles, Gift, Undo, RefreshCw, Star,
+}
+
 function TransactionItem({ tx }: { tx: StarsTransaction }) {
   const isCredit = tx.type === "credit"
-  const icon = TRANSACTION_ICONS[tx.reason] || "⭐"
+  const IconComponent = ICON_MAP[tx.reason === "subscription_renewal" ? "Star" : tx.reason === "generation" ? "Palette" : tx.reason === "livre" ? "Book" : tx.reason === "purchase" ? "CreditCard" : tx.reason === "reward" ? "Trophy" : tx.reason === "bonus" ? "Sparkles" : tx.reason === "signup_bonus" ? "Gift" : tx.reason === "refund" ? "Undo" : tx.reason === "daily_reset" ? "RefreshCw" : tx.reason === "admin_grant" ? "Gift" : ""] || Star
   const label = TRANSACTION_LABELS[tx.reason] || tx.reason
   const time = new Date(tx.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
 
@@ -38,10 +54,10 @@ function TransactionItem({ tx }: { tx: StarsTransaction }) {
       className="flex items-center gap-3 py-3 px-4 rounded-[14px] hover:bg-[#FFF9F2] transition-colors"
     >
       <div className={cn(
-        "w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0",
+        "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
         isCredit ? "bg-green-100" : tx.reason === "bonus" || tx.reason === "reward" ? "bg-amber-100" : "bg-red-100"
       )}>
-        {icon}
+        <IconComponent className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-[#3B2416] truncate">{label}</p>
@@ -55,7 +71,7 @@ function TransactionItem({ tx }: { tx: StarsTransaction }) {
           {isCredit ? "+" : ""}{tx.amount}
         </span>
         <p className="text-[10px] font-semibold text-[#7A6A5E]">
-          {tx.balance_after} ⭐
+          {tx.balance_after}
         </p>
       </div>
     </motion.div>

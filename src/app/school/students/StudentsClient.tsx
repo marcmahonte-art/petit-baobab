@@ -389,7 +389,7 @@ export default function StudentsClient() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-[#3B2416]">Mes élèves 👋</h1>
+            <h1 className="text-3xl font-black text-[#3B2416]">Mes élèves</h1>
             <p className="text-sm font-semibold text-[#7A6A5E] mt-1">
               Gérez vos élèves et suivez leur progression.
             </p>
@@ -553,7 +553,7 @@ export default function StudentsClient() {
                         <ClassBadge name={s.classroom_name} />
                       </td>
                       <td className="p-4 text-center font-bold text-[#3B2416]">{s.activities_count}</td>
-                      <td className="p-4 text-center font-bold text-[#F59E0B]">+{s.stars} ⭐</td>
+                      <td className="p-4 text-center font-bold text-[#F59E0B]">+{s.stars}</td>
                       <td className="p-4 text-sm text-[#7A6A5E]">{formatLastActivity(s.last_active)}</td>
                       <td className="p-4">
                         <StatusBadge status={s.status} />
@@ -589,7 +589,7 @@ export default function StudentsClient() {
                   <StudentName student={s} />
                   <div className="flex items-center gap-2 mt-1">
                     <ClassBadge name={s.classroom_name} />
-                    <span className="text-xs text-[#F59E0B] font-bold">+{s.stars} ⭐</span>
+                    <span className="text-xs text-[#F59E0B] font-bold">+{s.stars}</span>
                     <span className="text-xs text-[#7A6A5E]">· {s.activities_count} act.</span>
                   </div>
                 </div>
@@ -1048,7 +1048,7 @@ function StudentDrawer({
                   <p className="text-xs text-[#7A6A5E] font-medium">Activités</p>
                 </div>
                 <div className="bg-white rounded-xl p-4 border border-[#F0E7DA] text-center">
-                  <p className="text-2xl font-black text-[#F59E0B]">{student.stars} ⭐</p>
+                  <p className="text-2xl font-black text-[#F59E0B]">{student.stars}</p>
                   <p className="text-xs text-[#7A6A5E] font-medium">Étoiles</p>
                 </div>
                 <div className="bg-white rounded-xl p-4 border border-[#F0E7DA] text-center">

@@ -6,11 +6,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 interface MobileBottomNavProps {
-  /** Lien du bouton "Accueil". Défaut : "/dashboard" */
+  /** Lien du bouton "Accueil". Défaut : "/learn/dashboard" */
   homeHref?: string
 }
 
-export function MobileBottomNav({ homeHref = "/dashboard" }: MobileBottomNavProps) {
+export function MobileBottomNav({ homeHref = "/learn/dashboard" }: MobileBottomNavProps) {
   const pathname = usePathname()
 
   const navItems = [

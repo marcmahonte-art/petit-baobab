@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { Sparkles } from "lucide-react";
 
 interface MotivationBannerProps {
   starsEarnedThisWeek: number;
@@ -10,7 +11,7 @@ export default function MotivationBanner({
 }: MotivationBannerProps) {
   return (
     <div className="bg-[#E8F8F0] border border-[#A7F3D0] rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-3 justify-center shadow-sm">
-      <span className="text-xl">🎉</span>
+      <Sparkles className="w-6 h-6 text-[#047857]" />
       <p className="text-sm font-extrabold text-[#065F46] text-center sm:text-left leading-normal">
         Félicitations ! Vos élèves ont gagné{" "}
         <span className="text-base font-black text-[#047857]">

@@ -21,7 +21,7 @@ const FEATURES = [
     icon: Star,
     color: "#FFB300",
     bg: "#FFF4D6",
-    title: "Gagne des étoiles ⭐",
+    title: "Gagne des étoiles",
     desc: "Chaque dessin te rapporte des points",
   },
   {
@@ -55,7 +55,7 @@ export default function SchoolLoginPage() {
         {/* Titre + sous-titre */}
         <div className="mt-8 lg:mt-12">
           <h1 className="text-3xl md:text-[40px] font-extrabold text-[#1C1C3A] leading-tight mb-3">
-            Ta classe t&apos;attend ! 🎨
+            Ta classe t&apos;attend ! <Palette className="w-5 h-5 inline" />
           </h1>
           <p className="text-base font-semibold text-[#64748B] leading-relaxed max-w-md">
             Ton maître t&apos;a donné un code ? Connecte-toi et commence à créer !

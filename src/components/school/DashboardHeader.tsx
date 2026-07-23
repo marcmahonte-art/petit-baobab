@@ -29,7 +29,7 @@ export default function DashboardHeader() {
       {/* Greeting */}
        <div className="min-w-0">
         <h1 className="text-lg sm:text-xl font-extrabold text-[#3B2416] truncate">
-          Bonjour, {teacher.name} ! 👋
+          Bonjour, {teacher.name} !
         </h1>
         <p className="text-xs sm:text-sm text-[#7A6A5E] font-medium">
           {teacher.school_name

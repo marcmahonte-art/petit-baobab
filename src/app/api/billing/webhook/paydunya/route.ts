@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     const planLabel = planId
       ? planId === "ecole_pro" ? "École Pro" : planId === "super_baobab" ? "Super Baobab" : planId === "decouverte" ? "Découverte" : planId
       : packId
-        ? `Pack ${stars} ★`
+        ? `Pack ${stars} \u2605`
         : null;
 
     let receiptUrl: string | null = null;

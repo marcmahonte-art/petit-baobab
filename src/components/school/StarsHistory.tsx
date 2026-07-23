@@ -144,7 +144,7 @@ export default function StarsHistory() {
                       <TrendingDown className="w-4 h-4" />
                     )}
                     {isCredit ? "+" : ""}
-                    {tx.amount} ⭐
+                    {tx.amount} <Star className="w-3 h-3 inline text-[#FFB300] fill-[#FFB300]" />
                   </div>
                 </motion.div>
               );

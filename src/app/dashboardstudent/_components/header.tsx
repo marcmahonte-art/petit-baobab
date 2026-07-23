@@ -101,9 +101,9 @@ export function Header() {
 
   // Notifications mock data
   const [unreadNotifications, setUnreadNotifications] = useState([
-    { id: 1, text: "🎨 Félicitations ! Tu as gagné le badge Super Artiste !" },
-    { id: 2, text: "📚 Ton livre de coloriage est prêt à être téléchargé !" },
-    { id: 3, text: "✨ Nouveau dessin magique disponible." },
+    { id: 1, text: "Félicitations ! Tu as gagné le badge Super Artiste !" },
+    { id: 2, text: "Ton livre de coloriage est prêt à être téléchargé !" },
+    { id: 3, text: "Nouveau dessin magique disponible." },
   ])
 
   useEffect(() => {

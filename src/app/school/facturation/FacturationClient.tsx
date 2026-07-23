@@ -318,7 +318,7 @@ function TransactionsTimeline() {
                       item.stars > 0 ? "text-green-600" : "text-red-500"
                     }`}
                   >
-                    {item.stars > 0 ? "+" : ""}{item.stars}★
+                    {item.stars > 0 ? "+" : ""}{item.stars}
                   </span>
                 </motion.div>
               ))}
@@ -526,7 +526,7 @@ export default function FacturationClient() {
     () => [
       { id: "1", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/07/2026", ref: "INV-202607-00001", provider: "PayDunya" },
       { id: "2", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/06/2026", ref: "INV-202606-00003", provider: "PayDunya" },
-      { id: "3", plan: "Pack 500 ★", amount: 8000, status: "pending" as PaymentStatus, date: "15/06/2026", ref: "INV-202606-00002", provider: "PayDunya" },
+      { id: "3", plan: "Pack 500 \u2605", amount: 8000, status: "pending" as PaymentStatus, date: "15/06/2026", ref: "INV-202606-00002", provider: "PayDunya" },
     ],
     []
   )
