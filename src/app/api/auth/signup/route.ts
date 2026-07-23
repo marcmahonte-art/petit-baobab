@@ -100,7 +100,7 @@ export async function POST(request: Request) {
             .eq("id", existingAccount.id);
           if (!updErr) {
             plan = "ecole_pro";
-            starsBalance = 1000;
+            starsBalance = existingAccount.stars_balance;
             defaultSpace = "school";
           } else {
             logger.error("signup", updErr, { step: "update existing school account", id: existingAccount.id });
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
             .select("stars_balance, plan, default_space")
             .eq("id", newAccount.id)
             .maybeSingle();
-          starsBalance = refreshed?.stars_balance ?? 1000;
+          starsBalance = refreshed?.stars_balance ?? 0;
           plan = refreshed?.plan ?? "ecole_pro";
           defaultSpace = refreshed?.default_space ?? "school";
         } else {
