@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { commonNavItems, settingsNavItem } from "@/components/child-dashboard"
+import { useLearnSession } from "@/app/learn/_components/learn-session"
 
 const navItems = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
@@ -18,6 +19,18 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  // Source de vérité = cookie sb-student-token résolu côté serveur (learn/layout).
+  // Hors de /learn (ex: /parents), role = "unknown" → on garde le menu complet
+  // (espace parent). Sous /learn avec un élève, role = "student" → on masque
+  // les liens réservés au parent. Jamais déterminé par un état Zustand volatile.
+  const { role } = useLearnSession()
+  const isStudent = role === "student"
+
+  const visibleNavItems = isStudent
+    ? navItems.filter(
+        (i) => i.label !== "Espace parents" && i.label !== "Facturation"
+      )
+    : navItems
 
   return (
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
@@ -36,7 +49,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-col gap-1.5 mt-2">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href || (item.href === "/" && pathname === null)
             return (
               <Link

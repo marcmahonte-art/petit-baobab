@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { commonNavItems, settingsNavItem } from "@/components/child-dashboard"
-import { useAuthStore } from "@/lib/auth-store"
+import { useLearnSession } from "@/app/learn/_components/learn-session"
 
 const HOME_HREF = "/learn/dashboard"
 
@@ -27,8 +27,10 @@ const navItemsStudent = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { studentSession } = useAuthStore()
-  const navItems = studentSession ? navItemsStudent : navItemsParent
+  // Source de vérité = cookie sb-student-token résolu côté serveur (learn/layout).
+  // Jamais un état Zustand volatile (qui peut être perdu au refresh/retour).
+  const { role } = useLearnSession()
+  const navItems = role === "student" ? navItemsStudent : navItemsParent
 
   return (
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
@@ -85,7 +87,7 @@ export function Sidebar() {
               Accédez à tout le contenu et fonctionnalités illimitées.
             </p>
           </div>
-          <Link href={studentSession ? "/signup?space=family" : "/parents"}>
+          <Link href={role === "student" ? "/signup?space=family" : "/parents"}>
             <Button variant="premium" className="w-[110px] md:w-[120px] h-[34px] md:h-[38px] rounded-full text-[11px] md:text-xs font-bold bg-white text-[#3B2416] hover:bg-white/90 border-none shadow-sm cursor-pointer">
               Découvrir &gt;
             </Button>
