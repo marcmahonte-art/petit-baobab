@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     }
 
     let accountId = "";
-    let starsBalance = isSchool ? 1000 : 5;
+    let starsBalance = isSchool ? 0 : 5;
     let plan = isSchool ? "ecole_pro" : "free";
     let defaultSpace: string | null = isSchool ? "school" : null;
 
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
             .update({
               plan: "ecole_pro",
               default_space: "school",
-              stars_balance: 1000,
+              stars_balance: 0,
               plan_renewed_at: new Date().toISOString(),
               school_name: schoolName || null,
               school_whatsapp: schoolWhatsapp || null,
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
             .update({
               plan: "ecole_pro",
               default_space: "school",
-              stars_balance: 1000,
+              stars_balance: 0,
               plan_renewed_at: new Date().toISOString(),
               school_name: schoolName || null,
               school_whatsapp: schoolWhatsapp || null,
