@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const HeroSection: React.FC = () => {
   return (
-    <div className="relative w-full h-full flex flex-col pt-4 px-10 pb-10 lg:pt-6 lg:px-12 lg:pb-12 select-none overflow-hidden">
+    <div className="relative w-full h-full flex flex-col pt-2 px-10 pb-10 lg:pt-3 lg:px-12 lg:pb-12 select-none overflow-hidden">
       {/* Background Graphic */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -20,7 +20,7 @@ export const HeroSection: React.FC = () => {
       <div className="relative z-10 w-full flex flex-col h-full">
         
         {/* Top Brand Logo (cliquable → accueil) */}
-        <div className="self-start mb-6 w-full">
+        <div className="self-start mb-4 w-full">
           <Link href="/" aria-label="Accueil Petit Baobab" className="inline-block w-fit">
             <Image
               src="/illustrations/logo-petit-baobab.svg"
