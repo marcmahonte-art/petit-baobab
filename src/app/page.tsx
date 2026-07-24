@@ -389,7 +389,7 @@ export default function LandingPage() {
                   <img
                     alt="Aminata"
                     className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMshMF73B2AVXDBCo2U7qw6G-cXiJeM1AyQeKASzc9xAyD91GVGG7agzLQbOftSy4Wnh7JTBnl2n_tgn-fUAjSPe6tYsUxO7Q7s9tn8Xx4uzdU3GdQOMoeC5mZPoeABTLzORAMwgstzxwU-GLAIXVL4dDLxs6UtIbhyGtAKWBTdWmpRB2M2n83UXGaFARfNrpc_yXBFjc1BBl_BNIW9ueTLulV2lj5aeUdIt5n8FJMxhT5weyg541bg8-pnR0JgVSyCrwXssBSAVyT"
+                    src="/illustrations/aminata-maman.png"
                   />
                   <div>
                     <h4 className="font-bold text-sm">Aminata, maman</h4>
@@ -405,7 +405,7 @@ export default function LandingPage() {
                   <img
                     alt="Yacouba"
                     className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzcHUD2pDdYxT7rOS5H-3Xt11s5zxwUAnlAigVKuPhejRxxCbuCfG1CMzmJLF4D3Ib04XRghAeKfyzDGuyAbfZ2KttTjrFZgUfz088zx9tP-DC_KoV7olzz36mHoWfNt63pBSI0nbINoQQn8VZtVm3uPnfk8y0kx3TNyiMjtv3P3i162esyhDes3MSPvT7NQ90orygLlniC69ah9mqOWICE50nPlHCFMiTLiWR0sH-dEnTXXp-Yo-E575mXQiWgzd1UW4VzSyCe8wN"
+                    src="/illustrations/yacouba-enseignant.png"
                   />
                   <div>
                     <h4 className="font-bold text-sm">Yacouba, enseignant</h4>
@@ -421,7 +421,7 @@ export default function LandingPage() {
                   <img
                     alt="Fatou"
                     className="w-12 h-12 rounded-full border-2 border-[#6D4CFF]/20 object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCk9dEUgVbzCwSDhGyQRrcQvHseeU-88AmXxRyHdCk-vouLWaXCMCdreS36bTc3wdDRhpawoFn6nsw67kkzodRftXTWwMyONcsHZ5jI62X0ALmMmsJG7Y0nofk5z6b8AnHlHODLcSWvAVu67guLnOC8raDdO1xuDHcUH7H40edVFI9A7p1gna1rCocPaXXjN8HMYftmRiG3osAkOKBXY0P7DodWkLE-9rtDso2ednR-f0cV-lITLHjC49hbmuTXHdBKvBcmd3Q0QPH"
+                    src="/illustrations/fatou-maman.png"
                   />
                   <div>
                     <h4 className="font-bold text-sm">Fatou, maman</h4>
