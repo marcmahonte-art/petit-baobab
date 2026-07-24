@@ -110,12 +110,10 @@ export default function LandingPage() {
           
           <div className="animate-fade-in-up">
             <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.1] mb-6">
-              Le coloriage <br/>
-              qui éveille la <span className="text-[#6D4CFF]">créativité</span> <br/>
-              et célèbre <span className="text-[#22C55E]">l'Afrique</span>
+              L'univers créatif qui fait grandir les enfants.
             </h1>
             <p className="text-lg text-gray-600 mb-10 max-w-lg">
-              Des milliers de dessins africains, des histoires captivantes et des outils intelligents pour apprendre en s'amusant.
+              Des coloriages, des histoires et des livres personnalisés pour apprendre en s'amusant.
             </p>
             <div className="flex flex-wrap gap-4 mb-12">
               <button
