@@ -1718,7 +1718,6 @@ export function ColoringBooksPage() {
                         {[
                           { label: "Repères de coupe", state: cutMarks, setter: setCutMarks },
                           { label: "Optimiser l'encre (économie)", state: optimizeInk, setter: setOptimizeInk },
-                          { label: "Inclure le fond perdu (bleed)", state: bleed, setter: setBleed },
                         ].map((opt) => (
                           <label key={opt.label} className="flex items-center gap-3 cursor-pointer group">
                             <button
