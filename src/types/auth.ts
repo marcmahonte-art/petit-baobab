@@ -28,7 +28,7 @@ export type StudentLoginResponse = {
   student_id: string;
   classroom_id: string;
   name: string;
-  mascot: "awa" | "lion" | "robot";
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab";
   classroom_name: string;
   stars_balance: number;
   type: "student";
@@ -36,5 +36,5 @@ export type StudentLoginResponse = {
 
 export type MultipleStudentsResponse = {
   multiple: true;
-  students: { id: string; display_name: string; mascot: "awa" | "lion" | "robot" }[];
+  students: { id: string; display_name: string; mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab" }[];
 };

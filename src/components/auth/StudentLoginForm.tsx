@@ -14,15 +14,10 @@ import {
 } from "lucide-react"
 import confetti from "canvas-confetti"
 import { useAuthStore } from "@/lib/auth-store"
+import { getMascotImage } from "@/lib/mascots"
 import type { StudentLoginInput, StudentLoginResponse, MultipleStudentsResponse } from "@/types/school"
 
 type Status = "idle" | "loading" | "success"
-
-function mascotEmoji(mascot: string): string {
-  if (mascot === "lion") return "🦁"
-  if (mascot === "robot") return "🤖"
-  return "🐵"
-}
 
 export function StudentLoginForm() {
   const router = useRouter()
@@ -151,7 +146,7 @@ export function StudentLoginForm() {
                       <CheckCircle className="w-5 h-5" />
                     </span>
                   )}
-                  <span className="text-5xl leading-none">{mascotEmoji(c.mascot)}</span>
+                  <img src={getMascotImage(c.mascot)} alt={c.display_name} className="w-12 h-12 rounded-full object-cover" />
                   <span className="text-[13px] font-medium text-[#1C1C3A] text-center">
                     {c.display_name}
                   </span>

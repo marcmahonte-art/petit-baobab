@@ -107,10 +107,16 @@ export function Header() {
       if (storedMascot) setProfileMascot(storedMascot)
     }
 
-    // Charger l'âge depuis le profil enfant actif (DB)
+    // Charger nom + mascotte + âge depuis le profil enfant actif (DB)
     fetch("/api/student/profile")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
+        if (data && typeof data.name === "string" && data.name.trim()) {
+          setProfileName(data.name.trim())
+        }
+        if (data && typeof data.mascot === "string") {
+          setProfileMascot(data.mascot)
+        }
         if (data && typeof data.age === "number") {
           setProfileAge(`${data.age} ans`)
         } else {

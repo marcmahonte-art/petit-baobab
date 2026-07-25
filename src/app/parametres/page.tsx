@@ -91,13 +91,18 @@ export default function ParametresPage() {
     localStorage.setItem("pb_lock", String(parentalLockEnabled))
     localStorage.setItem("pb_pin", parentPin)
 
-    // Sauvegarder l'âge sur le profil enfant actif (DB) si connecté en tant qu'élève
+    // Sauvegarder nom + mascotte + âge sur le profil enfant actif (DB)
+    // si connecté en tant qu'élève ou enfant de compte famille
     const ageNum = Number(childAge)
-    if (!Number.isNaN(ageNum)) {
+    const body: Record<string, unknown> = {}
+    if (childName.trim()) body.name = childName.trim()
+    if (selectedMascot) body.mascot = selectedMascot
+    if (!Number.isNaN(ageNum)) body.age = ageNum
+    if (Object.keys(body).length > 0) {
       fetch("/api/student/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ age: ageNum }),
+        body: JSON.stringify(body),
       }).catch(() => {})
     }
 
