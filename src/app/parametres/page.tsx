@@ -67,8 +67,20 @@ export default function ParametresPage() {
     }
   }, [])
 
+  // Charger l'âge depuis le profil enfant actif (DB) si connecté en tant qu'élève
+  useEffect(() => {
+    fetch("/api/student/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && typeof data.age === "number") {
+          setChildAge(String(data.age))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   // Save settings handler
-  const handleSave = () => {
+  const handleSave = async () => {
     localStorage.setItem("pb_child_name", childName)
     localStorage.setItem("pb_child_age", childAge)
     localStorage.setItem("pb_mascot", selectedMascot)
@@ -77,6 +89,16 @@ export default function ParametresPage() {
     localStorage.setItem("pb_lang", language)
     localStorage.setItem("pb_lock", String(parentalLockEnabled))
     localStorage.setItem("pb_pin", parentPin)
+
+    // Sauvegarder l'âge sur le profil enfant actif (DB) si connecté en tant qu'élève
+    const ageNum = Number(childAge)
+    if (!Number.isNaN(ageNum)) {
+      fetch("/api/student/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ age: ageNum }),
+      }).catch(() => {})
+    }
 
     setIsSavedToastOpen(true)
     setTimeout(() => setIsSavedToastOpen(false), 2500)
@@ -147,15 +169,17 @@ export default function ParametresPage() {
                     <label className="text-xs font-black text-[#7A6A5E] uppercase tracking-wider">
                       Âge de l&apos;enfant
                     </label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={18}
+                    <select
                       value={childAge}
                       onChange={(e) => setChildAge(e.target.value)}
-                      placeholder="Ex: 6"
-                      className="rounded-xl border-[#F0E7DA] h-12 px-4 text-sm font-bold text-[#3B2416] bg-[#FFF9F2]/30 focus-visible:ring-[#7D6AF8]"
-                    />
+                      className="rounded-xl border-[#F0E7DA] h-12 px-4 text-sm font-bold text-[#3B2416] bg-[#FFF9F2]/30 focus-visible:ring-[#7D6AF8] w-full"
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i + 3).map((a) => (
+                        <option key={a} value={a}>
+                          {a} ans
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="flex flex-col gap-3">

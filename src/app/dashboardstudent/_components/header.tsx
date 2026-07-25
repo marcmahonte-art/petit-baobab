@@ -110,13 +110,25 @@ export function Header() {
     if (activeProfile) {
       setProfileName(activeProfile.name)
       setProfileMascot(activeProfile.mascot)
-      setProfileAge("6 ans") // Age par défaut
     } else {
       const storedName = localStorage.getItem("pb_child_name")
       const storedMascot = localStorage.getItem("pb_mascot")
       if (storedName) setProfileName(storedName)
       if (storedMascot) setProfileMascot(storedMascot)
     }
+
+    // Charger l'âge depuis le profil enfant actif (DB)
+    fetch("/api/student/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && typeof data.age === "number") {
+          setProfileAge(`${data.age} ans`)
+        } else {
+          const storedAge = localStorage.getItem("pb_child_age")
+          if (storedAge) setProfileAge(`${storedAge} ans`)
+        }
+      })
+      .catch(() => {})
   }, [activeProfile])
 
   // Click away listener for dropdowns
