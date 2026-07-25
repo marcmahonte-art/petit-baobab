@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getStudentSession } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
-import { getSupabaseSsrClient } from "@/lib/supabase-server"
+import { getSupabaseServer } from "@/lib/supabase-server"
 
 // Résout le profile_id cible :
 //  - mode élève : depuis le cookie sb-student-token
@@ -25,7 +25,7 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   }
   if (!profileId) return null
 
-  const ssrClient = await getSupabaseSsrClient()
+  const ssrClient = await getSupabaseServer()
   const { data: userData } = await ssrClient.auth.getUser()
   const userId = userData.user?.id
   if (!userId) return null
