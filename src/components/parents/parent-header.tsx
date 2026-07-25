@@ -13,17 +13,14 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 
 import { useAuthStore } from "@/lib/auth-store"
+import { getMascotImage } from "@/lib/mascots"
 
 interface ParentHeaderProps {
   currentChild: string
   onChildChange: (child: string) => void
 }
 
-const getAvatarSrc = (mascot: string) => {
-  if (mascot === "lion") return "/illustrations/lion.webp"
-  if (mascot === "robot") return "/illustrations/robot.webp"
-  return "/illustrations/awa.webp"
-}
+const getAvatarSrc = (mascot: string) => getMascotImage(mascot)
 
 export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps) {
   const router = useRouter()

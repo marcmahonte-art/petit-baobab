@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getMascotImage } from "@/lib/mascots";
 import { Sidebar } from "@/components/sidebar";
 import { MobileBottomNav } from "@/components/child-dashboard/mobile-bottom-nav";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -111,7 +112,7 @@ export default function MagicDrawingPage() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [profileName, setProfileName] = useState("Awa");
   const [profileAge, setProfileAge] = useState("6 ans");
-  const [profileMascot, setProfileMascot] = useState("awa");
+  const [profileMascot, setProfileMascot] = useState("bobo");
   const maxChars = 200;
 
   useEffect(() => {
@@ -128,11 +129,7 @@ export default function MagicDrawingPage() {
   const { profiles, activeProfileId: currentProfileId, switchProfile } = useProfileStore();
   const router = useRouter();
 
-  const getAvatarSrc = (mascot: string) => {
-    if (mascot === "lion") return "/illustrations/lion.webp";
-    if (mascot === "robot") return "/illustrations/robot.webp";
-    return "/illustrations/awa.webp";
-  };
+  const getAvatarSrc = (mascot: string) => getMascotImage(mascot);
 
   useEffect(() => {
     const active = profiles.find((p) => p.id === currentProfileId);
@@ -749,7 +746,7 @@ export default function MagicDrawingPage() {
                 </div>
                 <div className="ml-auto hidden sm:block">
                   <Image
-                    src="/illustrations/awa.webp"
+                    src={getMascotImage(profileMascot)}
                     alt="Awa"
                     width={48}
                     height={48}

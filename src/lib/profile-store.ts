@@ -6,7 +6,7 @@ export type PlanType = "free" | "decouverte" | "super-baobab" | "ecole-pro"
 export interface ChildProfile {
   id: string
   name: string
-  mascot: "awa" | "lion" | "robot"
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab"
   language: "fr" | "en"
   points: number
   badges: string[]

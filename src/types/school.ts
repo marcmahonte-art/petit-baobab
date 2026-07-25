@@ -18,7 +18,7 @@ export interface SchoolStudent {
   first_name: string;
   last_name: string | null;
   display_name: string | null;
-  mascot: "awa" | "lion" | "robot";
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab";
   pin: string | null;
   deleted_at: string | null;
   created_at: string;
@@ -124,7 +124,7 @@ export interface CreateStudentInput {
   first_name: string;
   last_name?: string;
   display_name?: string;
-  mascot?: "awa" | "lion" | "robot";
+  mascot?: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab";
 }
 
 export interface CreateStudentsBulkInput {
@@ -144,7 +144,7 @@ export interface StudentLoginResponse {
   classroom_id: string;
   account_id: string;
   name: string;
-  mascot: "awa" | "lion" | "robot";
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab";
   classroom_name: string;
   stars_balance: number;
   type: "student";

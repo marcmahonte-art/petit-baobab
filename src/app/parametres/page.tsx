@@ -20,21 +20,22 @@ import {
 } from "lucide-react"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
 
 const mascottes = [
-  { id: "awa", name: "Awa", desc: "La petite fille curieuse", image: "/illustrations/avatar-awa.png" },
-  { id: "lion", name: "Bébé Lion", desc: "Le roi courageux de la savane", image: "/illustrations/avatar-lion.png" },
-  { id: "robot", name: "Baobab Robot", desc: "Le robot ami de la nature", image: "/illustrations/avatar-robot.png" },
-  { id: "fleur", name: "Fleur", desc: "La petite fleur joyeuse", image: "" },
-  { id: "militaire", name: "Militaire", desc: "Le soldat courageux", image: "" },
-  { id: "dinosaure", name: "Dinosaure", desc: "Le dinosaure explorateur", image: "" },
+  { id: "bobo", name: "Bôbô le Lion", desc: "Courage", image: "/illustrations/mascots/bobo-lion.png" },
+  { id: "kaya", name: "Kaya l'Éléphant", desc: "Mémoire", image: "/illustrations/mascots/kaya-elephant.png" },
+  { id: "zuri", name: "Zuri la Girafe", desc: "Curiosité", image: "/illustrations/mascots/zuri-girafe.png" },
+  { id: "momo", name: "Momo le Singe", desc: "Jeux", image: "/illustrations/mascots/momo-singe.png" },
+  { id: "kiki", name: "Kiki le Perroquet", desc: "Lecture", image: "/illustrations/mascots/kiki-perroquet.png" },
+  { id: "baobab", name: "Petit Baobab", desc: "Guide magique", image: "/illustrations/mascots/baobab-guide.png" },
 ]
 
 export default function ParametresPage() {
   // State variables with local storage support
   const [childName, setChildName] = useState("Awa")
   const [childAge, setChildAge] = useState("6")
-  const [selectedMascot, setSelectedMascot] = useState("awa")
+  const [selectedMascot, setSelectedMascot] = useState<string>(DEFAULT_MASCOT)
   const [musicEnabled, setMusicEnabled] = useState(true)
   const [sfxEnabled, setSfxEnabled] = useState(true)
   const [language, setLanguage] = useState("fr")
@@ -202,9 +203,11 @@ export default function ParametresPage() {
                             }`}
                           >
                             <div className="relative w-16 h-16 rounded-full overflow-hidden bg-[#FFF9F2] border border-[#F0E7DA] mb-2 flex items-center justify-center">
-                              <div className="text-2xl select-none">
-                                {m.id === "awa" ? "👧🏾" : m.id === "lion" ? "🦁" : m.id === "robot" ? "🤖" : m.id === "fleur" ? "🌸" : m.id === "militaire" ? "💂" : m.id === "dinosaure" ? "🦕" : "🤖"}
-                              </div>
+                              {m.image ? (
+                                <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <img src={getMascotImage(m.id)} alt={m.name} className="w-full h-full object-cover" />
+                              )}
                             </div>
                             <span className="font-extrabold text-sm text-[#261B4B]">{m.name}</span>
                             <span className="text-[10px] font-bold text-[#7A6A5E] mt-1 leading-tight">{m.desc}</span>

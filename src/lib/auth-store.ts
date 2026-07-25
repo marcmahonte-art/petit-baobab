@@ -17,14 +17,14 @@ export interface AccountSession {
 export interface ChildProfileSession {
   id: string
   name: string
-  mascot: "awa" | "lion" | "robot"
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab"
   pin_required: boolean
 }
 
 export interface StudentSessionState {
   type: "student"
   name: string
-  mascot: "awa" | "lion" | "robot"
+  mascot: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab"
   profileId: string
   classroomId: string
   classroomName?: string

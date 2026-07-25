@@ -11,7 +11,7 @@ import { Footer } from "./parents/footer"
 import { motion } from "framer-motion"
 
 export function ParentsPage() {
-  const [currentChild, setCurrentChild] = useState("awa")
+  const [currentChild, setCurrentChild] = useState("bobo")
 
   return (
     <motion.div

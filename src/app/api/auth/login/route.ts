@@ -171,7 +171,7 @@ export async function POST(request: Request) {
         .insert({
           account_id: account.id,
           name: cleanName || "Mon Enfant",
-          mascot: "awa",
+          mascot: "bobo",
           pin_required: false,
         })
         .select()

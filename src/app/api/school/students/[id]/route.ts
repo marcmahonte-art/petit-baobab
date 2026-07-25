@@ -165,7 +165,7 @@ export async function PATCH(
     // 3. Mettre à jour l'élève
     const updateData: Record<string, any> = {};
     if (typeof display_name === "string") updateData.display_name = display_name.trim();
-    if (mascot && ["awa", "lion", "robot"].includes(mascot)) updateData.mascot = mascot;
+    if (mascot && ["bobo", "kaya", "zuri", "momo", "kiki", "baobab"].includes(mascot)) updateData.mascot = mascot;
 
     // 3b. Changer de classe (avec vérification de propriété)
     if (typeof classroom_id === "string" && classroom_id && classroom_id !== student.classroom_id) {

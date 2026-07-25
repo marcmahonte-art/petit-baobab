@@ -124,7 +124,7 @@ export async function GET(request: Request) {
             if (acc?.id) {
               await admin
                 .from("child_profiles")
-                .insert({ account_id: acc.id, name: getDisplayNameFromEmail(user.email || ""), mascot: "awa", pin_required: false });
+                .insert({ account_id: acc.id, name: getDisplayNameFromEmail(user.email || ""), mascot: "bobo", pin_required: false });
             }
           }
         }

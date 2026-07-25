@@ -18,7 +18,7 @@ const payload: StudentLoginResponse = {
   classroom_id: "c1",
   account_id: "a1",
   name: "Awa",
-  mascot: "awa",
+  mascot: "bobo",
   classroom_name: "CE1 A",
   stars_balance: 47,
   type: "student",

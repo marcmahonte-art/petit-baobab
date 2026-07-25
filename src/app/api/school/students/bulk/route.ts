@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const classroomId: string | undefined = body?.classroom_id;
-    const students: { first_name: string; last_name?: string; display_name?: string; mascot?: "awa" | "lion" | "robot" }[] = body?.students;
+    const students: { first_name: string; last_name?: string; display_name?: string; mascot?: "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab" }[] = body?.students;
 
     if (!classroomId) {
       return NextResponse.json({ error: "L'identifiant de la classe est requis." }, { status: 400 });
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         errors.push(`Prénom "${firstName}" contient des caractères non autorisés.`);
         continue;
       }
-      const mascot = stu.mascot ?? "awa";
+      const mascot = stu.mascot ?? "bobo";
 
       // Insert school student
       const { data: schoolStudent, error: insStdErr } = await supabase

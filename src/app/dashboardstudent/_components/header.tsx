@@ -10,6 +10,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useCreditStore } from "@/lib/credit-store"
+import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
@@ -40,12 +41,7 @@ export function Header() {
   // saturerait le quota de Supabase. Le solde est déjà chargé via la
   // session (login + restauration) et au montage des composants.
   if (studentSession && studentSession.type === "student") {
-    const mascotSrc =
-      studentSession.mascot === "lion"
-        ? "/illustrations/lion.webp"
-        : studentSession.mascot === "robot"
-          ? "/illustrations/robot.webp"
-          : "/illustrations/awa.webp"
+    const mascotSrc = getMascotImage(studentSession?.mascot)
 
     return (
       <header className="flex items-center justify-between gap-4 py-2 lg:h-[72px] px-4 lg:px-6 w-full bg-white border-b border-[#EFE7DB]">
@@ -90,7 +86,7 @@ export function Header() {
   // Profile local states
   const [profileName, setProfileName] = useState("Awa")
   const [profileAge, setProfileAge] = useState("6 ans")
-  const [profileMascot, setProfileMascot] = useState("awa")
+  const [profileMascot, setProfileMascot] = useState<string>(DEFAULT_MASCOT)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("")
@@ -141,11 +137,7 @@ export function Header() {
     return () => window.removeEventListener("click", handleOutsideClick)
   }, [])
 
-  const getAvatarSrc = (mascot: string) => {
-    if (mascot === "lion") return "/illustrations/lion.webp"
-    if (mascot === "robot") return "/illustrations/robot.webp"
-    return "/illustrations/awa.webp"
-  }
+  const getAvatarSrc = (mascot: string) => getMascotImage(mascot)
 
   const toggleLanguage = () => {
     setLanguage(lang === "fr" ? "en" : "fr")

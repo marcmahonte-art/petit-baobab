@@ -159,7 +159,7 @@ export async function POST(request: Request) {
 
     // 7. Insérer les élèves validés
     for (const student of studentsToInsert) {
-      const mascot = "awa"; // mascotte par défaut
+      const mascot = "bobo"; // mascotte par défaut
 
       const { data: schoolStudent, error: insertStdErr } = await supabase
         .from("school_students")

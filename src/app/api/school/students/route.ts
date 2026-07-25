@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       const firstName = typeof std.first_name === "string" ? std.first_name.trim() : "";
       const lastName = typeof std.last_name === "string" ? std.last_name.trim() : null;
       const displayName = typeof std.display_name === "string" ? std.display_name.trim() : null;
-      const mascot = std.mascot && ["awa", "lion", "robot"].includes(std.mascot) ? std.mascot : "awa";
+      const mascot = std.mascot && ["bobo", "kaya", "zuri", "momo", "kiki", "baobab"].includes(std.mascot) ? std.mascot : "bobo";
 
       if (!firstName || firstName.length < 2 || firstName.length > 50) {
         continue; // Passer les élèves invalides

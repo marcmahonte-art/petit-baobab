@@ -139,7 +139,7 @@ export async function GET() {
         first_name: s.first_name,
         last_name: s.last_name,
         display_name: s.display_name,
-        mascot: s.mascot || "awa",
+        mascot: s.mascot || "bobo",
         profile_id: profileId || null,
         classroom_name: classObj?.name || "Classe",
         class_code: classObj?.class_code || "",

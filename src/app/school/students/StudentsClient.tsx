@@ -45,12 +45,15 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 
 const MASCOT_IMAGES: Record<string, string> = {
-  awa: "/illustrations/awa.webp",
-  lion: "/illustrations/lion.webp",
-  robot: "/illustrations/robot.webp",
+  bobo: "/illustrations/mascots/bobo-lion.png",
+  kaya: "/illustrations/mascots/kaya-elephant.png",
+  zuri: "/illustrations/mascots/zuri-girafe.png",
+  momo: "/illustrations/mascots/momo-singe.png",
+  kiki: "/illustrations/mascots/kiki-perroquet.png",
+  baobab: "/illustrations/mascots/baobab-guide.png",
 };
 
-const MASCOTS = ["awa", "lion", "robot"] as const;
+const MASCOTS = ["bobo", "kaya", "zuri", "momo", "kiki", "baobab"] as const;
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   actif: { label: "Actif", className: "bg-[#10B981]/15 text-[#0E9F6E] border border-[#10B981]/30" },
@@ -827,7 +830,7 @@ function EditStudentModal({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [mascot, setMascot] = useState<string>("awa");
+  const [mascot, setMascot] = useState<string>("bobo");
   const [classroomId, setClassroomId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 

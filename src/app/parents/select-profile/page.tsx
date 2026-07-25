@@ -5,17 +5,18 @@ import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
 import { motion } from "framer-motion"
 import Image from "next/image"
-
-const mascotAssets: Record<string, string> = {
-  awa: "/illustrations/awa.webp",
-  lion: "/illustrations/lion.webp",
-  robot: "/illustrations/robot.webp",
-}
+import { getMascotImage } from "@/lib/mascots"
 
 const mascotColors: Record<string, string> = {
   awa: "bg-[#FFE08A] hover:bg-[#FFE08A]/90 border-[#D97706]",
   lion: "bg-[#FFC4A8] hover:bg-[#FFC4A8]/90 border-[#EA580C]",
   robot: "bg-[#E0F2FE] hover:bg-[#E0F2FE]/90 border-[#0284C7]",
+  bobo: "bg-[#FFC4A8] hover:bg-[#FFC4A8]/90 border-[#EA580C]",
+  kaya: "bg-[#E0F2FE] hover:bg-[#E0F2FE]/90 border-[#0284C7]",
+  zuri: "bg-[#FCE7F3] hover:bg-[#FCE7F3]/90 border-[#DB2777]",
+  momo: "bg-[#DCFCE7] hover:bg-[#DCFCE7]/90 border-[#16A34A]",
+  kiki: "bg-[#FEF3C7] hover:bg-[#FEF3C7]/90 border-[#D97706]",
+  baobab: "bg-[#DDF26B] hover:bg-[#DDF26B]/90 border-[#65A30D]",
 }
 
 export default function SelectProfilePage() {
@@ -59,9 +60,9 @@ export default function SelectProfilePage() {
         {/* Profile Grid */}
         <div className="flex flex-wrap justify-center gap-8">
           {profiles.map((profile, idx) => {
-            const mascot = profile.mascot || "awa"
-            const colorClass = mascotColors[mascot] || mascotColors.awa
-            const imagePath = mascotAssets[mascot] || "/illustrations/logo-petit-baobab.webp"
+            const mascot = profile.mascot || "bobo"
+            const colorClass = mascotColors[mascot] || "bg-[#DDF26B] hover:bg-[#DDF26B]/90 border-[#65A30D]"
+            const imagePath = getMascotImage(mascot)
 
             return (
               <motion.button
