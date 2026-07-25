@@ -19,11 +19,11 @@ export function BrushSizeSlider() {
   }
 
   return (
-    <div className="flex items-center gap-3.5 select-none w-full px-1 py-1">
+    <div className="flex items-center gap-3.5 select-none w-full px-1 py-1 overflow-hidden">
       <span className="text-xs sm:text-sm font-extrabold text-[#7A6A5E] shrink-0">
         Taille
       </span>
-      <div className="flex-1 min-w-[70px]">
+      <div className="flex-1 min-w-0">
         <Slider
           min={0}
           max={sizes.length - 1}
