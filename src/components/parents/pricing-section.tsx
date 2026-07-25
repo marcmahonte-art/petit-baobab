@@ -35,12 +35,12 @@ export function PricingSection() {
     {
       name: "Super Baobab",
       price: "4 500 FCFA",
-      period: "/ mois (1 ou 9 mois)",
+      period: "/ mois (3 mois)",
       credits: "250",
       creditsLabel: "étoiles incluses / mois",
       features: [
         "250 étoiles à utiliser par mois",
-        "Disponible en 1 mois (4 500 FCFA) ou 9 mois (40 500 FCFA)",
+        "Disponible en 3 mois (13 500 FCFA)",
         "Tous les styles de dessin",
         "Livres",
         "Téléchargement de vos créations",
