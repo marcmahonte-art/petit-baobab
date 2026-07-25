@@ -1,19 +1,57 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getStudentSession } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
+import { supabase as getUserClient } from "@/lib/supabaseClient"
 
-export async function GET() {
+// Résout le profile_id cible :
+//  - mode élève : depuis le cookie sb-student-token
+//  - mode famille : depuis ?profileId= (GET) ou body.profileId (PATCH),
+//    à condition que le profil appartienne bien au compte parent connecté
+async function resolveProfileId(request: NextRequest): Promise<string | null> {
+  const session = await getStudentSession()
+  if (session?.profile_id) return session.profile_id
+
+  // Mode famille : parent authentifié
+  let profileId: string | null = null
+  if (request.method === "PATCH") {
+    try {
+      const b = await request.clone().json()
+      profileId = b?.profileId ?? null
+    } catch {
+      profileId = null
+    }
+  } else {
+    profileId = request.nextUrl.searchParams.get("profileId")
+  }
+  if (!profileId) return null
+
+  const { data: userData } = await getUserClient.auth.getUser()
+  const userId = userData.user?.id
+  if (!userId) return null
+
+  const supabase = getSupabaseAdmin()
+  const { data: profile } = await supabase
+    .from("child_profiles")
+    .select("id, account_id")
+    .eq("id", profileId)
+    .single()
+
+  if (!profile || profile.account_id !== userId) return null
+  return profileId
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const session = await getStudentSession()
-    if (!session?.profile_id) {
-      return NextResponse.json({ error: "Non authentifié (élève)." }, { status: 401 })
+    const profileId = await resolveProfileId(request)
+    if (!profileId) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from("child_profiles")
       .select("name, mascot, age")
-      .eq("id", session.profile_id)
+      .eq("id", profileId)
       .single()
 
     if (error) {
@@ -30,9 +68,9 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getStudentSession()
-    if (!session?.profile_id) {
-      return NextResponse.json({ error: "Non authentifié (élève)." }, { status: 401 })
+    const profileId = await resolveProfileId(request)
+    if (!profileId) {
+      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
     let body: any
@@ -55,13 +93,12 @@ export async function PATCH(request: NextRequest) {
     const { data, error } = await supabase
       .from("child_profiles")
       .update(update)
-      .eq("id", session.profile_id)
+      .eq("id", profileId)
       .select("name, mascot, age")
       .single()
 
     if (error) {
       // La colonne age peut ne pas exister encore (migration DB à appliquer).
-      // On renvoie 200 avec les champs connus pour ne pas casser le front.
       console.warn("PATCH /api/student/profile warn:", error.message)
       return NextResponse.json({ warning: error.message, applied: Object.keys(update) })
     }

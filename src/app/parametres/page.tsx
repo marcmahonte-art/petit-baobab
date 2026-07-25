@@ -21,6 +21,7 @@ import {
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
+import { useProfileStore } from "@/lib/profile-store"
 
 const mascottes = [
   { id: "bobo", name: "Bôbô le Lion", desc: "Courage", image: "/illustrations/mascots/bobo-lion.png" },
@@ -68,14 +69,18 @@ export default function ParametresPage() {
     }
   }, [])
 
-  // Charger l'âge depuis le profil enfant actif (DB) si connecté en tant qu'élève
+  // Charger nom + mascotte + âge depuis le profil enfant actif (DB)
   useEffect(() => {
-    fetch("/api/student/profile")
+    const activeProfileId = useProfileStore.getState().activeProfileId
+    const url = activeProfileId
+      ? `/api/student/profile?profileId=${encodeURIComponent(activeProfileId)}`
+      : "/api/student/profile"
+    fetch(url)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (data && typeof data.age === "number") {
-          setChildAge(String(data.age))
-        }
+        if (data && typeof data.age === "number") setChildAge(String(data.age))
+        if (data && typeof data.name === "string" && data.name.trim()) setChildName(data.name.trim())
+        if (data && typeof data.mascot === "string") setSelectedMascot(data.mascot)
       })
       .catch(() => {})
   }, [])
@@ -98,6 +103,8 @@ export default function ParametresPage() {
     if (childName.trim()) body.name = childName.trim()
     if (selectedMascot) body.mascot = selectedMascot
     if (!Number.isNaN(ageNum)) body.age = ageNum
+    const activeProfileId = useProfileStore.getState().activeProfileId
+    if (activeProfileId) body.profileId = activeProfileId
     if (Object.keys(body).length > 0) {
       fetch("/api/student/profile", {
         method: "PATCH",
