@@ -84,6 +84,9 @@ export default function TarificationPage() {
             <br />
             Que vous soyez un parent souhaitant partager des moments créatifs à la maison ou une école cherchant à enrichir l'apprentissage en classe, Petit Baobab propose une formule adaptée à vos besoins.
           </p>
+          <p className="text-[13px] md:text-[15px] font-bold text-[#334155] mt-3">
+            Commencez gratuitement — Un paiement simple et sécurisé (Orange Money · Moov Money)
+          </p>
         </div>
 
         <PricingPageContent />
