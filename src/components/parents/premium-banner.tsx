@@ -7,7 +7,7 @@ export function PremiumBanner() {
     <div className="w-full h-auto md:h-[52px] rounded-[14px] bg-[#FFFBEB] border border-[#F59E0B] flex items-center gap-3 px-4 py-3 md:py-0 shadow-sm select-none">
       <Info className="w-5 h-5 text-[#F59E0B] shrink-0" />
       <span className="text-[14px] md:text-[16px] font-medium text-[#B45309] leading-tight">
-        <span className="font-extrabold">Plan gratuit inclus</span> — 3 générations par jour (style Contour simple uniquement), réinitialisées à minuit GMT (Burkina Faso). Aucune carte requise.
+        <span className="font-extrabold">Découvrez Petit Baobab</span> avec 5 étoiles offertes dès votre inscription. Testez la création de coloriages et explorez l'univers créatif avant de choisir une offre.
       </span>
     </div>
   )
