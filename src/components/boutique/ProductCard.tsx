@@ -1,0 +1,118 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { Product } from "@/lib/mock/types";
+import { Price } from "./Price";
+import { Rating } from "./Rating";
+import { useCartStore } from "@/lib/cart-store";
+import { ShoppingCart, Eye, Download, Check } from "lucide-react";
+import { useState } from "react";
+
+interface ProductCardProps {
+  product: Product;
+}
+
+export function ProductCard({ product }: ProductCardProps) {
+  const { addItem } = useCartStore();
+  const [added, setAdded] = useState(false);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
+  return (
+    <div className="group relative flex flex-col bg-white rounded-[20px] border border-[#E5E0D5] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      {/* Image & Badges */}
+      <Link href={`/boutique/${product.slug}`} className="relative w-full aspect-[4/3] bg-[#FFF9F2] overflow-hidden block">
+        <Image
+          src={product.images[0] || "/illustrations/Collection-livres.webp"}
+          alt={product.title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {product.isNew && (
+            <span className="px-2.5 py-1 rounded-full bg-[#1D9E75] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+              Nouveau
+            </span>
+          )}
+          {product.bestSeller && (
+            <span className="px-2.5 py-1 rounded-full bg-[#FFD95C] text-[#3B2416] text-[10px] font-extrabold uppercase tracking-wider shadow-sm">
+              Best-seller
+            </span>
+          )}
+          {product.downloadable && (
+            <span className="px-2.5 py-1 rounded-full bg-[#7D6AF8] text-white text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
+              <Download className="w-3 h-3" />
+              PDF
+            </span>
+          )}
+        </div>
+      </Link>
+
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-bold text-[#7D6AF8] uppercase tracking-wider">
+            {product.category.replace("-", " ")}
+          </span>
+
+          <Link href={`/boutique/${product.slug}`}>
+            <h3 className="text-base font-bold text-[#3B2416] group-hover:text-[#7D6AF8] transition-colors line-clamp-2 mt-0.5">
+              {product.title}
+            </h3>
+          </Link>
+
+          <div className="mt-2">
+            <Rating rating={product.rating} reviewCount={product.reviewCount} />
+          </div>
+        </div>
+
+        {/* Price & Actions */}
+        <div className="pt-2 border-t border-[#E5E0D5]/50 flex items-center justify-between gap-2">
+          <Price amount={product.price} currency={product.currency} size="md" />
+
+          <div className="flex items-center gap-1.5">
+            <Link
+              href={`/boutique/${product.slug}`}
+              className="p-2 rounded-full bg-[#FFF9F2] hover:bg-[#E5E0D5]/50 text-[#3B2416] transition-colors"
+              aria-label="Voir le produit"
+              title="Voir le produit"
+            >
+              <Eye className="w-4 h-4" />
+            </Link>
+
+            <button
+              onClick={handleAddToCart}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full font-bold text-xs transition-all duration-200 shadow-sm ${
+                added
+                  ? "bg-[#1D9E75] text-white"
+                  : "bg-[#7D6AF8] hover:bg-[#6552E8] text-white shadow-[#7D6AF8]/20"
+              }`}
+              aria-label="Acheter le produit"
+            >
+              {added ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Ajouté !</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  <span>Acheter</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
