@@ -1,74 +1,11 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/lib/auth-store";
-import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n-provider";
+import { Header } from "@/components/landing/Header";
 import { PricingPageContent } from "@/components/pricing-page-content";
 import { Sparkles } from "lucide-react";
 
 export default function TarificationPage() {
-  const router = useRouter();
-  const { lang, setLanguage } = useI18n();
-  const { user, checkSession } = useAuthStore();
-
-  useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  const handleCTA = () => {
-    if (user) {
-      router.push("/dashboard");
-    } else {
-      router.push("/signup");
-    }
-  };
-
-  const handleLogin = () => {
-    if (user) {
-      router.push("/dashboard");
-    } else {
-      router.push("/login");
-    }
-  };
-
   return (
     <div className="bg-[#fef5e0] font-sans text-[#1F2937] antialiased overflow-x-hidden min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#fef5e0]/90 backdrop-blur-sm border-b border-gray-100 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={() => router.push("/")}>
-            <div className="h-[90px] md:h-[140px] flex items-center justify-center">
-              <img
-                alt="Logo"
-                className="h-[90px] md:h-[140px] w-auto object-contain"
-                src="/illustrations/logo-petit-baobab.svg"
-              />
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
-            <a className="hover:text-[#6D4CFF] transition-colors" href="/">Accueil</a>
-            <a className="text-[#6D4CFF] transition-colors" href="/tarification">Tarifs</a>
-            <a className="hover:text-[#6D4CFF] transition-colors" href="/#testimonials">À propos</a>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogin}
-              className="hidden sm:inline-flex px-5 py-2 text-sm font-semibold hover:bg-gray-100 rounded-[8px] transition-colors cursor-pointer"
-            >
-              Se connecter
-            </button>
-            <button
-              onClick={handleCTA}
-              className="hidden sm:inline-flex px-5 py-2 text-sm font-semibold bg-[#6D4CFF] text-white rounded-[8px] hover:bg-[#6D4CFF]/90 transition-all shadow-md shadow-[#6D4CFF]/20 cursor-pointer"
-            >
-              Créer un compte
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Contenu tarifs */}
       <main className="max-w-7xl mx-auto px-6 py-12 md:py-16">

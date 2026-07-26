@@ -14,8 +14,7 @@ import {
 export default function BoutiquePage() {
   return (
     <div
-      className="flex min-h-screen flex-col"
-      style={{ background: "#FFFDF9" }}
+      className="flex min-h-screen flex-col bg-[#fef5e0] font-sans text-[#1F2937] antialiased overflow-x-hidden"
     >
       <ShopHeader />
       <main
