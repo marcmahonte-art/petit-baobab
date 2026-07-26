@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n-provider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Petit Baobab",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className="antialiased font-sans">
         <I18nProvider>{children}</I18nProvider>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

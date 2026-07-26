@@ -5,9 +5,11 @@ import Image from "next/image";
 import { Product } from "@/lib/mock/types";
 import { Price } from "./Price";
 import { Rating } from "./Rating";
-import { useCartStore } from "@/lib/cart-store";
+import { useCartStore } from "@/stores/cart-store";
 import { ShoppingCart, Eye, Download, Check } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface ProductCardProps {
   product: Product;
@@ -22,11 +24,23 @@ export function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
     addItem(product, 1);
     setAdded(true);
+
+    toast.success(`"${product.title}" ajouté au panier !`, {
+      description: `${product.price.toLocaleString("fr-FR")} ${product.currency}`,
+      duration: 3000,
+    });
+
     setTimeout(() => setAdded(false), 1500);
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-[20px] border border-[#E5E0D5] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.2 }}
+      className="group relative flex flex-col bg-white rounded-[20px] border border-[#E5E0D5] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+    >
       {/* Image & Badges */}
       <Link href={`/boutique/${product.slug}`} className="relative w-full aspect-[4/3] bg-[#FFF9F2] overflow-hidden block">
         <Image
@@ -89,9 +103,10 @@ export function ProductCard({ product }: ProductCardProps) {
               <Eye className="w-4 h-4" />
             </Link>
 
-            <button
+            <motion.button
+              whileTap={{ scale: 0.92 }}
               onClick={handleAddToCart}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full font-bold text-xs transition-all duration-200 shadow-sm ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-bold text-xs transition-all duration-200 shadow-sm cursor-pointer ${
                 added
                   ? "bg-[#1D9E75] text-white"
                   : "bg-[#7D6AF8] hover:bg-[#6552E8] text-white shadow-[#7D6AF8]/20"
@@ -109,10 +124,10 @@ export function ProductCard({ product }: ProductCardProps) {
                   <span>Acheter</span>
                 </>
               )}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
