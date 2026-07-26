@@ -33,6 +33,7 @@ const navLinks = [
   { label: "Accueil", href: "#hero" },
   { label: "Fonctionnalités", href: "#features" },
   { label: "Tarifs", href: "/tarification" },
+  { label: "Boutique", href: "/boutique" },
   { label: "À propos", href: "#about" },
 ]
 

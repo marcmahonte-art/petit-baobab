@@ -13,13 +13,27 @@ import {
 // par email/WhatsApp) viendra se brancher sur les boutons "Acheter".
 export default function BoutiquePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-[#FFFDF8]">
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ background: "#FFFDF9" }}
+    >
       <ShopHeader />
-      <main className="flex-1">
-        <ShopHero />
-        <ShopCategories />
-        <ShopPopularProducts />
-        <ShopReassurance />
+      <main
+        className="flex-1"
+        style={{
+          maxWidth: 1440,
+          margin: "0 auto",
+          width: "100%",
+          paddingTop: 32,
+          paddingBottom: 80,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+          <ShopHero />
+          <ShopCategories />
+          <ShopPopularProducts />
+          <ShopReassurance />
+        </div>
       </main>
       <ShopFooter />
     </div>
