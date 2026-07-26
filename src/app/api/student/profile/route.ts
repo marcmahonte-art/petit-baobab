@@ -25,9 +25,21 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   }
   if (!profileId) return null
 
-  const ssrClient = await getSupabaseSsrClient()
-  const { data: userData } = await ssrClient.auth.getUser()
-  const userId = userData.user?.id
+  // Mode famille : parent authentifié (Bearer token standard Supabase, ou cookie de session)
+  const authHeader = request.headers.get("authorization")
+  const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null
+
+  let userId: string | null = null
+  if (bearer) {
+    const ssrClient = await getSupabaseSsrClient()
+    const { data: userData } = await ssrClient.auth.getUser(bearer)
+    userId = userData.user?.id ?? null
+  }
+  if (!userId) {
+    const ssrClient = await getSupabaseSsrClient()
+    const { data: userData } = await ssrClient.auth.getUser()
+    userId = userData.user?.id ?? null
+  }
   if (!userId) return null
 
   const supabase = getSupabaseAdmin()
