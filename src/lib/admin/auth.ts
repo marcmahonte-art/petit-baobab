@@ -39,7 +39,7 @@ export async function getSuperAdminSession(): Promise<SuperAdminSession | null> 
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-  const { data, error } = await client.auth.getUser();
+  const { data, error } = await client.auth.getUser(token);
   if (error || !data.user) return null;
 
   const email = (data.user.email || "").toLowerCase();
