@@ -3,12 +3,17 @@ import { CartItem } from "@/lib/mock/types";
 import { Price } from "./Price";
 import { ShieldCheck, Lock } from "lucide-react";
 
+export const DELIVERY_FEE = 3500; // frais impression+livraison en XOF
+
 interface CheckoutSummaryProps {
   items: CartItem[];
   totalPrice: number;
+  deliveryMethod: "download" | "delivery";
 }
 
-export function CheckoutSummary({ items, totalPrice }: CheckoutSummaryProps) {
+export function CheckoutSummary({ items, totalPrice, deliveryMethod }: CheckoutSummaryProps) {
+  const deliveryFee = deliveryMethod === "delivery" ? DELIVERY_FEE : 0;
+  const finalTotal = totalPrice + deliveryFee;
   return (
     <div className="bg-white rounded-[20px] border border-[#E5E0D5] p-6 shadow-sm space-y-6">
       <h3 className="text-lg font-bold text-[#3B2416] pb-3 border-b border-[#E5E0D5]">
@@ -43,12 +48,16 @@ export function CheckoutSummary({ items, totalPrice }: CheckoutSummaryProps) {
           <Price amount={totalPrice} size="sm" />
         </div>
         <div className="flex justify-between text-[#3B2416]/70">
-          <span>Livraison / Téléchargement</span>
-          <span className="font-bold text-[#1D9E75]">GRATUIT</span>
+          <span>{deliveryMethod === "delivery" ? "Impression + Livraison" : "Téléchargement"}</span>
+          {deliveryMethod === "delivery" ? (
+            <Price amount={deliveryFee} size="sm" />
+          ) : (
+            <span className="font-bold text-[#1D9E75]">GRATUIT</span>
+          )}
         </div>
         <div className="flex justify-between text-base font-extrabold text-[#3B2416] pt-3 border-t border-[#E5E0D5]">
           <span>Total à payer</span>
-          <Price amount={totalPrice} size="lg" />
+          <Price amount={finalTotal} size="lg" />
         </div>
       </div>
 

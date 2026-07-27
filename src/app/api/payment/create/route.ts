@@ -8,6 +8,8 @@ import { createShopInvoice } from "@/lib/paydunya/checkout";
 import { assertPaydunyaConfigured } from "@/lib/paydunya/config";
 import { PRODUCTS } from "@/lib/mock/products";
 
+const DELIVERY_FEE = 3500;
+
 export const runtime = "nodejs";
 
 // --- Rate limiting simple en mémoire (par IP, 10 req / 10 min) ---
@@ -30,6 +32,8 @@ const CheckoutSchema = z.object({
   phone: z.string().trim().min(6).max(30),
   country: z.string().trim().min(1).max(80),
   city: z.string().trim().min(1).max(80),
+  delivery_method: z.enum(["download", "delivery"]).default("download"),
+  shipping_address: z.string().trim().nullable().optional(),
   acceptTerms: z.literal(true),
   items: z
     .array(
@@ -91,9 +95,11 @@ export async function POST(request: NextRequest) {
       });
     }
     const total = items.reduce((s, it) => s + it.unitPrice * it.quantity, 0);
-    const totalHT = Math.round(total / 1.18);
+    const deliveryFee = input.delivery_method === "delivery" ? DELIVERY_FEE : 0;
+    const totalWithDelivery = total + deliveryFee;
+    const totalHT = Math.round(totalWithDelivery / 1.18);
 
-    if (total <= 0) {
+    if (totalWithDelivery <= 0) {
       return NextResponse.json({ error: "empty_order" }, { status: 400 });
     }
 
@@ -111,8 +117,11 @@ export async function POST(request: NextRequest) {
         phone: input.phone,
         country: input.country,
         city: input.city,
+        delivery_method: input.delivery_method,
+        delivery_fee: deliveryFee,
+        shipping_address: input.shipping_address || null,
         items,
-        total,
+        total: totalWithDelivery,
         total_ht: totalHT,
         payment_status: "pending",
         status: "pending",
@@ -135,7 +144,7 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         orderNumber: order.order_number,
         items,
-        totalAmount: total,
+        totalAmount: totalWithDelivery,
         customerEmail: input.email,
         customerPhone: input.phone,
       });

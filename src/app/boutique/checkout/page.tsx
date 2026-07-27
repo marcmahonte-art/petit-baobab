@@ -8,14 +8,19 @@ import { CheckoutSummary } from "@/components/boutique/CheckoutSummary";
 import { PaymentMethods, PaymentMethodType } from "@/components/boutique/PaymentMethods";
 import { MiniCart } from "@/components/boutique/MiniCart";
 import { useCartStore } from "@/stores/cart-store";
-import { Lock, ArrowRight, BookOpen } from "lucide-react";
+import { Lock, ArrowRight, BookOpen, Download, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { DELIVERY_FEE } from "@/components/boutique/CheckoutSummary";
 
 export default function CheckoutPage() {
   const { items, getTotalTTC, clearCart } = useCartStore();
+  const [deliveryMethod, setDeliveryMethod] = useState<"download" | "delivery">("download");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const totalPriceTTC = getTotalTTC();
+  const deliveryFee = deliveryMethod === "delivery" ? DELIVERY_FEE : 0;
+  const finalTotal = totalPriceTTC + deliveryFee;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -81,6 +86,8 @@ export default function CheckoutPage() {
           phone: formData.phone,
           country: formData.country,
           city: formData.city,
+          delivery_method: deliveryMethod,
+          shipping_address: deliveryMethod === "delivery" ? deliveryAddress : null,
           acceptTerms: formData.acceptTerms,
           items: items.map(({ product, quantity }) => ({
             productId: product.id,
@@ -274,10 +281,71 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {/* Delivery Option Card */}
+            <div className="bg-white rounded-[24px] border border-[#E5E0D5] p-6 md:p-8 shadow-sm space-y-4">
+              <h3 className="text-lg font-bold text-[#3B2416] pb-3 border-b border-[#E5E0D5]">
+                2. Mode de réception
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod("download")}
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                    deliveryMethod === "download"
+                      ? "border-[#7D6AF8] bg-[#7D6AF8]/5"
+                      : "border-[#E5E0D5] hover:border-[#7D6AF8]/50"
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#7D6AF8]/10 flex items-center justify-center shrink-0">
+                    <Download className="w-5 h-5 text-[#7D6AF8]" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-[#3B2416]">Téléchargement</p>
+                    <p className="text-[11px] text-[#3B2416]/60">Reçois le PDF par email</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeliveryMethod("delivery")}
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                    deliveryMethod === "delivery"
+                      ? "border-[#7D6AF8] bg-[#7D6AF8]/5"
+                      : "border-[#E5E0D5] hover:border-[#7D6AF8]/50"
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#FFB300]/10 flex items-center justify-center shrink-0">
+                    <Truck className="w-5 h-5 text-[#FFB300]" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-[#3B2416]">Livraison</p>
+                    <p className="text-[11px] text-[#3B2416]/60">Impression + envoi à domicile</p>
+                  </div>
+                </button>
+              </div>
+
+              {deliveryMethod === "delivery" && (
+                <div>
+                  <label className="block text-xs font-bold text-[#3B2416] mb-1.5">
+                    Adresse de livraison complète <span className="text-[#FF5E83]">*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Rue, quartier, ville, code postal, pays..."
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-[#E5E0D5] bg-[#FFF9F2] text-sm text-[#3B2416] focus:outline-none focus:border-[#7D6AF8] resize-none"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Payment Options Card */}
             <div className="bg-white rounded-[24px] border border-[#E5E0D5] p-6 md:p-8 shadow-sm space-y-4">
               <h3 className="text-lg font-bold text-[#3B2416] pb-3 border-b border-[#E5E0D5]">
-                2. Mode de paiement
+                3. Mode de paiement
               </h3>
 
               <PaymentMethods
@@ -289,7 +357,7 @@ export default function CheckoutPage() {
 
           {/* Right Summary & Submit CTA */}
           <div className="space-y-4">
-            <CheckoutSummary items={items} totalPrice={totalPriceTTC} />
+            <CheckoutSummary items={items} totalPrice={totalPriceTTC} deliveryMethod={deliveryMethod} />
 
             <button
               type="submit"

@@ -25,6 +25,9 @@ export interface OrderStatusData {
     status: string;
     invoice_number: string | null;
     created_at: string;
+    delivery_method: string;
+    delivery_fee: number;
+    shipping_address: string | null;
   } | null;
   downloads: Array<{
     id: string;

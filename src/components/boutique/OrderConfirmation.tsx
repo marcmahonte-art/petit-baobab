@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  CheckCircle2, Clock, XCircle, Download, ArrowLeft, FileText, Loader2,
+  CheckCircle2, Clock, XCircle, Download, ArrowLeft, FileText, Loader2, Truck,
 } from "lucide-react";
 import { useOrderStatus } from "./useOrderStatus";
 import { Price } from "./Price";
@@ -142,6 +142,16 @@ export function OrderConfirmation() {
           <span>Montant total</span>
           <Price amount={order.total} size="lg" />
         </div>
+
+        {order.delivery_method === "delivery" && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#FFF3E0]/50 border border-[#FFB300]/30 text-sm text-[#3B2416]">
+            <Truck className="w-5 h-5 text-[#FFB300] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-xs uppercase tracking-wide text-[#FFB300]">Livraison prévue</p>
+              <p className="text-xs text-[#3B2416]/70 mt-0.5">{order.shipping_address || "Adresse non renseignée"}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Téléchargements */}

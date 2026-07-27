@@ -12,7 +12,7 @@ import { Breadcrumb } from "@/components/boutique/Breadcrumb";
 import { Price } from "@/components/boutique/Price";
 import { useOrderStatus } from "@/components/boutique/useOrderStatus";
 import {
-  Download, FileText, Loader2, PackageOpen, ShoppingBag, Clock, CheckCircle2, XCircle,
+  Download, FileText, Loader2, PackageOpen, ShoppingBag, Clock, CheckCircle2, XCircle, Truck,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
@@ -103,6 +103,21 @@ function MesAchatsContent() {
             <Price amount={order.total} size="md" />
           </div>
         </div>
+
+        {order.delivery_method === "delivery" && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#FFF3E0]/50 border border-[#FFB300]/30 text-sm text-[#3B2416]">
+            <Truck className="w-5 h-5 text-[#FFB300] shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-xs uppercase tracking-wide text-[#FFB300]">Livraison prévue</p>
+              <p className="text-xs text-[#3B2416]/70 mt-0.5">{order.shipping_address || "Adresse non renseignée"}</p>
+              {order.delivery_fee > 0 && (
+                <p className="text-xs text-[#3B2416]/60 mt-1">
+                  Frais de livraison : <Price amount={order.delivery_fee} size="sm" />
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Téléchargements */}

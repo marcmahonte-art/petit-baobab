@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     // Relire l'état à jour + téléchargements
     const { data: fresh } = await supabase
       .from("shop_orders")
-      .select("id, order_number, first_name, items, total, total_ht, payment_status, status, invoice_number, invoice_url, created_at")
+      .select("id, order_number, first_name, items, total, total_ht, payment_status, status, invoice_number, invoice_url, created_at, delivery_method, delivery_fee, shipping_address")
       .eq("id", parsed.data.order)
       .single();
 
