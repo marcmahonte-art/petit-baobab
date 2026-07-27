@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
+import { getHomeRedirect } from "@/lib/admin/client-guard"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
@@ -45,7 +46,7 @@ export default function Hero() {
           <div className="flex gap-3 md:gap-4 mt-5 md:mt-8 flex-wrap">
             {user ? (
               <Button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push(getHomeRedirect())}
                 className="h-12 md:h-14 px-6 md:px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-sm md:text-[16px] rounded-full shadow-hover hover:scale-[1.02] md:hover:scale-[1.03] transition-all duration-180 md:duration-200 cursor-pointer"
               >
                 <span>

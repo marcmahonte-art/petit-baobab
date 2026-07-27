@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
 import { Header } from "@/components/landing/Header"
 import { Star } from "lucide-react"
+import { getHomeRedirect } from "@/lib/admin/client-guard"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -18,7 +19,7 @@ export default function LandingPage() {
 
   const handleCTA = () => {
     if (user) {
-      router.push("/dashboard")
+      router.push(getHomeRedirect())
     } else {
       router.push("/signup")
     }
@@ -26,7 +27,7 @@ export default function LandingPage() {
 
   const handleLogin = () => {
     if (user) {
-      router.push("/dashboard")
+      router.push(getHomeRedirect())
     } else {
       router.push("/login")
     }

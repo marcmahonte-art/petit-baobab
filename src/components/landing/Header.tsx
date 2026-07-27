@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { getHomeRedirect } from "@/lib/admin/client-guard";
 
 export function Header() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function Header() {
 
   const handleCTA = () => {
     if (user) {
-      router.push("/dashboard");
+      router.push(getHomeRedirect());
     } else {
       router.push("/signup");
     }
@@ -27,7 +28,7 @@ export function Header() {
 
   const handleLogin = () => {
     if (user) {
-      router.push("/dashboard");
+      router.push(getHomeRedirect());
     } else {
       router.push("/login");
     }
@@ -87,7 +88,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           {user ? (
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push(getHomeRedirect())}
               className="hidden sm:inline-flex px-5 py-2 text-sm font-semibold bg-[#6D4CFF] text-white rounded-[8px] hover:bg-[#6D4CFF]/90 transition-all shadow-md shadow-[#6D4CFF]/20 cursor-pointer"
             >
               Mon Espace

@@ -4,9 +4,11 @@ import { Home, Users, Star, CreditCard } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { commonNavItems, settingsNavItem } from "@/components/child-dashboard"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { commonNavItems, settingsNavItem } from "@/components/child-dashboard";
+import { isSuperAdminClient } from "@/lib/admin/client-guard";
+import { ShieldCheck } from "lucide-react";
 import { useLearnSession } from "@/app/learn/_components/learn-session"
 
 const navItemsBase = [
@@ -19,6 +21,7 @@ const navItemsBase = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   // Source de vérité = cookie sb-student-token résolu côté serveur (learn/layout).
   // Hors de /learn (ex: /parents), role = "unknown" → on garde le menu complet
   // (espace parent). Sous /learn avec un élève, role = "student" → on masque
@@ -40,7 +43,7 @@ export function Sidebar() {
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">
       <div>
         {/* Logo Section → lien vers dashboard */}
-        <Link href="/dashboard" className="h-[72px] md:h-[96px] flex items-center px-1">
+        <Link href="/learn/dashboard" className="h-[72px] md:h-[96px] flex items-center px-1">
           <Image
             src="/illustrations/logo-petit-baobab.webp"
             alt="Petit Baobab"
@@ -107,6 +110,19 @@ export function Sidebar() {
           />
         </div>
       </div>
+
+      {/* Bouton Super Admin — visible UNIQUEMENT si le compte connecté
+          est un Super Admin (email dans NEXT_PUBLIC_SUPER_ADMIN_EMAILS).
+          Redirige vers le back-office /dashboard. */}
+      {isSuperAdminClient() && (
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-[16px] bg-[#7D6AF8] text-white text-sm font-extrabold shadow-md hover:bg-[#6552E8] transition-colors cursor-pointer"
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Super Admin
+        </button>
+      )}
     </aside>
   )
 }

@@ -99,7 +99,7 @@ export default async function SelectSpacePage() {
               </p>
               <Link
                 id="space-family"
-                href="/dashboard"
+                href="/learn/dashboard"
                 className="w-full h-12 rounded-full font-bold text-white flex items-center justify-center gap-2 transition-transform active:scale-95"
                 style={{ backgroundColor: FAMILY_BLUE }}
               >

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
+import { getHomeRedirect } from "@/lib/admin/client-guard"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
@@ -33,7 +34,7 @@ export default function FinalCtaBanner() {
             <Button
               onClick={() =>
                 user
-                  ? router.push("/dashboard")
+                  ? router.push(getHomeRedirect())
                   : router.push("/signup")
               }
               className="h-[52px] px-7 bg-white text-[#7D6AF8] font-bold rounded-full hover:bg-white/90 transition-colors cursor-pointer"
