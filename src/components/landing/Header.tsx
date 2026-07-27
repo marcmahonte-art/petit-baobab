@@ -148,7 +148,7 @@ export function Header() {
                   <button
                     onClick={() => {
                       setSheetOpen(false);
-                      router.push("/dashboard");
+                      router.push(getHomeRedirect());
                     }}
                     className="w-full h-11 rounded-full bg-[#6D4CFF] text-white text-sm font-semibold hover:bg-[#6D4CFF]/90 cursor-pointer"
                   >

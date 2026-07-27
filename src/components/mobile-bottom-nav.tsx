@@ -4,9 +4,8 @@ import { Home, Palette, Sparkles, Gamepad2, Bookmark } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
-const navItems = [
-  { icon: Home, label: "Accueil", href: "/dashboard", active: true },
+const NAV_ITEMS_BASE = [
+  { icon: Home, label: "Accueil", href: "/learn/dashboard", active: true },
   { icon: Palette, label: "Coloriage", href: "/coloriage" },
   { icon: Sparkles, label: "Magique", href: "/magic-drawing" },
   { icon: Gamepad2, label: "Jeux", href: "#" },
@@ -18,7 +17,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-14 md:h-16 bg-white border-t border-[#F0E7DA] flex items-center justify-around px-2 z-50">
-      {navItems.map((item) => {
+      {NAV_ITEMS_BASE.map((item) => {
         const isActive = pathname === item.href
         return (
           <Link
