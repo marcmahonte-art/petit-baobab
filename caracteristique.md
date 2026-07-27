@@ -54,7 +54,7 @@ exactement à l'identifiant du modèle de couverture utilisé dans le code.
 
 | ID (nom de fichier)          | Modèle affiché      | Libellé (UI)        |
 |------------------------------|---------------------|---------------------|
-| `cover-petit-baobab.svg`     | `petit-baobab`      | Petit Baobab        |
+| `.svg`     | `petit-baobab`      | Petit Baobab        |
 | `cover-savane.svg`           | `savane`            | Savane              |
 | `cover-ecole.svg`            | `ecole`             | École               |
 | `cover-afrique.svg`          | `afrique`           | Afrique             |

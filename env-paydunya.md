@@ -4,7 +4,7 @@
 
 Lien direct : https://vercel.com/polo6/petit-baobab/settings/environment-variables
 
-Ajouter ces 5 variables (Production, Preview, Development) :
+Ajouter ces 5 variablroduction, Preview, Development) :
 
 | Variable | Valeur |
 |---|---|
