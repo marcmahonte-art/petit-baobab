@@ -101,7 +101,10 @@ export async function POST(request: Request) {
 
       if (insertStdErr || !schoolStudent) {
         console.error("Failed to insert student:", insertStdErr);
-        continue;
+        return NextResponse.json(
+          { error: "Une erreur est survenue lors de la création de l'élève." },
+          { status: 500 }
+        );
       }
 
       // b. Créer le child_profile lié à cet élève
