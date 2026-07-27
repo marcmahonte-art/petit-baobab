@@ -20,9 +20,6 @@ export function BoutiqueHeader() {
   const navLinks = [
     { label: "Accueil", href: "/" },
     { label: "Fonctionnalités", href: "/#features" },
-    { label: "Créer", href: "/#creer" },
-    { label: "Jeux", href: "/#jeux" },
-    { label: "Livres", href: "/#livres" },
     { label: "Boutique", href: "/boutique" },
     { label: "Mes achats", href: "/boutique/mes-achats" },
     { label: "Tarifs", href: "/tarification" },
