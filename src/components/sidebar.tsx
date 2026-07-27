@@ -12,7 +12,7 @@ import { ShieldCheck } from "lucide-react";
 import { useLearnSession } from "@/app/learn/_components/learn-session"
 
 const navItemsBase = [
-  { icon: Home, label: "Accueil", href: "/dashboard" },
+  { icon: Home, label: "Accueil", href: "/learn/dashboard" },
   ...commonNavItems,
   { icon: Users, label: "Espace parents", href: "/parents" },
   { icon: CreditCard, label: "Facturation", href: "/parents/billing" },
