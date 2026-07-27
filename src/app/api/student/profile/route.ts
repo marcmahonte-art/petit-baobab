@@ -1,50 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getStudentSession } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
-import { createClient } from "@supabase/supabase-js"
-import { cookies } from "next/headers"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-
-async function getParentUserId(): Promise<string | null> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("sb-access-token")?.value
-  if (!token) return null
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: userData, error } = await supabase.auth.getUser()
-
-  if (!error && userData.user) return userData.user.id
-
-  // Token expiré → tenter le refresh avec sb-refresh-token
-  const refreshToken = cookieStore.get("sb-refresh-token")?.value
-  if (!refreshToken) return null
-
-  const refreshClient = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
-  const { data: refreshData, error: refreshError } =
-    await refreshClient.auth.refreshSession({ refresh_token: refreshToken })
-
-  if (refreshError || !refreshData.session) return null
-
-  // Mettre à jour les cookies avec les nouveaux tokens
-  const secure = process.env.NODE_ENV === "production"
-  cookieStore.set("sb-access-token", refreshData.session.access_token, {
-    httpOnly: true, secure, sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30, path: "/",
-  })
-  cookieStore.set("sb-refresh-token", refreshData.session.refresh_token, {
-    httpOnly: true, secure, sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30, path: "/",
-  })
-
-  return refreshData.user?.id ?? null
-}
+import { getServerUser } from "@/lib/auth"
 
 // Résout le profile_id cible :
 //  - mode élève : depuis le cookie sb-student-token
@@ -54,7 +11,6 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   const session = await getStudentSession()
   if (session?.profile_id) return session.profile_id
 
-  // Mode famille : parent authentifié
   let profileId: string | null = null
   if (request.method === "PATCH") {
     try {
@@ -68,9 +24,9 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   }
   if (!profileId) return null
 
-  // Mode famille : parent authentifié via cookie sb-access-token
-  const userId = await getParentUserId()
-  if (!userId) return null
+  // Mode famille : récupère l'utilisateur connecté via sb-access-token (avec refresh si expiré)
+  const user = await getServerUser()
+  if (!user) return null
 
   const supabase = getSupabaseAdmin()
   const { data: profile } = await supabase
@@ -79,7 +35,7 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
     .eq("id", profileId)
     .single()
 
-  if (!profile || profile.account_id !== userId) return null
+  if (!profile || profile.account_id !== user.id) return null
   return profileId
 }
 
