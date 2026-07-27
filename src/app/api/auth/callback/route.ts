@@ -52,6 +52,7 @@ export async function GET(request: Request) {
     }
 
     const isSchool = searchParams.get("accountType") === "school";
+    const isStore = searchParams.get("accountType") === "store";
 
     const supabase = await getSupabaseSsrClient();
     const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code);
@@ -149,7 +150,7 @@ export async function GET(request: Request) {
     await setAuthCookies(session.access_token, session.refresh_token);
     await setRoleCookie(plan || "free");
 
-    const redirectTo = getRedirectPath({ plan, defaultSpace, hasFamilySub, hasSchoolSub });
+    const redirectTo = isStore ? "/store" : getRedirectPath({ plan, defaultSpace, hasFamilySub, hasSchoolSub });
     logger.info("oauth-callback", "Redirection post-connexion", { email: user.email, plan, defaultSpace, hasFamilySub, hasSchoolSub, redirectTo });
     return NextResponse.redirect(`${origin}${redirectTo}`);
   } catch (err: any) {

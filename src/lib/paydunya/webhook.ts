@@ -7,6 +7,7 @@ import { verifyInvoice, type PaydunyaInvoiceStatus } from "./verify";
 import { generateShopInvoicePdf } from "@/lib/invoices/generate-shop-invoice";
 import { sendOrderConfirmationEmail, sendPaymentFailedEmail } from "@/lib/emails/send";
 import { sendWhatsAppConfirmation } from "@/lib/whatsapp/send";
+import { triggerCustomerMagicLinkAfterPurchase } from "@/lib/store/customer-account";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface ShopOrderRow {
@@ -30,6 +31,7 @@ export interface ShopOrderRow {
   invoice_token: string | null;
   access_token: string;
   invoice_number: string | null;
+  customer_user_id?: string | null;
 }
 
 const PAYMENT_STATUS_MAP: Record<PaydunyaInvoiceStatus, string> = {
@@ -205,6 +207,10 @@ async function finalizePaidOrder(
   );
   sendWhatsAppConfirmation(updatedOrder).catch((e) =>
     console.error("[shop-webhook] WhatsApp non envoyé:", e)
+  );
+
+  triggerCustomerMagicLinkAfterPurchase(updatedOrder).catch((e) =>
+    console.error("[shop-webhook] lien magique client non envoyé:", e)
   );
 
   return { ok: true, status: "paid" };
