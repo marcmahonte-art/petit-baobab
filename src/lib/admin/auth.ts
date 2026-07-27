@@ -1,11 +1,9 @@
 // Guard Super Admin pour /dashboard.
-// Approche sûre, sans modifier le schéma auth existant :
-//  - lit la session Supabase (service_role),
-//  - autorise si l'email figure dans SUPER_ADMIN_EMAILS (env Vercel),
-//    OU si l'user_id figure dans la table `super_admins` (optionnelle, créée au besoin).
-// Le /dashboard redirige vers /login si non admin.
+// Approche robuste : on décode le JWT de session (cookie sb-access-token,
+// format JWT standard Supabase) pour en extraire l'email, puis on compare
+// à SUPER_ADMIN_EMAILS (env) OU à la table super_admins. On ne dépend PAS de
+// auth.getUser() (qui peut échouer selon la config des cookies).
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { createClient } from "@supabase/supabase-js";
 
 export interface SuperAdminSession {
   userId: string;
@@ -13,44 +11,56 @@ export interface SuperAdminSession {
   name: string | null;
 }
 
+function base64UrlDecode(input: string): string {
+  const b64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  if (typeof atob === "function") return atob(b64);
+  return Buffer.from(b64, "base64").toString("binary");
+}
+
+function decodeJwt(token: string): Record<string, any> | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const json = decodeURIComponent(
+      base64UrlDecode(parts[1])
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 function getAdminEmails(): string[] {
   const raw = process.env.SUPER_ADMIN_EMAILS;
   if (!raw) return [];
-  return raw
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+  return raw.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 }
 
-/** Récupère la session admin à partir du cookie d'auth (côté serveur). */
-export async function getSuperAdminSession(): Promise<SuperAdminSession | null> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !anonKey) return null;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // Lecture du cookie d'auth posé par setAuthCookies (sb-access-token)
+export async function getSuperAdminSession(): Promise<SuperAdminSession | null> {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
   const token = cookieStore.get("sb-access-token")?.value;
   if (!token) return null;
 
-  const client = createClient(supabaseUrl, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
+  const payload = decodeJwt(token);
+  if (!payload) return null;
 
-  const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) return null;
-
-  const email = (data.user.email || "").toLowerCase();
-  const adminEmails = getAdminEmails();
+  const email: string = (payload.email || "").toLowerCase();
+  const userId: string = payload.sub || "";
+  if (!EMAIL_RE.test(email) || !userId) return null;
 
   // 1. Email listé explicitement
+  const adminEmails = getAdminEmails();
   if (adminEmails.includes(email)) {
     return {
-      userId: data.user.id,
-      email: data.user.email || "",
-      name: (data.user.user_metadata?.full_name as string) || null,
+      userId,
+      email: payload.email || email,
+      name: (payload.user_metadata?.full_name as string) || null,
     };
   }
 
@@ -60,13 +70,13 @@ export async function getSuperAdminSession(): Promise<SuperAdminSession | null> 
     const { data: row } = await admin
       .from("super_admins")
       .select("user_id")
-      .eq("user_id", data.user.id)
+      .eq("user_id", userId)
       .maybeSingle();
     if (row) {
       return {
-        userId: data.user.id,
-        email: data.user.email || "",
-        name: (data.user.user_metadata?.full_name as string) || null,
+        userId,
+        email: payload.email || email,
+        name: (payload.user_metadata?.full_name as string) || null,
       };
     }
   } catch {
