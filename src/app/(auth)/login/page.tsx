@@ -9,6 +9,7 @@ import { motion } from "framer-motion"
 import { Mail } from "lucide-react"
 import { logger } from "@/lib/logger"
 import { getSiteUrl } from "@/lib/site"
+import { getHomeRedirect } from "@/lib/admin/client-guard"
 
 import { AuthLayout } from "@/components/auth/AuthLayout"
 import { InputField } from "@/components/auth/InputField"
@@ -117,8 +118,9 @@ function LoginFormContent() {
       } else if (result.multipleProfiles) {
         router.push("/parents/select-profile")
       } else {
-        // Espace famille : /dashboard est le tableau de bord parent canonique.
-        router.push("/dashboard")
+        // Espace famille : on redirige vers l'espace apprenant.
+        // Si c'est un Super Admin, il va vers le back-office /dashboard.
+        router.push(getHomeRedirect())
       }
     } else {
       setSubmitError(result.error || (lang === "fr" ? "Identifiants de connexion incorrects." : "Incorrect login credentials."))

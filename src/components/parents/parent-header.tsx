@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, ChevronDown, Star, Settings, Users } from "lucide-react"
+import { BookOpen, ChevronDown, Star, Settings, Users, LogOut } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -107,6 +107,9 @@ export function ParentHeader({ currentChild, onChildChange }: ParentHeaderProps)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/parents")} className="rounded-xl font-bold text-sm text-[#7A6A5E]">
                 <Users className="inline w-4 h-4 mr-2" /> Espace Parents
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={async () => { await useAuthStore.getState().logout(); router.push("/login") }} className="rounded-xl font-bold text-sm text-red-500">
+                <LogOut className="inline w-4 h-4 mr-2" /> Déconnexion
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

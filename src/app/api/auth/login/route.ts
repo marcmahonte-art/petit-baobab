@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getSupabaseServer } from "@/lib/supabaseServer"
-import { setAuthCookies, setRoleCookie, adjustStars } from "@/lib/auth"
+import { setAuthCookies, setRoleCookie, adjustStars, setAdminCookie } from "@/lib/auth";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
@@ -184,6 +184,8 @@ export async function POST(request: Request) {
 
     // 4b. Cookie de rôle (parent/teacher) pour le routage middleware/header
     await setRoleCookie(account.plan)
+    // 4c. Cookie admin public (lu côté client pour le guard /dashboard)
+    await setAdminCookie(user.email)
 
     // 5. Return success payload
     return NextResponse.json({

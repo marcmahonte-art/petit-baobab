@@ -113,17 +113,43 @@ export async function clearAuthCookies() {
  * Lu par le middleware et le header pour router sans rappel DB.
  */
 export async function setRoleCookie(plan: string) {
-  const cookieStore = await cookies()
-  const role = plan === "ecole_pro" ? "teacher" : "parent"
+  const cookieStore = await cookies();
+  const role = plan === "ecole_pro" ? "teacher" : "parent";
 
-  const secure = process.env.NODE_ENV === "production"
+  const secure = process.env.NODE_ENV === "production";
   cookieStore.set("pb-role", role, {
     httpOnly: false,
     secure,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
-  })
+  });
+}
+
+/**
+ * Pose un cookie PUBLIC (non httpOnly) "pb-admin" = "1" si l'email de
+ * l'utilisateur figure dans SUPER_ADMIN_EMAILS. Lu côté client par le
+ * guard Super Admin (le cookie sb-access-token étant httpOnly, il n'est
+ * pas lisible en JS). Permet d'afficher le bouton "Super Admin" et de
+ * router correctement depuis la landing/login.
+ */
+export async function setAdminCookie(email: string | null | undefined) {
+  const cookieStore = await cookies();
+  const secure = process.env.NODE_ENV === "production";
+  const adminEmails = (process.env.SUPER_ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdmin =
+    !!email && adminEmails.includes(String(email).toLowerCase());
+
+  cookieStore.set("pb-admin", isAdmin ? "1" : "0", {
+    httpOnly: false,
+    secure,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+    path: "/",
+  });
 }
 
 /**

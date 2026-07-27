@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { getSupabaseServer } from "@/lib/supabaseServer"
-import { getServerUser, adjustStars } from "@/lib/auth"
+import { getServerUser, adjustStars, setAdminCookie } from "@/lib/auth";
 
 function getDisplayNameFromEmail(email: string): string {
   if (!email) return "Mon Enfant"
@@ -32,8 +32,11 @@ export async function GET() {
       .single()
 
     if (accError || !account) {
-      return NextResponse.json({ authenticated: false })
+      return NextResponse.json({ authenticated: false });
     }
+
+    // Cookie admin public (lu côté client pour le guard /dashboard)
+    await setAdminCookie(user.email);
 
     let starsBalance = account.stars_balance || 0
 
