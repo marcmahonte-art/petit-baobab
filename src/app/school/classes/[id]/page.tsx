@@ -6,9 +6,12 @@ import { Users, Star, BookOpen, Pencil, Plus, X, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const MASCOTS = [
-  { value: 'awa', label: 'Awa', emoji: '🐵' },
-  { value: 'lion', label: 'Lion', emoji: '🦁' },
-  { value: 'robot', label: 'Robot', emoji: '🤖' },
+  { value: 'bobo', label: 'Bôbô le Lion', emoji: '🦁' },
+  { value: 'kaya', label: "Kaya l'Éléphant", emoji: '🐘' },
+  { value: 'zuri', label: 'Zuri la Girafe', emoji: '🦒' },
+  { value: 'momo', label: 'Momo le Singe', emoji: '🐒' },
+  { value: 'kiki', label: 'Kiki le Perroquet', emoji: '🦜' },
+  { value: 'baobab', label: 'Petit Baobab', emoji: '🌳' },
 ] as const;
 
 export default function ClassDetailPage() {
@@ -26,7 +29,7 @@ export default function ClassDetailPage() {
   const [showForm, setShowForm] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [mascot, setMascot] = useState('awa');
+  const [mascot, setMascot] = useState('bobo');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export default function ClassDetailPage() {
       toast({ title: 'Élève ajouté', description: `${firstName} a été ajouté(e) à la classe.` });
       setFirstName('');
       setLastName('');
-      setMascot('awa');
+      setMascot('bobo');
       setShowForm(false);
       fetchStudents(id);
       fetchClassDetail(id);
