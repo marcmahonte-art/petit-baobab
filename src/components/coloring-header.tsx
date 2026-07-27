@@ -13,7 +13,8 @@ interface ColoringHeaderProps {
 
 export function ColoringHeader({ onDownload, onPrint, onOpenDrawings }: ColoringHeaderProps) {
   const studentSession = useAuthStore((s) => s.studentSession)
-  const backHref = studentSession ? "/dashboardstudent" : "/dashboard"
+  const user = useAuthStore((s) => s.user)
+  const backHref = studentSession ? "/learn/dashboard" : user ? "/learn/dashboard" : "/"
 
   return (
     <header className="min-h-[68px] md:h-[80px] flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 select-none shrink-0 w-full py-1.5 md:py-0">
