@@ -24,6 +24,7 @@ export function BoutiqueHeader() {
     { label: "Jeux", href: "/#jeux" },
     { label: "Livres", href: "/#livres" },
     { label: "Boutique", href: "/boutique" },
+    { label: "Mes achats", href: "/boutique/mes-achats" },
     { label: "Tarifs", href: "/tarification" },
     { label: "À propos", href: "/#testimonials" },
   ];

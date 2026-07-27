@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { BoutiqueHeader } from "@/components/boutique/BoutiqueHeader";
 import { Footer } from "@/components/boutique/Footer";
 import { Breadcrumb } from "@/components/boutique/Breadcrumb";
@@ -9,19 +8,14 @@ import { CheckoutSummary } from "@/components/boutique/CheckoutSummary";
 import { PaymentMethods, PaymentMethodType } from "@/components/boutique/PaymentMethods";
 import { MiniCart } from "@/components/boutique/MiniCart";
 import { useCartStore } from "@/stores/cart-store";
-import { useOrderStore } from "@/stores/order-store";
 import { Lock, ArrowRight, BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, getTotalTTC, getTotalHT, clearCart } = useCartStore();
-  const { createOrder } = useOrderStore();
-
+  const { items, getTotalTTC, clearCart } = useCartStore();
   const totalPriceTTC = getTotalTTC();
-  const totalPriceHT = getTotalHT();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -64,7 +58,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.acceptTerms) {
@@ -74,36 +68,61 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
 
-    // Create mock order in Zustand + localStorage
-    const createdOrder = createOrder({
-      items: [...items],
-      total: totalPriceTTC,
-      totalHT: totalPriceHT,
-      email: formData.email,
-      phone: formData.phone,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      country: formData.country,
-      city: formData.city,
-      paymentMethod:
-        paymentMethod === "orange_money"
-          ? "Orange Money"
-          : paymentMethod === "moov_money"
-          ? "Moov Money"
-          : paymentMethod === "card"
-          ? "Carte Bancaire"
-          : "PayDunya",
-    });
+    try {
+      // Créer la commande + facture PayDunya côté serveur
+      // (les montants sont recalculés serveur — on n'envoie que les IDs/quantités)
+      const res = await fetch("/api/payment/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          acceptTerms: formData.acceptTerms,
+          items: items.map(({ product, quantity }) => ({
+            productId: product.id,
+            quantity,
+          })),
+        }),
+      });
 
-    toast.success("FAUSSE COMMANDE CRÉÉE !", {
-      description: `Commande ${createdOrder.order_number} générée avec succès.`,
-      duration: 3000,
-    });
+      const data = await res.json();
 
-    setTimeout(() => {
+      if (!res.ok || !data.checkout_url) {
+        toast.error(
+          data.message ||
+            "Impossible d'initier le paiement. Veuillez réessayer."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      // Mémoriser l'accès invité pour la page merci / mes-achats
+      try {
+        localStorage.setItem(
+          "pb_boutique_last_order",
+          JSON.stringify({
+            order_id: data.order_id,
+            access_token: data.access_token,
+            order_number: data.order_number,
+          })
+        );
+      } catch {
+        /* stockage indisponible : la page merci utilisera l'URL */
+      }
+
+      toast.success("Redirection vers le paiement sécurisé PayDunya...");
       clearCart();
-      router.push("/boutique/merci");
-    }, 800);
+
+      // Redirection automatique vers la page de paiement PayDunya
+      window.location.href = data.checkout_url as string;
+    } catch {
+      toast.error("Erreur réseau. Vérifiez votre connexion et réessayez.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -124,7 +143,7 @@ export default function CheckoutPage() {
             Finaliser ma commande
           </h1>
           <p className="text-xs md:text-sm text-[#3B2416]/70 mt-1">
-            Mode invité. Remplissez vos coordonnées pour valider votre fausse commande.
+            Mode invité. Remplissez vos coordonnées puis payez en toute sécurité via PayDunya.
           </p>
         </div>
 
@@ -278,11 +297,11 @@ export default function CheckoutPage() {
               className="w-full py-4 px-6 rounded-full bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-extrabold text-sm text-center flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#7D6AF8]/30 hover:scale-[1.01] cursor-pointer"
             >
               {submitting ? (
-                <span>Création de la commande...</span>
+                <span>Redirection vers PayDunya...</span>
               ) : (
                 <>
                   <Lock className="w-4 h-4" />
-                  <span>Commander (Faux Paiement)</span>
+                  <span>Commander et payer</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
