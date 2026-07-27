@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { ReactNode } from "react";
 
 export function AdminPage({
   title,
@@ -10,7 +11,7 @@ export function AdminPage({
   title: string;
   description?: string;
   note?: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="space-y-5">
@@ -30,14 +31,19 @@ export function AdminPage({
   );
 }
 
+export interface AdminRow {
+  cells: ReactNode[];
+}
+
 // Tableau modulaire réutilisable pour tous les modules admin.
+// rows = [{ cells: [<td>...] }]
 export function AdminTable({
   columns,
   rows,
   empty = "Aucune donnée.",
 }: {
   columns: string[];
-  rows: React.ReactNode[][];
+  rows: AdminRow[];
   empty?: string;
 }) {
   return (
@@ -61,7 +67,7 @@ export function AdminTable({
             ) : (
               rows.map((row, i) => (
                 <tr key={i} className="border-t border-[#F1ECE5] hover:bg-[#FFF9F2]/50">
-                  {row.map((cell, j) => (
+                  {row.cells.map((cell, j) => (
                     <td key={j} className="px-4 py-3 whitespace-nowrap">{cell}</td>
                   ))}
                 </tr>

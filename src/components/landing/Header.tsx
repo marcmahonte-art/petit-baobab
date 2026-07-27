@@ -36,8 +36,9 @@ export function Header() {
 
   const navLinks = [
     { label: "Accueil", href: "/" },
-    { label: "Tarifs", href: "/tarification" },
+    { label: "Fonctionnalités", href: "/fonctionnalites" },
     { label: "Boutique", href: "/boutique" },
+    { label: "Tarifs", href: "/tarification" },
     { label: "À propos", href: "/#testimonials" },
   ];
 
