@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getStudentSession } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
-import { getSupabaseSsrClient } from "@/lib/supabase-server"
+import { createClient } from "@supabase/supabase-js"
+import { cookies } from "next/headers"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
+async function getParentUserId(): Promise<string | null> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("sb-access-token")?.value
+  if (!token) return null
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+  const { data: userData } = await supabase.auth.getUser()
+  return userData.user?.id ?? null
+}
 
 // Résout le profile_id cible :
 //  - mode élève : depuis le cookie sb-student-token
@@ -25,10 +42,8 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   }
   if (!profileId) return null
 
-  // Mode famille : parent authentifié via cookie de session Supabase (ssr client)
-  const ssrClient = await getSupabaseSsrClient()
-  const { data: userData } = await ssrClient.auth.getUser()
-  const userId = userData.user?.id
+  // Mode famille : parent authentifié via cookie sb-access-token
+  const userId = await getParentUserId()
   if (!userId) return null
 
   const supabase = getSupabaseAdmin()

@@ -22,6 +22,8 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
 import { useProfileStore } from "@/lib/profile-store"
+import { useAuthStore } from "@/lib/auth-store"
+import { toast } from "@/components/ui/use-toast"
 
 const mascottes = [
   { id: "bobo", name: "Bôbô le Lion", desc: "Courage", image: "/illustrations/mascots/bobo-lion.png" },
@@ -96,8 +98,6 @@ export default function ParametresPage() {
     localStorage.setItem("pb_lock", String(parentalLockEnabled))
     localStorage.setItem("pb_pin", parentPin)
 
-    // Sauvegarder nom + mascotte + âge sur le profil enfant actif (DB)
-    // si connecté en tant qu'élève ou enfant de compte famille
     const ageNum = Number(childAge)
     const body: Record<string, unknown> = {}
     if (childName.trim()) body.name = childName.trim()
@@ -105,12 +105,38 @@ export default function ParametresPage() {
     if (!Number.isNaN(ageNum)) body.age = ageNum
     const activeProfileId = useProfileStore.getState().activeProfileId
     if (activeProfileId) body.profileId = activeProfileId
-    if (Object.keys(body).length > 0) {
-      fetch("/api/student/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }).catch(() => {})
+
+    if (Object.keys(body).length > 0 && activeProfileId) {
+      try {
+        const res = await fetch("/api/student/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          toast({ title: "Erreur", description: data.error || "Impossible d'enregistrer les paramètres." })
+          return
+        }
+        // Sync auth store + profile store pour appliquer immédiatement
+        useAuthStore.setState((state) => ({
+          profiles: state.profiles.map((p) =>
+            p.id === activeProfileId
+              ? { ...p, name: childName.trim(), mascot: selectedMascot as any }
+              : p
+          ),
+        }))
+        useProfileStore.setState((state) => ({
+          profiles: state.profiles.map((p) =>
+            p.id === activeProfileId
+              ? { ...p, name: childName.trim(), mascot: selectedMascot as any }
+              : p
+          ),
+        }))
+      } catch (err: any) {
+        toast({ title: "Erreur", description: err.message || "Erreur réseau." })
+        return
+      }
     }
 
     setIsSavedToastOpen(true)
