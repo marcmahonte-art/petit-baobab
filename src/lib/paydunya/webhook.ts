@@ -154,13 +154,17 @@ async function finalizePaidOrder(
   }
   const invoiceNumber = `${prefix}${String(seq).padStart(5, "0")}`;
 
-  // 7b. Créer les téléchargements sécurisés (30 jours / 20 max)
+  // 7b. Créer les téléchargements sécurisés (60 jours / 20 max)
+  const expiresAt = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString();
   const downloadRows = order.items.map((item) => ({
     order_id: order.id,
     product_id: item.productId,
     product_title: item.title,
     // Chemin du PDF dans le bucket privé shop-files (convention: products/<id>.pdf)
     file_path: item.filePath || `products/${item.productId}.pdf`,
+    expires_at: expiresAt,
+    max_downloads: 20,
+    download_count: 0,
   }));
 
   const { error: dlErr } = await supabase

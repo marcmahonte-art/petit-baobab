@@ -133,7 +133,10 @@ function MesAchatsContent() {
                       ? "Lien expiré"
                       : exhausted
                       ? "Quota de téléchargements atteint"
-                      : `${dl.remaining} téléchargement${dl.remaining > 1 ? "s" : ""} restant${dl.remaining > 1 ? "s" : ""} — expire le ${new Date(dl.expires_at).toLocaleDateString("fr-FR")}`}
+                      : (() => {
+                          const daysLeft = Math.ceil((new Date(dl.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                          return `${dl.remaining} téléchargement${dl.remaining > 1 ? "s" : ""} restant${dl.remaining > 1 ? "s" : ""} — expire dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`;
+                        })()}
                   </p>
                 </div>
                 {expired || exhausted ? (
