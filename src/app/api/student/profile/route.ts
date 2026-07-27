@@ -16,8 +16,34 @@ async function getParentUserId(): Promise<string | null> {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
   })
-  const { data: userData } = await supabase.auth.getUser()
-  return userData.user?.id ?? null
+  const { data: userData, error } = await supabase.auth.getUser()
+
+  if (!error && userData.user) return userData.user.id
+
+  // Token expiré → tenter le refresh avec sb-refresh-token
+  const refreshToken = cookieStore.get("sb-refresh-token")?.value
+  if (!refreshToken) return null
+
+  const refreshClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data: refreshData, error: refreshError } =
+    await refreshClient.auth.refreshSession({ refresh_token: refreshToken })
+
+  if (refreshError || !refreshData.session) return null
+
+  // Mettre à jour les cookies avec les nouveaux tokens
+  const secure = process.env.NODE_ENV === "production"
+  cookieStore.set("sb-access-token", refreshData.session.access_token, {
+    httpOnly: true, secure, sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30, path: "/",
+  })
+  cookieStore.set("sb-refresh-token", refreshData.session.refresh_token, {
+    httpOnly: true, secure, sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30, path: "/",
+  })
+
+  return refreshData.user?.id ?? null
 }
 
 // Résout le profile_id cible :
