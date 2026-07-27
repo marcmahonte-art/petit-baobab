@@ -20,16 +20,12 @@ export async function triggerCustomerMagicLinkAfterPurchase(order: ShopOrderRow)
     }
 
     const { error } = await sendStoreMagicLink(email, getAppUrl());
-    await supabase.from("notifications").insert({
-      user_id: existingProfile?.user_id ?? null,
-      channel: "email",
-      title: "Lien magique espace client",
-      body: error
-        ? `Lien magique non envoyé à ${email}: ${error.message}`
-        : `Lien magique envoyé à ${email} après la commande ${order.order_number}.`,
-      status: error ? "failed" : "sent",
-      metadata: { order_id: order.id, order_number: order.order_number },
-    });
+    // Log non bloquant (ne casse pas le webhook même si notifications échoue)
+    if (error) {
+      console.error("[store-account] magic link échoué:", error.message);
+    } else {
+      console.info("[store-account] magic link envoyé à", email);
+    }
   } catch (error) {
     console.error("[store-account] magic link après achat:", error);
   }
