@@ -145,3 +145,210 @@ export async function getAdminSchools(): Promise<{
   const schools = users.map((u) => ({ ...u, subscription: subMap[u.id] ?? null }));
   return { schools, total: schools.length };
 }
+
+// ============================================================
+// BOUTIQUE — commandes (qui a payé quoi / quand / combien)
+// ============================================================
+export interface AdminOrderRow {
+  id: string;
+  orderNumber: string;
+  client: string;
+  email: string;
+  itemsCount: number;
+  total: number;
+  currency: string;
+  method: string;
+  paymentStatus: string;
+  status: string;
+  createdAt: string | null;
+}
+
+export async function getAdminShopOrders(opts: {
+  status?: string;
+  limit?: number;
+} = {}): Promise<{ orders: AdminOrderRow[]; total: number; caTotal: number }> {
+  const supabase = getSupabaseAdmin();
+  let query = supabase
+    .from("shop_orders")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false });
+
+  if (opts.status && opts.status !== "all") {
+    query = query.eq("payment_status", opts.status);
+  }
+
+  const { data, error, count } = await query.limit(opts.limit ?? 100);
+  if (error || !data) return { orders: [], total: 0, caTotal: 0 };
+
+  const orders: AdminOrderRow[] = (data as any[]).map((o) => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const itemsCount = items.reduce((acc: number, it: any) => acc + (it.quantity || 1), 0);
+    return {
+      id: o.id,
+      orderNumber: o.order_number,
+      client: `${o.first_name || ""} ${o.last_name || ""}`.trim(),
+      email: o.email,
+      itemsCount,
+      total: o.total,
+      currency: o.currency || "XOF",
+      method: o.payment_method || "paydunya",
+      paymentStatus: o.payment_status,
+      status: o.status,
+      createdAt: o.created_at,
+    };
+  });
+
+  const caTotal = (data as any[])
+    .filter((o) => o.payment_status === "paid")
+    .reduce((acc: number, o) => acc + (o.total || 0), 0);
+
+  return { orders, total: count ?? data.length, caTotal };
+}
+
+// ============================================================
+// PAIEMENTS — transactions + abonnements (famille + ecole)
+// ============================================================
+export interface AdminPaymentRow {
+  id: string;
+  type: "boutique" | "abonnement";
+  client: string;
+  email: string;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  createdAt: string | null;
+}
+
+export async function getAdminPayments(): Promise<{
+  payments: AdminPaymentRow[];
+  caBoutique: number;
+  caAbonnements: number;
+}> {
+  const supabase = getSupabaseAdmin();
+
+  const { data: orders } = await supabase
+    .from("shop_orders")
+    .select("id, order_number, first_name, last_name, email, total, currency, payment_method, payment_status, created_at")
+    .eq("payment_status", "paid")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const { data: subs } = await supabase
+    .from("subscriptions")
+    .select("id, account_id, plan, amount, currency, status, created_at")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const { data: accounts } = await supabase
+    .from("accounts")
+    .select("id, user_id, plan")
+    .in("plan", ["super_baobab", "ecole_pro"]);
+
+  const planByAccount: Record<string, string> = {};
+  for (const a of (accounts as any[]) || []) planByAccount[a.id] = a.plan;
+
+  const boutique: AdminPaymentRow[] = (orders as any[] || []).map((o) => ({
+    id: o.id,
+    type: "boutique",
+    client: `${o.first_name || ""} ${o.last_name || ""}`.trim(),
+    email: o.email,
+    amount: o.total || 0,
+    currency: o.currency || "XOF",
+    method: o.payment_method || "paydunya",
+    status: o.payment_status,
+    createdAt: o.created_at,
+  }));
+
+  const abo: AdminPaymentRow[] = (subs as any[] || []).map((s) => ({
+    id: s.id,
+    type: "abonnement",
+    client: planByAccount[s.account_id] === "ecole_pro" ? "École" : "Famille",
+    email: "—",
+    amount: s.amount || 0,
+    currency: s.currency || "XOF",
+    method: "carte/Orange/Moov",
+    status: s.status,
+    createdAt: s.created_at,
+  }));
+
+  const caBoutique = boutique.reduce((acc, p) => acc + p.amount, 0);
+  const caAbonnements = abo.reduce((acc, p) => acc + p.amount, 0);
+
+  return { payments: [...boutique, ...abo], caBoutique, caAbonnements };
+}
+
+// ============================================================
+// ETOILES — soldes, historique de consommation, packs
+// ============================================================
+export interface AdminStarsRow {
+  accountId: string;
+  email: string;
+  plan: string;
+  balance: number;
+  totalDistribue: number;
+  totalConsomme: number;
+}
+
+export async function getAdminStars(): Promise<{
+  rows: AdminStarsRow[];
+  totalRestant: number;
+  totalDistribue: number;
+  totalConsomme: number;
+  packs: { label: string; count: number }[];
+}> {
+  const supabase = getSupabaseAdmin();
+
+  const { data: accounts } = await supabase
+    .from("accounts")
+    .select("id, user_id, plan, stars_balance")
+    .order("stars_balance", { ascending: false })
+    .limit(300);
+
+  const { data: tx } = await supabase
+    .from("stars_transactions")
+    .select("account_id, amount, reason")
+    .limit(3000);
+
+  const byAccount: Record<string, { dist: number; cons: number }> = {};
+  let totalDist = 0;
+  let totalCons = 0;
+  const packsCount: Record<string, number> = {};
+  for (const t of (tx as any[]) || []) {
+    const a = byAccount[t.account_id] || (byAccount[t.account_id] = { dist: 0, cons: 0 });
+    if ((t.amount || 0) > 0) {
+      a.dist += t.amount;
+      totalDist += t.amount;
+    } else {
+      a.cons += Math.abs(t.amount);
+      totalCons += Math.abs(t.amount);
+    }
+    if (t.reason === "pack_purchase" || (t.reason || "").startsWith("pack")) {
+      packsCount[t.reason] = (packsCount[t.reason] || 0) + 1;
+    }
+  }
+
+  const userIds = (accounts as any[] || []).map((a) => a.user_id).filter(Boolean);
+  let emailMap: Record<string, string> = {};
+  if (userIds.length) {
+    const { data: list } = await supabase.auth.admin.listUsers({ perPage: 200, page: 1 });
+    for (const u of (list?.users || []).filter((u: any) => userIds.includes(u.id))) {
+      emailMap[u.id] = u.email ?? "—";
+    }
+  }
+
+  const rows: AdminStarsRow[] = (accounts as any[] || []).map((a) => ({
+    accountId: a.id,
+    email: emailMap[a.user_id] || "—",
+    plan: a.plan,
+    balance: a.stars_balance || 0,
+    totalDistribue: byAccount[a.id]?.dist || 0,
+    totalConsomme: byAccount[a.id]?.cons || 0,
+  }));
+
+  const packs = Object.entries(packsCount).map(([label, count]) => ({ label, count }));
+  const totalRestant = rows.reduce((acc, r) => acc + r.balance, 0);
+
+  return { rows, totalRestant, totalDistribue: totalDist, totalConsomme: totalCons, packs };
+}
