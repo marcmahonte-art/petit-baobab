@@ -273,6 +273,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
                         src={schoolForm.logo_url}
                         alt="Logo école"
                         className="w-full h-full rounded-xl object-cover border border-[#E5E0D5]"
+                        onError={() => setSchoolForm({ ...schoolForm, logo_url: "" })}
                       />
                     ) : (
                       <div className="w-full h-full rounded-xl bg-[#7D6AF8]/10 flex items-center justify-center text-xl font-extrabold text-[#7D6AF8]">
