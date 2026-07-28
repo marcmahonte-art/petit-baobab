@@ -82,6 +82,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
     phone: account?.phone || "",
     email: account?.email || user.email || "",
     website: account?.website || "",
+    logo_url: account?.school_logo_url || "",
   });
   const [preferences, setPreferences] = useState({
     emailNotifications: true,
@@ -102,6 +103,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: "", newPassword: "", confirm: "" });
   const [editingSchool, setEditingSchool] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const supabase = getSupabaseClient();
   const initials = teacherProfile?.full_name
@@ -123,6 +125,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
           phone: schoolForm.phone,
           email: schoolForm.email,
           website: schoolForm.website,
+          school_logo_url: schoolForm.logo_url || null,
         })
         .eq("id", account.id);
       if (error) throw error;
@@ -264,8 +267,56 @@ export default function ParametresClient({ user, account, billing, teacherProfil
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-[#7D6AF8]/10 flex items-center justify-center text-xl font-extrabold text-[#7D6AF8]">
-                    {schoolForm.name ? schoolForm.name[0].toUpperCase() : "E"}
+                  <div className="relative w-14 h-14 shrink-0">
+                    {schoolForm.logo_url ? (
+                      <img
+                        src={schoolForm.logo_url}
+                        alt="Logo école"
+                        className="w-full h-full rounded-xl object-cover border border-[#E5E0D5]"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-xl bg-[#7D6AF8]/10 flex items-center justify-center text-xl font-extrabold text-[#7D6AF8]">
+                        {schoolForm.name ? schoolForm.name[0].toUpperCase() : "E"}
+                      </div>
+                    )}
+                    {editingSchool && (
+                      <label className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#7D6AF8] flex items-center justify-center cursor-pointer shadow-md hover:bg-[#6552E8] transition-colors">
+                        <Pencil className="w-3 h-3 text-white" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploadingLogo}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            setUploadingLogo(true);
+                            try {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              const res = await fetch("/api/school/upload", {
+                                method: "POST",
+                                body: formData,
+                              });
+                              if (!res.ok) throw new Error("Upload échoué");
+                              const { url } = await res.json();
+                              setSchoolForm({ ...schoolForm, logo_url: url });
+                              // Sauvegarder immédiatement
+                              const { error } = await supabase
+                                .from("accounts")
+                                .update({ school_logo_url: url })
+                                .eq("id", account.id);
+                              if (error) throw error;
+                              toast.success("Logo mis à jour.");
+                            } catch (e: any) {
+                              toast.error(e.message || "Erreur upload logo.");
+                            } finally {
+                              setUploadingLogo(false);
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#3B2416]">{schoolForm.name || "Nom non défini"}</p>
