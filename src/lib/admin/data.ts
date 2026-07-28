@@ -352,3 +352,136 @@ export async function getAdminStars(): Promise<{
 
   return { rows, totalRestant, totalDistribue: totalDist, totalConsomme: totalCons, packs };
 }
+
+// ============================================================
+// IA — usage (proxy : saved_drawings origin='ia', books, coloriages)
+// ============================================================
+export interface AdminAIRow {
+  model: string;
+  generations: number;
+  totalStars: number;
+}
+
+export async function getAdminAI(): Promise<{
+  totalGenerations: number;
+  totalLivres: number;
+  totalColoriages: number;
+  models: AdminAIRow[];
+  recent: { name: string; model: string; stars: number; createdAt: string | null }[];
+}> {
+  const supabase = getSupabaseAdmin();
+
+  const [
+    { data: iaDraws, error: iaErr },
+    { data: books },
+    { data: colorDraws },
+  ] = await Promise.all([
+    supabase.from("saved_drawings").select("id, model_name, stars_cost, name, created_at").eq("origin", "ia").order("created_at", { ascending: false }),
+    supabase.from("books").select("id", { count: "exact" }),
+    supabase.from("saved_drawings").select("id", { count: "exact" }).eq("origin", "colorage"),
+  ]);
+
+  if (iaErr) {
+    return { totalGenerations: 0, totalLivres: (books as any)?.length || 0, totalColoriages: (colorDraws as any)?.length || 0, models: [], recent: [] };
+  }
+
+  const ia = (iaDraws as any[]) || [];
+  const byModel: Record<string, AdminAIRow> = {};
+  for (const d of ia) {
+    const m = d.model_name || "inconnu";
+    byModel[m] = byModel[m] || { model: m, generations: 0, totalStars: 0 };
+    byModel[m].generations += 1;
+    byModel[m].totalStars += d.stars_cost || 0;
+  }
+
+  const models = Object.values(byModel).sort((a, b) => b.generations - a.generations);
+  const recent = ia.slice(0, 8).map((d) => ({
+    name: d.name || "—",
+    model: d.model_name || "—",
+    stars: d.stars_cost || 0,
+    createdAt: d.created_at,
+  }));
+
+  return {
+    totalGenerations: ia.length,
+    totalLivres: (books as any)?.length || 0,
+    totalColoriages: (colorDraws as any)?.length || 0,
+    models,
+    recent,
+  };
+}
+
+// ============================================================
+// ANALYTICS — agrégats globaux
+// ============================================================
+export async function getAdminAnalytics() {
+  const supabase = getSupabaseAdmin();
+
+  const [
+    { count: usersTotal },
+    { count: schoolsTotal },
+    { count: familiesTotal },
+    { count: childrenTotal },
+    { count: classroomsTotal },
+    { count: studentsTotal },
+    { data: orders },
+    { data: accounts },
+    { data: starsTx },
+  ] = await Promise.all([
+    supabase.from("accounts").select("id", { count: "exact" }),
+    supabase.from("accounts").select("id", { count: "exact" }).eq("plan", "ecole_pro"),
+    supabase.from("accounts").select("id", { count: "exact" }).in("plan", ["free", "decouverte", "super_baobab"]),
+    supabase.from("child_profiles").select("id", { count: "exact" }),
+    supabase.from("classrooms").select("id", { count: "exact" }),
+    supabase.from("school_students").select("id", { count: "exact" }),
+    supabase.from("shop_orders").select("id, total, payment_status"),
+    supabase.from("accounts").select("id, stars_balance"),
+    supabase.from("stars_transactions").select("amount"),
+  ]);
+
+  const caBoutique = ((orders as any[]) || [])
+    .filter((o) => o.payment_status === "paid")
+    .reduce((acc, o) => acc + (o.total || 0), 0);
+  const starsRestantes = ((accounts as any[]) || []).reduce((acc, a) => acc + (a.stars_balance || 0), 0);
+  const starsDistribuees = ((starsTx as any[]) || [])
+    .filter((t) => (t.amount || 0) > 0)
+    .reduce((acc, t) => acc + t.amount, 0);
+
+  return {
+    usersTotal: usersTotal || 0,
+    schoolsTotal: schoolsTotal || 0,
+    familiesTotal: familiesTotal || 0,
+    childrenTotal: childrenTotal || 0,
+    classroomsTotal: classroomsTotal || 0,
+    studentsTotal: studentsTotal || 0,
+    caBoutique,
+    starsRestantes,
+    starsDistribuees,
+  };
+}
+
+// ============================================================
+// SETTINGS — configuration globale (lecture serveur, pas d'exposition de secret)
+// ============================================================
+export interface AdminSettings {
+  supabaseUrl: string | null;
+  hasServiceKey: boolean;
+  paydunyaMode: string;       // "" = sandbox, "live" = prod
+  boutiqueActive: boolean;
+  emailFrom: string | null;
+  whatsappConfigured: boolean;
+  superAdmins: string[];       // emails autorisés
+}
+
+export async function getAdminSettings(): Promise<AdminSettings> {
+  const rawAdmins = process.env.SUPER_ADMIN_EMAILS || "";
+  return {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || null,
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    paydunyaMode: process.env.PAYDUNYA_MODE || "sandbox",
+    boutiqueActive: !!process.env.PAYDUNYA_MASTER_KEY,
+    emailFrom: process.env.SHOP_EMAIL_FROM || null,
+    whatsappConfigured: !!process.env.WHATSAPP_API_KEY,
+    superAdmins: rawAdmins.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
+  };
+}
