@@ -61,7 +61,7 @@ export default function StarPurchaseModal({ open, onClose, preselectedPackId }: 
 
         <h3 className="text-lg font-extrabold text-[#3B2416] mb-1">Acheter des étoiles</h3>
         <p className="text-xs font-semibold text-[#7A6A5E] mb-5">
-          Choisissez un pack. Vous serez redirigé vers PayDunya pour le paiement (Wave, Orange Money, carte).
+          Choisissez un pack. Vous serez redirigé vers le paiement sécurisé (Orange Money, carte).
         </p>
 
         <div className="space-y-3">
@@ -110,7 +110,7 @@ export default function StarPurchaseModal({ open, onClose, preselectedPackId }: 
         )}
 
         <p className="mt-4 text-[10px] text-[#7A6A5E] text-center font-medium">
-          Paiement sécurisé via PayDunya (Orange Money, Wave, Moov Money, carte bancaire)
+          Paiement sécurisé (Orange Money, Moov Money, carte bancaire)
         </p>
       </div>
     </div>

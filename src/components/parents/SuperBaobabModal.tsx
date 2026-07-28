@@ -179,12 +179,12 @@ export default function SuperBaobabModal({ open, onClose }: SuperBaobabModalProp
               <span>Chargement du paiement...</span>
             </>
           ) : (
-            <span>Payer {totalPrice.toLocaleString("fr-FR")} FCFA via PayDunya</span>
+            <span>Payer {totalPrice.toLocaleString("fr-FR")} FCFA</span>
           )}
         </button>
 
         <p className="mt-4 text-[11px] text-[#94A3B8] text-center font-semibold">
-          Paiement 100% sécurisé via PayDunya (Orange Money, Wave, Moov Money, Carte)
+          Paiement 100% sécurisé (Orange Money, Moov Money, Carte)
         </p>
       </div>
     </div>

@@ -95,7 +95,6 @@ export function Footer() {
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold text-[#3B2416]">
             <span className="px-2.5 py-1 bg-[#FFF9F2] rounded-md border border-[#E5E0D5]">Orange Money</span>
             <span className="px-2.5 py-1 bg-[#FFF9F2] rounded-md border border-[#E5E0D5]">Moov Money</span>
-            <span className="px-2.5 py-1 bg-[#FFF9F2] rounded-md border border-[#E5E0D5]">PayDunya</span>
             <span className="px-2.5 py-1 bg-[#FFF9F2] rounded-md border border-[#E5E0D5]">Carte bancaire</span>
           </div>
         </div>

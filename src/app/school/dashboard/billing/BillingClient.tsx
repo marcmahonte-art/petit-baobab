@@ -511,7 +511,7 @@ function PaymentMethodCard({ lastPayment }: { lastPayment?: BillingData["payment
           </div>
           <div>
             <h3 className="text-base font-extrabold text-[#3B2416]">Moyen de paiement</h3>
-            <p className="text-[11px] font-semibold text-[#7A6A5E]">PayDunya</p>
+            <p className="text-[11px] font-semibold text-[#7A6A5E]">Paiement sécurisé</p>
           </div>
         </div>
         <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">Connecté</span>
@@ -521,8 +521,8 @@ function PaymentMethodCard({ lastPayment }: { lastPayment?: BillingData["payment
           <span className="text-[10px] font-bold text-[#3B2416]">PD</span>
         </div>
         <div>
-          <p className="text-sm font-bold text-[#3B2416]">PayDunya</p>
-          <p className="text-[11px] font-semibold text-[#7A6A5E]">Orange Money, Wave, Moov Money, Carte</p>
+          <p className="text-sm font-bold text-[#3B2416]">Paiement sécurisé</p>
+          <p className="text-[11px] font-semibold text-[#7A6A5E]">Orange Money, Moov Money</p>
         </div>
       </div>
       <div className="flex items-center justify-between text-xs font-semibold text-[#7A6A5E]">

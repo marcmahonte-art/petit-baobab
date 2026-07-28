@@ -715,7 +715,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
               {[
                 { name: "Orange Money", icon: Smartphone, connected: true },
                 { name: "Moov Money", icon: Smartphone, connected: false },
-                { name: "PayDunya", icon: CreditCard, connected: true },
+                { name: "Carte bancaire", icon: CreditCard, connected: true },
                 { name: "WhatsApp Business", icon: Phone, connected: false },
                 { name: "Google Classroom", icon: School, connected: false },
                 { name: "Microsoft Teams", icon: Users, connected: false },

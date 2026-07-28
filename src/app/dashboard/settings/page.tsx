@@ -51,8 +51,8 @@ export default async function AdminSettingsPage() {
           <h3 className="text-sm font-extrabold mb-2 flex items-center gap-2">
             <ShoppingBag className="w-4 h-4 text-[#7D6AF8]" /> Boutique & Paiements
           </h3>
-          <Row icon={<ShoppingBag className="w-4 h-4" />} label="Boutique (PayDunya)" value={s.boutiqueActive ? "Active" : "Inactive"} ok={s.boutiqueActive} />
-          <Row icon={<Settings className="w-4 h-4" />} label="Mode PayDunya" value={s.paydunyaMode === "live" ? "PRODUCTION" : "Sandbox (test)"} ok={s.paydunyaMode !== "live"} />
+          <Row icon={<ShoppingBag className="w-4 h-4" />} label="Boutique (paiement)" value={s.boutiqueActive ? "Active" : "Inactive"} ok={s.boutiqueActive} />
+          <Row icon={<Settings className="w-4 h-4" />} label="Mode paiement" value={s.paydunyaMode === "live" ? "PRODUCTION" : "Sandbox (test)"} ok={s.paydunyaMode !== "live"} />
           <Row icon={<Mail className="w-4 h-4" />} label="Email expéditeur" value={s.emailFrom || "—"} ok={!!s.emailFrom} />
           <Row icon={<Phone className="w-4 h-4" />} label="WhatsApp Business" value={s.whatsappConfigured ? "Configuré" : "Non"} ok={s.whatsappConfigured} />
         </div>

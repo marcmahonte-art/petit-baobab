@@ -117,7 +117,7 @@ export default function SubscribeDialog({
         </button>
 
         <p className="mt-3 text-[10px] text-[#7A6A5E] text-center font-medium">
-          Paiement sécurisé via PayDunya (Orange Money, Wave, Moov Money, carte bancaire)
+          Paiement sécurisé (Orange Money, Moov Money, carte bancaire)
         </p>
 
         {error && (

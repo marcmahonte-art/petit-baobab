@@ -30,12 +30,6 @@ export function PaymentMethods({ selectedMethod, onSelect }: PaymentMethodsProps
       subtitle: "Paiement international sécurisé",
       icon: <CreditCard className="w-5 h-5 text-[#7D6AF8]" />,
     },
-    {
-      id: "paydunya" as PaymentMethodType,
-      title: "PayDunya (Wave / Mobile)",
-      subtitle: "Guichet de paiement multi-opérateurs",
-      icon: <Shield className="w-5 h-5 text-[#1D9E75]" />,
-    },
   ];
 
   return (

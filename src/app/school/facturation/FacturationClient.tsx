@@ -408,8 +408,8 @@ function PaymentMethodCard() {
           <span className="text-[10px] font-bold text-[#3B2416]">PD</span>
         </div>
         <div>
-          <p className="text-sm font-bold text-[#3B2416]">PayDunya</p>
-          <p className="text-[11px] font-semibold text-[#7A6A5E]">Orange Money, Wave, Moov Money, Carte</p>
+          <p className="text-sm font-bold text-[#3B2416]">Paiement sécurisé</p>
+          <p className="text-[11px] font-semibold text-[#7A6A5E]">Orange Money, Moov Money</p>
         </div>
       </div>
       <div className="flex gap-2">
@@ -524,9 +524,9 @@ export default function FacturationClient() {
 
   const recentPayments = useMemo(
     () => [
-      { id: "1", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/07/2026", ref: "INV-202607-00001", provider: "PayDunya" },
-      { id: "2", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/06/2026", ref: "INV-202606-00003", provider: "PayDunya" },
-      { id: "3", plan: "Pack 500 \u2605", amount: 8000, status: "pending" as PaymentStatus, date: "15/06/2026", ref: "INV-202606-00002", provider: "PayDunya" },
+      { id: "1", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/07/2026", ref: "INV-202607-00001", provider: "Paiement sécurisé" },
+      { id: "2", plan: "École Pro", amount: 25000, status: "success" as PaymentStatus, date: "01/06/2026", ref: "INV-202606-00003", provider: "Paiement sécurisé" },
+      { id: "3", plan: "Pack 500 \u2605", amount: 8000, status: "pending" as PaymentStatus, date: "15/06/2026", ref: "INV-202606-00002", provider: "Paiement sécurisé" },
     ],
     []
   )

@@ -121,10 +121,10 @@ export default function CheckoutPage() {
         /* stockage indisponible : la page merci utilisera l'URL */
       }
 
-      toast.success("Redirection vers le paiement sécurisé PayDunya...");
+      toast.success("Redirection vers le paiement sécurisé...");
       clearCart();
 
-      // Redirection automatique vers la page de paiement PayDunya
+      // Redirection automatique vers la page de paiement sécurisée
       window.location.href = data.checkout_url as string;
     } catch {
       toast.error("Erreur réseau. Vérifiez votre connexion et réessayez.");
@@ -150,7 +150,7 @@ export default function CheckoutPage() {
             Finaliser ma commande
           </h1>
           <p className="text-xs md:text-sm text-[#3B2416]/70 mt-1">
-            Mode invité. Remplissez vos coordonnées puis payez en toute sécurité via PayDunya.
+            Mode invité. Remplissez vos coordonnées puis payez en toute sécurité.
           </p>
         </div>
 
@@ -365,7 +365,7 @@ export default function CheckoutPage() {
               className="w-full py-4 px-6 rounded-full bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-extrabold text-sm text-center flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#7D6AF8]/30 hover:scale-[1.01] cursor-pointer"
             >
               {submitting ? (
-                <span>Redirection vers PayDunya...</span>
+                <span>Redirection vers le paiement sécurisé...</span>
               ) : (
                 <>
                   <Lock className="w-4 h-4" />
