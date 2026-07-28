@@ -10,7 +10,7 @@ export function TrustSection() {
     {
       icon: <ShieldCheck className="w-6 h-6 text-[#1D9E75]" />,
       title: "Paiement sécurisé",
-      description: "Payez en toute sécurité par Orange Money, Moov Money, PayDunya ou Carte bancaire.",
+      description: "Payez en toute sécurité par Orange Money, Moov Money ou Carte bancaire.",
     },
     {
       icon: <Printer className="w-6 h-6 text-[#F59E0B]" />,
