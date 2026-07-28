@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   LayoutDashboard, Users, GraduationCap, School, ShieldCheck, ShoppingBag,
   Package, FolderTree, Receipt, Download, Palette, BookOpen, BookText,
@@ -123,9 +124,15 @@ export function AdminSidebar() {
 
   return (
     <aside className="w-64 shrink-0 h-screen sticky top-0 hidden lg:flex flex-col bg-white border-r border-[#F1ECE5] overflow-y-auto">
-      <Link href="/dashboard" className="h-16 flex items-center px-5 border-b border-[#F1ECE5]">
-        <span className="text-lg font-extrabold text-[#7D6AF8]">🌳 Petit Baobab</span>
-        <span className="ml-2 text-[10px] uppercase tracking-wide font-bold text-white bg-[#7D6AF8] rounded-full px-2 py-0.5">
+      <Link href="/dashboard" className="h-16 flex items-center px-5 border-b border-[#F1ECE5] gap-2">
+        <Image
+          src="/illustrations/logo-petit-baobab.webp"
+          alt="Petit Baobab"
+          width={120}
+          height={36}
+          className="w-auto h-[32px] object-contain"
+        />
+        <span className="text-[10px] uppercase tracking-wide font-bold text-white bg-[#7D6AF8] rounded-full px-2 py-0.5">
           Admin
         </span>
       </Link>
