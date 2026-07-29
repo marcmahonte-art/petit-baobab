@@ -37,15 +37,23 @@ function subscribe(cb: () => void) {
   return () => listeners.delete(cb)
 }
 
-async function fetchAgeFromApi(): Promise<number | null> {
+async function fetchFullProfileFromApi(): Promise<{ name: string; mascot: string; age: number | null } | null> {
   try {
     const res = await fetch("/api/student/profile")
     if (!res.ok) return null
     const data = await res.json()
-    return typeof data.age === "number" ? data.age : null
+    return {
+      name: typeof data.name === "string" ? data.name.trim() : "",
+      mascot: typeof data.mascot === "string" ? data.mascot : DEFAULT_MASCOT,
+      age: typeof data.age === "number" ? data.age : null,
+    }
   } catch {
     return null
   }
+}
+
+function getActiveProfileId(): string | null {
+  return useAuthStore.getState().activeProfileId || useProfileStore.getState().activeProfileId
 }
 
 export function useProfile(): ProfileData {
@@ -84,32 +92,49 @@ export function useProfile(): ProfileData {
     notifyAgeListeners()
   }, [])
 
-  const fetchProfile = useCallback(async () => {
+  const syncFromApi = useCallback(async () => {
     if (isStudent) return
-    const a = await fetchAgeFromApi()
-    if (a !== null) {
-      setAge(a)
+
+    const profile = await fetchFullProfileFromApi()
+    if (!profile) return
+
+    if (profile.age !== null) {
+      setAge(profile.age)
     } else {
       const stored = typeof window !== "undefined" ? localStorage.getItem("pb_child_age") : null
       setAge(stored ? Number(stored) : null)
     }
+
+    const pid = getActiveProfileId()
+    if (!pid) return
+
+    useAuthStore.setState((state) => ({
+      profiles: state.profiles.map((p) =>
+        p.id === pid ? { ...p, name: profile.name, mascot: profile.mascot as any } : p
+      ),
+    }))
+
+    useProfileStore.setState((state) => ({
+      profiles: state.profiles.map((p) =>
+        p.id === pid ? { ...p, name: profile.name, mascot: profile.mascot as any } : p
+      ),
+    }))
   }, [isStudent, setAge])
 
   useEffect(() => {
     if (!fetchedRef.current) {
       fetchedRef.current = true
-      fetchProfile()
+      syncFromApi()
     }
-  }, [fetchProfile])
+  }, [syncFromApi])
 
   useEffect(() => {
     const handler = () => {
-      fetchProfile()
-      useAuthStore.getState().checkSession()
+      syncFromApi()
     }
     window.addEventListener("pb-profile-updated", handler)
     return () => window.removeEventListener("pb-profile-updated", handler)
-  }, [fetchProfile])
+  }, [syncFromApi])
 
   return {
     id: activeProfileId,
@@ -135,10 +160,27 @@ export async function refreshProfile(): Promise<void> {
 
   await useAuthStore.getState().checkSession()
 
-  const age = await fetchAgeFromApi()
-  if (age !== null) {
-    externalAge = age
-    notifyAgeListeners()
+  const profile = await fetchFullProfileFromApi()
+  if (profile) {
+    if (profile.age !== null) {
+      externalAge = profile.age
+      notifyAgeListeners()
+    }
+
+    const pid = getActiveProfileId()
+    if (pid) {
+      useAuthStore.setState((state) => ({
+        profiles: state.profiles.map((p) =>
+          p.id === pid ? { ...p, name: profile.name, mascot: profile.mascot as any } : p
+        ),
+      }))
+
+      useProfileStore.setState((state) => ({
+        profiles: state.profiles.map((p) =>
+          p.id === pid ? { ...p, name: profile.name, mascot: profile.mascot as any } : p
+        ),
+      }))
+    }
   }
 
   window.dispatchEvent(new CustomEvent("pb-profile-updated"))
