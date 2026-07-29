@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
@@ -202,5 +202,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(result)
+  return NextResponse.json(result, {
+    headers: {
+      "Cache-Control": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
+    },
+  })
 }

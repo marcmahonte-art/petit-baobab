@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useEffect, useRef, useState } from "react"
 import { ColoringHeader } from "@/components/coloring-header"
 import { DrawingToolsPanel } from "@/components/drawing-tools-panel"
@@ -9,9 +10,6 @@ import { BrushSizeSlider } from "@/components/brush-size-slider"
 import { MyDrawingsGrid } from "@/components/my-drawings-grid"
 import { CategoryTabs } from "@/components/category-tabs"
 import { FooterActions } from "@/components/footer-actions"
-import { RewardPopup } from "@/components/reward-popup"
-import { DrawingGallery } from "@/components/drawings/DrawingGallery"
-import { SaveDrawingModal } from "@/components/drawings/SaveDrawingModal"
 import { drawingService } from "@/features/drawings/DrawingService"
 import type { SavedDrawing } from "@/features/drawings/types"
 import { useColoringStore } from "@/lib/store"
@@ -20,6 +18,19 @@ import { useBookStore } from "@/features/coloring-book/store/useBookStore"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sliders } from "lucide-react"
+
+const RewardPopup = dynamic(
+  () => import("@/components/reward-popup").then((mod) => mod.RewardPopup),
+  { ssr: false }
+)
+const DrawingGallery = dynamic(
+  () => import("@/components/drawings/DrawingGallery").then((mod) => mod.DrawingGallery),
+  { ssr: false }
+)
+const SaveDrawingModal = dynamic(
+  () => import("@/components/drawings/SaveDrawingModal").then((mod) => mod.SaveDrawingModal),
+  { ssr: false }
+)
 
 export function ColoringPage() {
   const canvasRef = useRef<CanvasCardRef>(null)
@@ -54,23 +65,6 @@ export function ColoringPage() {
     activeSavedDrawingId,
     setActiveSavedDrawingId,
   } = useColoringStore()
-
-  // Auto-save template to "Mes dessins" when a new model is selected
-  useEffect(() => {
-    if (!activeSavedDrawingId && currentDrawing.id && profileId) {
-      drawingService.saveFromTemplate(
-        currentDrawing,
-        currentDrawing.category || selectedCategory,
-        profileId
-      ).then((result) => {
-        if (result) {
-          setActiveSavedDrawingId(result.id)
-          setGalleryRefreshKey((k) => k + 1)
-        }
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDrawing.id, profileId])
 
   const handleUndo = () => canvasRef.current?.undo()
   const handleRedo = () => canvasRef.current?.redo()

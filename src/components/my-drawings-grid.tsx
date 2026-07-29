@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
@@ -61,23 +61,23 @@ export function MyDrawingsGrid() {
         </span>
       </div>
 
-      {/* Grid of drawings: 2 columns, Gap 14px, max-height 320px scrollable */}
+      {/* Grid of drawings: 2 columns, Gap 14px, scrollable */}
       {!isCollapsed && (
-        <div className="max-h-[340px] overflow-y-auto pr-1 custom-scrollbar min-h-[120px] flex flex-col justify-center">
+        <div className="max-h-[360px] overflow-y-auto pr-1 custom-scrollbar min-h-[140px]">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-8 text-neutral-400 gap-2">
+            <div className="flex flex-col items-center justify-center min-h-[140px] py-8 text-neutral-400 gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-[#4A4EBE]" />
               <span className="text-xs font-semibold">Chargement des dessins...</span>
             </div>
           ) : currentCategoryDrawings.length === 0 ? (
-            <div className="text-center py-8 text-xs font-semibold text-[#7A6A5E] px-4 leading-normal">
+            <div className="flex flex-col items-center justify-center min-h-[140px] text-center py-8 text-xs font-semibold text-[#7A6A5E] px-4 leading-normal">
               Aucun modele disponible dans cette categorie.
               <p className="text-[10px] text-[#7A6A5E]/70 mt-1 font-medium leading-relaxed">
                 Ajoute des fichiers .svg dans <code className="bg-neutral-100 px-1 py-0.5 rounded">public/illustrations/{selectedCategory}/</code> pour les voir ici !
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 md:gap-[14px] justify-items-center pb-2">
+            <div className="grid grid-cols-2 gap-2 md:gap-[14px] justify-items-center pb-4 pt-1">
               {currentCategoryDrawings.map((draw) => {
                 const isActive = currentDrawing.id === draw.id
                 return (
