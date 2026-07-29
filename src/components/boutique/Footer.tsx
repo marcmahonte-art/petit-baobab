@@ -8,10 +8,10 @@ export function Footer() {
         {/* Brand Column */}
         <div className="space-y-4 md:col-span-1">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-10 flex items-center">
+            <div className="h-20 flex items-center">
               <img
                 alt="Logo"
-                className="h-9 w-auto object-contain"
+                className="h-[72px] w-auto object-contain"
                 src="/illustrations/logo-petit-baobab.svg"
               />
             </div>

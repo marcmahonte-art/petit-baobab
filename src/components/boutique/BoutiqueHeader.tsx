@@ -39,10 +39,10 @@ export function BoutiqueHeader() {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 cursor-pointer shrink-0">
-          <div className="h-12 md:h-14 flex items-center justify-center">
+          <div className="h-24 md:h-28 flex items-center justify-center">
             <img
               alt="Petit Baobab Logo"
-              className="h-10 md:h-12 w-auto object-contain"
+              className="h-20 md:h-24 w-auto object-contain"
               src="/illustrations/logo-petit-baobab.svg"
             />
           </div>
