@@ -22,7 +22,7 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
 import { useProfileStore } from "@/lib/profile-store"
-import { useAuthStore } from "@/lib/auth-store"
+import { refreshProfile } from "@/lib/hooks/useProfile"
 import { toast } from "@/components/ui/use-toast"
 
 const mascottes = [
@@ -106,9 +106,6 @@ export default function ParametresPage() {
     const activeProfileId = useProfileStore.getState().activeProfileId
     if (activeProfileId) body.profileId = activeProfileId
 
-    const cleanName = childName.trim()
-    const cleanMascot = selectedMascot
-
     try {
       const res = await fetch("/api/student/profile", {
         method: "PATCH",
@@ -120,46 +117,13 @@ export default function ParametresPage() {
         toast({ title: "Erreur", description: data.error || "Impossible d'enregistrer les paramètres." })
         return
       }
+      if (data.name) setChildName(data.name)
+      if (data.mascot) setSelectedMascot(data.mascot)
     } catch (err: any) {
       console.warn("API profile update warning:", err)
     }
 
-    // Sync auth store (studentSession + profiles)
-    useAuthStore.setState((state) => ({
-      studentSession: state.studentSession
-        ? { ...state.studentSession, name: cleanName, mascot: cleanMascot as any }
-        : null,
-      profiles: state.profiles.map((p) =>
-        !activeProfileId || p.id === activeProfileId
-          ? { ...p, name: cleanName, mascot: cleanMascot as any }
-          : p
-      ),
-    }))
-
-    // Sync profile store
-    useProfileStore.setState((state) => {
-      const targetId = activeProfileId || state.activeProfileId
-      if (targetId && state.profiles.some((p) => p.id === targetId)) {
-        return {
-          profiles: state.profiles.map((p) =>
-            p.id === targetId ? { ...p, name: cleanName, mascot: cleanMascot as any } : p
-          ),
-        }
-      }
-      if (state.profiles.length > 0) {
-        return {
-          profiles: state.profiles.map((p, idx) =>
-            idx === 0 ? { ...p, name: cleanName, mascot: cleanMascot as any } : p
-          ),
-        }
-      }
-      return state
-    })
-
-    // Dispatch global event for header and active components to re-render
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("pb-profile-updated", { detail: { name: cleanName, mascot: cleanMascot } }))
-    }
+    await refreshProfile()
 
     setIsSavedToastOpen(true)
     setTimeout(() => setIsSavedToastOpen(false), 2500)

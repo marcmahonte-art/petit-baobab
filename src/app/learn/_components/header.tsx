@@ -10,10 +10,11 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useCreditStore } from "@/lib/credit-store"
-import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
+import { getMascotImage } from "@/lib/mascots"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
+import { useProfile } from "@/lib/hooks/useProfile"
 import { useRealtimeStars } from "@/lib/hooks/useRealtimeStars"
 import Link from "next/link"
 
@@ -30,8 +31,8 @@ export function Header() {
       ? account.stars_balance
       : creditInfo.remaining
 
-  const { profiles, activeProfileId, switchProfile } = useProfileStore()
-  const activeProfile = profiles.find((p) => p.id === activeProfileId)
+  const { switchProfile } = useProfileStore()
+  const profile = useProfile()
 
   // ── Mode élève : header simplifié + MAJ temps réel du solde ──
   if (studentSession && studentSession.type === "student") {
@@ -77,10 +78,10 @@ export function Header() {
     )
   }
 
-  // Profile local states
-  const [profileName, setProfileName] = useState("Awa")
-  const [profileAge, setProfileAge] = useState("6 ans")
-  const [profileMascot, setProfileMascot] = useState<string>(DEFAULT_MASCOT)
+  // Profile from unified hook
+  const profileName = profile.name
+  const profileAge = profile.age ? `${profile.age} ans` : "6 ans"
+  const profileMascot = profile.mascot
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("")
@@ -95,47 +96,6 @@ export function Header() {
     { id: 2, text: "Ton livre de coloriage est prêt à être téléchargé !" },
     { id: 3, text: "Nouveau dessin magique disponible." },
   ])
-
-  useEffect(() => {
-    const syncProfileData = (e?: Event) => {
-      const customEvt = e as CustomEvent<{ name?: string; mascot?: string }> | undefined
-      if (customEvt?.detail?.name) setProfileName(customEvt.detail.name)
-      if (customEvt?.detail?.mascot) setProfileMascot(customEvt.detail.mascot)
-
-      fetch("/api/student/profile")
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (data && typeof data.name === "string" && data.name.trim()) {
-            setProfileName(data.name.trim())
-          }
-          if (data && typeof data.mascot === "string") {
-            setProfileMascot(data.mascot)
-          }
-          if (data && typeof data.age === "number") {
-            setProfileAge(`${data.age} ans`)
-          } else {
-            const storedAge = typeof window !== "undefined" ? localStorage.getItem("pb_child_age") : null
-            if (storedAge) setProfileAge(`${storedAge} ans`)
-          }
-        })
-        .catch(() => {})
-    }
-
-    if (activeProfile) {
-      setProfileName(activeProfile.name)
-      setProfileMascot(activeProfile.mascot)
-    } else {
-      const storedName = typeof window !== "undefined" ? localStorage.getItem("pb_child_name") : null
-      const storedMascot = typeof window !== "undefined" ? localStorage.getItem("pb_mascot") : null
-      if (storedName) setProfileName(storedName)
-      if (storedMascot) setProfileMascot(storedMascot)
-    }
-
-    syncProfileData()
-
-    window.addEventListener("pb-profile-updated", syncProfileData)
-    return () => window.removeEventListener("pb-profile-updated", syncProfileData)
-  }, [activeProfile])
 
   // Click away listener for dropdowns
   useEffect(() => {
@@ -225,14 +185,14 @@ export function Header() {
         </div>
       </div>
 
-      {profiles.length > 1 && (
+      {profile.profiles.length > 1 && (
         <div className="mb-3">
           <span className="text-[10px] font-black text-[#7A6A5E] uppercase tracking-wider block mb-1.5">
             Changer de profil
           </span>
           <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
-            {profiles.map((p) => {
-              if (p.id === activeProfileId) return null
+            {profile.profiles.map((p) => {
+              if (p.id === profile.activeProfileId) return null
               return (
                 <div
                   key={p.id}

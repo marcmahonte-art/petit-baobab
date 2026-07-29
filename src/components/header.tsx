@@ -13,7 +13,8 @@ import { useCreditStore } from "@/lib/credit-store"
 import { useProfileStore } from "@/lib/profile-store"
 import { useI18n } from "@/lib/i18n-provider"
 import { useAuthStore } from "@/lib/auth-store"
-import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
+import { useProfile } from "@/lib/hooks/useProfile"
+import { getMascotImage } from "@/lib/mascots"
 import { useRealtimeStars } from "@/lib/hooks/useRealtimeStars"
 import Link from "next/link"
 
@@ -32,8 +33,8 @@ export function Header() {
       ? account.stars_balance
       : creditInfo.remaining
 
-  const { profiles, activeProfileId, switchProfile } = useProfileStore()
-  const activeProfile = profiles.find((p) => p.id === activeProfileId)
+  const { switchProfile } = useProfileStore()
+  const profile = useProfile()
 
   // ── Mode élève : header simplifié + MAJ temps réel du solde ──
   if (studentSession && studentSession.type === "student") {
@@ -79,10 +80,10 @@ export function Header() {
     )
   }
 
-  // Profile local states
-  const [profileName, setProfileName] = useState("Awa")
-  const [profileAge, setProfileAge] = useState("6 ans")
-  const [profileMascot, setProfileMascot] = useState<string>(DEFAULT_MASCOT)
+  // Profile from unified hook
+  const profileName = profile.name
+  const profileAge = profile.age ? `${profile.age} ans` : "6 ans"
+  const profileMascot = profile.mascot
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("")
@@ -97,19 +98,6 @@ export function Header() {
     { id: 2, text: "Ton livre de coloriage est prêt à être téléchargé !", icon: "Book" },
     { id: 3, text: "Nouveau dessin magique disponible.", icon: "Sparkles" },
   ] as { id: number; text: string; icon: string }[])
-
-  useEffect(() => {
-    if (activeProfile) {
-      setProfileName(activeProfile.name)
-      setProfileMascot(activeProfile.mascot)
-      setProfileAge("6 ans") // Age par défaut
-    } else {
-      const storedName = localStorage.getItem("pb_child_name")
-      const storedMascot = localStorage.getItem("pb_mascot")
-      if (storedName) setProfileName(storedName)
-      if (storedMascot) setProfileMascot(storedMascot)
-    }
-  }, [activeProfile])
 
   // Click away listener for dropdowns
   useEffect(() => {
@@ -199,14 +187,14 @@ export function Header() {
         </div>
       </div>
 
-      {profiles.length > 1 && (
+      {profile.profiles.length > 1 && (
         <div className="mb-3">
           <span className="text-[10px] font-black text-[#7A6A5E] uppercase tracking-wider block mb-1.5">
             Changer de profil
           </span>
           <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
-            {profiles.map((p) => {
-              if (p.id === activeProfileId) return null
+            {profile.profiles.map((p) => {
+              if (p.id === profile.activeProfileId) return null
               return (
                 <div
                   key={p.id}
