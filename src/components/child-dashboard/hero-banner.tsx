@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useProfileStore } from "@/lib/profile-store"
 
@@ -7,7 +8,28 @@ export function HeroBanner() {
   const profiles = useProfileStore((s) => s.profiles)
   const activeProfileId = useProfileStore((s) => s.activeProfileId)
   const activeProfile = profiles.find((p) => p.id === activeProfileId)
-  const childName = activeProfile?.name || "Awa"
+
+  const [childName, setChildName] = useState("Awa")
+
+  useEffect(() => {
+    const updateName = (e?: Event) => {
+      const customEvt = e as CustomEvent<{ name?: string }> | undefined
+      if (customEvt?.detail?.name) {
+        setChildName(customEvt.detail.name)
+        return
+      }
+      if (activeProfile?.name) {
+        setChildName(activeProfile.name)
+      } else if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("pb_child_name")
+        if (stored) setChildName(stored)
+      }
+    }
+
+    updateName()
+    window.addEventListener("pb-profile-updated", updateName)
+    return () => window.removeEventListener("pb-profile-updated", updateName)
+  }, [activeProfile])
 
   return (
     <section className="h-[180px] xs:h-[200px] md:h-[250px] lg:h-[250px] rounded-[32px] bg-[#FFF5CC] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] relative select-none">

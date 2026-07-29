@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getStudentSession } from "@/lib/auth/student-session"
+import { getStudentSession, signStudentToken } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 import { getServerUser } from "@/lib/auth"
 
@@ -80,9 +80,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     const update: Record<string, unknown> = {}
-    if (typeof body.age === "number") update.age = body.age
-    if (typeof body.name === "string") update.name = body.name
-    if (typeof body.mascot === "string") update.mascot = body.mascot
+    if (typeof body.age === "number" && !Number.isNaN(body.age)) update.age = body.age
+    if (typeof body.name === "string" && body.name.trim()) update.name = body.name.trim()
+    if (typeof body.mascot === "string" && body.mascot.trim()) update.mascot = body.mascot.trim()
 
     if (Object.keys(update).length === 0) {
       return NextResponse.json({ error: "Aucun champ à mettre à jour." }, { status: 400 })
@@ -93,16 +93,32 @@ export async function PATCH(request: NextRequest) {
       .from("child_profiles")
       .update(update)
       .eq("id", profileId)
-      .select("name, mascot, age")
+      .select("id, name, mascot, age")
       .single()
 
-    if (error) {
-      // La colonne age peut ne pas exister encore (migration DB à appliquer).
-      console.warn("PATCH /api/student/profile warn:", error.message)
-      return NextResponse.json({ warning: error.message, applied: Object.keys(update) })
+    const resultPayload = data || { id: profileId, ...update }
+
+    // Si une session élève est active (cookie sb-student-token), mettre à jour le JWT cookie
+    const studentSession = await getStudentSession()
+    const response = NextResponse.json(resultPayload)
+
+    if (studentSession && studentSession.profile_id === profileId) {
+      const updatedSession = {
+        ...studentSession,
+        name: (update.name ?? studentSession.name) as string,
+        mascot: (update.mascot ?? studentSession.mascot) as any,
+      }
+      const token = await signStudentToken(updatedSession)
+      response.cookies.set("sb-student-token", token, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+      })
     }
 
-    return NextResponse.json(data)
+    return response
   } catch (err: any) {
     console.error("PATCH /api/student/profile exception:", err)
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })

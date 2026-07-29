@@ -97,34 +97,44 @@ export function Header() {
   ])
 
   useEffect(() => {
+    const syncProfileData = (e?: Event) => {
+      const customEvt = e as CustomEvent<{ name?: string; mascot?: string }> | undefined
+      if (customEvt?.detail?.name) setProfileName(customEvt.detail.name)
+      if (customEvt?.detail?.mascot) setProfileMascot(customEvt.detail.mascot)
+
+      fetch("/api/student/profile")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data && typeof data.name === "string" && data.name.trim()) {
+            setProfileName(data.name.trim())
+          }
+          if (data && typeof data.mascot === "string") {
+            setProfileMascot(data.mascot)
+          }
+          if (data && typeof data.age === "number") {
+            setProfileAge(`${data.age} ans`)
+          } else {
+            const storedAge = typeof window !== "undefined" ? localStorage.getItem("pb_child_age") : null
+            if (storedAge) setProfileAge(`${storedAge} ans`)
+          }
+        })
+        .catch(() => {})
+    }
+
     if (activeProfile) {
       setProfileName(activeProfile.name)
       setProfileMascot(activeProfile.mascot)
     } else {
-      const storedName = localStorage.getItem("pb_child_name")
-      const storedMascot = localStorage.getItem("pb_mascot")
+      const storedName = typeof window !== "undefined" ? localStorage.getItem("pb_child_name") : null
+      const storedMascot = typeof window !== "undefined" ? localStorage.getItem("pb_mascot") : null
       if (storedName) setProfileName(storedName)
       if (storedMascot) setProfileMascot(storedMascot)
     }
 
-    // Charger nom + mascotte + âge depuis le profil enfant actif (DB)
-    fetch("/api/student/profile")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && typeof data.name === "string" && data.name.trim()) {
-          setProfileName(data.name.trim())
-        }
-        if (data && typeof data.mascot === "string") {
-          setProfileMascot(data.mascot)
-        }
-        if (data && typeof data.age === "number") {
-          setProfileAge(`${data.age} ans`)
-        } else {
-          const storedAge = localStorage.getItem("pb_child_age")
-          if (storedAge) setProfileAge(`${storedAge} ans`)
-        }
-      })
-      .catch(() => {})
+    syncProfileData()
+
+    window.addEventListener("pb-profile-updated", syncProfileData)
+    return () => window.removeEventListener("pb-profile-updated", syncProfileData)
   }, [activeProfile])
 
   // Click away listener for dropdowns

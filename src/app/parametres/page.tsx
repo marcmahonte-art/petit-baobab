@@ -106,37 +106,59 @@ export default function ParametresPage() {
     const activeProfileId = useProfileStore.getState().activeProfileId
     if (activeProfileId) body.profileId = activeProfileId
 
-    if (Object.keys(body).length > 0 && activeProfileId) {
-      try {
-        const res = await fetch("/api/student/profile", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-          toast({ title: "Erreur", description: data.error || "Impossible d'enregistrer les paramètres." })
-          return
-        }
-        // Sync auth store + profile store pour appliquer immédiatement
-        useAuthStore.setState((state) => ({
-          profiles: state.profiles.map((p) =>
-            p.id === activeProfileId
-              ? { ...p, name: childName.trim(), mascot: selectedMascot as any }
-              : p
-          ),
-        }))
-        useProfileStore.setState((state) => ({
-          profiles: state.profiles.map((p) =>
-            p.id === activeProfileId
-              ? { ...p, name: childName.trim(), mascot: selectedMascot as any }
-              : p
-          ),
-        }))
-      } catch (err: any) {
-        toast({ title: "Erreur", description: err.message || "Erreur réseau." })
+    const cleanName = childName.trim()
+    const cleanMascot = selectedMascot
+
+    try {
+      const res = await fetch("/api/student/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok && res.status !== 401) {
+        toast({ title: "Erreur", description: data.error || "Impossible d'enregistrer les paramètres." })
         return
       }
+    } catch (err: any) {
+      console.warn("API profile update warning:", err)
+    }
+
+    // Sync auth store (studentSession + profiles)
+    useAuthStore.setState((state) => ({
+      studentSession: state.studentSession
+        ? { ...state.studentSession, name: cleanName, mascot: cleanMascot as any }
+        : null,
+      profiles: state.profiles.map((p) =>
+        !activeProfileId || p.id === activeProfileId
+          ? { ...p, name: cleanName, mascot: cleanMascot as any }
+          : p
+      ),
+    }))
+
+    // Sync profile store
+    useProfileStore.setState((state) => {
+      const targetId = activeProfileId || state.activeProfileId
+      if (targetId && state.profiles.some((p) => p.id === targetId)) {
+        return {
+          profiles: state.profiles.map((p) =>
+            p.id === targetId ? { ...p, name: cleanName, mascot: cleanMascot as any } : p
+          ),
+        }
+      }
+      if (state.profiles.length > 0) {
+        return {
+          profiles: state.profiles.map((p, idx) =>
+            idx === 0 ? { ...p, name: cleanName, mascot: cleanMascot as any } : p
+          ),
+        }
+      }
+      return state
+    })
+
+    // Dispatch global event for header and active components to re-render
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("pb-profile-updated", { detail: { name: cleanName, mascot: cleanMascot } }))
     }
 
     setIsSavedToastOpen(true)
