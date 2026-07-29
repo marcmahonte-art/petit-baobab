@@ -39,7 +39,7 @@ export function Header() {
     { label: "Fonctionnalités", href: "/fonctionnalites" },
     { label: "Boutique", href: "/boutique" },
     { label: "Tarifs", href: "/tarification" },
-    { label: "À propos", href: "/#testimonials" },
+    { label: "À propos", href: "/about" },
   ];
 
   return (
