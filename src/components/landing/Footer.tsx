@@ -85,21 +85,12 @@ export default function Footer() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
           {/* Logo column */}
           <div className="col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="shrink-0">
-                <rect x="16" y="26" width="8" height="10" rx="2" fill="#8B5A2B" />
-                <ellipse cx="20" cy="14" rx="12" ry="10" fill="#20C997" />
-                <circle cx="20" cy="13" r="4" fill="#FFF9F2" />
-              </svg>
-              <div className="flex flex-col leading-tight">
-                <div className="flex gap-1">
-                  <span className="text-[18px] font-bold text-[#1A1A2E]">Petit</span>
-                  <span className="text-[18px] font-extrabold text-[#7D6AF8]">Baobab</span>
-                </div>
-                <span className="text-[11px] font-medium text-[#6B6B7B]">
-                  Apprendre, créer, grandir !
-                </span>
-              </div>
+            <div className="h-20 flex items-center mb-4">
+              <img
+                alt="Logo Petit Baobab"
+                className="h-[72px] w-auto object-contain"
+                src="/illustrations/logo-petit-baobab.svg"
+              />
             </div>
           </div>
 
