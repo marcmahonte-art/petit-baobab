@@ -294,27 +294,27 @@ function ValueCard({ card }: { card: IconCard }) {
 
 function AboutHero() {
   return (
-    <section className="mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-10 px-6 py-12 md:px-12 md:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
-      <motion.div initial="hidden" animate="visible" variants={fadeUp}>
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#7D6AF8]/35 bg-white px-4 py-2 text-sm font-bold text-[#7D6AF8] shadow-sm">
-          <BadgeCheck className="h-4 w-4" aria-hidden />
+    <section className="mx-auto grid max-w-[1280px] grid-cols-1 gap-10 px-6 py-12 md:px-12 md:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
+      <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex flex-col justify-center">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#7D6AF8]/35 bg-white px-4 py-1.5 text-xs font-bold text-[#7D6AF8] shadow-sm">
+          <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
           A propos de nous
         </div>
-        <h1 className="max-w-2xl text-4xl font-bold leading-[1.08] text-[#2B1640] md:text-5xl lg:text-6xl">
+        <h1 className="max-w-xl text-3xl font-bold leading-[1.1] text-[#2B1640] md:text-4xl lg:text-5xl">
           Une nouvelle facon d&apos;apprendre en <span className="text-[#1D9E75]">Afrique.</span>
         </h1>
-        <p className="mt-6 max-w-xl text-lg font-semibold leading-8 text-[#3B2416]">
+        <p className="mt-4 max-w-lg text-base font-semibold leading-7 text-[#3B2416]">
           Petit Baobab aide les enfants a apprendre en creant.
         </p>
-        <p className="mt-3 max-w-xl text-base font-medium leading-8 text-[#3B2416]/78 md:text-lg">
+        <p className="mt-2 max-w-lg text-sm font-medium leading-7 text-[#3B2416]/78 md:text-base">
           Coloriages, histoires, livres personnalises et jeux educatifs reunis dans une seule plateforme pensee pour les familles et les ecoles africaines.
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button asChild className="h-12 rounded-[8px] bg-[#7D6AF8] px-7 text-base font-bold text-white shadow-lg shadow-[#7D6AF8]/25 hover:bg-[#6753E9] focus-visible:ring-[#7D6AF8] sm:h-14">
-            <Link href="/signup">Decouvrir la plateforme<ArrowRight className="ml-2 h-5 w-5" aria-hidden /></Link>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Button asChild className="h-11 rounded-[8px] bg-[#7D6AF8] px-6 text-sm font-bold text-white shadow-lg shadow-[#7D6AF8]/25 hover:bg-[#6753E9] focus-visible:ring-[#7D6AF8] sm:h-12">
+            <Link href="/signup">Decouvrir la plateforme<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link>
           </Button>
-          <Button asChild variant="ghost" className="h-12 rounded-[8px] px-7 text-base font-bold text-[#5B36B6] hover:bg-[#7D6AF8]/10 focus-visible:ring-[#7D6AF8] sm:h-14">
-            <Link href="/boutique">Voir la boutique<ArrowRight className="ml-2 h-5 w-5" aria-hidden /></Link>
+          <Button asChild variant="ghost" className="h-11 rounded-[8px] px-6 text-sm font-bold text-[#5B36B6] hover:bg-[#7D6AF8]/10 focus-visible:ring-[#7D6AF8] sm:h-12">
+            <Link href="/boutique">Voir la boutique<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link>
           </Button>
         </div>
       </motion.div>
@@ -323,7 +323,7 @@ function AboutHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="relative min-h-[360px] md:min-h-[520px]"
+        className="relative min-h-[420px] md:min-h-[560px]"
       >
         <Image
           src="/illustrations/about-hero.webp"
