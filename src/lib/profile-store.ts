@@ -10,6 +10,7 @@ export interface ChildProfile {
   language: "fr" | "en"
   points: number
   badges: string[]
+  avatar_url?: string
   createdAt: number
 }
 
