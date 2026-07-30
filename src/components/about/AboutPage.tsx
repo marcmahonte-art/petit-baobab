@@ -294,46 +294,46 @@ function ValueCard({ card }: { card: IconCard }) {
 
 function AboutHero() {
   return (
-    <section className="mx-auto grid max-w-[1280px] grid-cols-1 gap-10 px-6 py-12 md:px-12 md:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
-      <motion.div initial="hidden" animate="visible" variants={fadeUp} className="flex flex-col justify-center">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#7D6AF8]/35 bg-white px-4 py-1.5 text-xs font-bold text-[#7D6AF8] shadow-sm">
-          <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-          A propos de nous
-        </div>
-        <h1 className="max-w-xl text-3xl font-bold leading-[1.1] text-[#2B1640] md:text-4xl lg:text-5xl">
-          Une nouvelle facon d&apos;apprendre en <span className="text-[#1D9E75]">Afrique.</span>
-        </h1>
-        <p className="mt-4 max-w-lg text-base font-semibold leading-7 text-[#3B2416]">
-          Petit Baobab aide les enfants a apprendre en creant.
-        </p>
-        <p className="mt-2 max-w-lg text-sm font-medium leading-7 text-[#3B2416]/78 md:text-base">
-          Coloriages, histoires, livres personnalises et jeux educatifs reunis dans une seule plateforme pensee pour les familles et les ecoles africaines.
-        </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button asChild className="h-11 rounded-[8px] bg-[#7D6AF8] px-6 text-sm font-bold text-white shadow-lg shadow-[#7D6AF8]/25 hover:bg-[#6753E9] focus-visible:ring-[#7D6AF8] sm:h-12">
-            <Link href="/signup">Decouvrir la plateforme<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link>
-          </Button>
-          <Button asChild variant="ghost" className="h-11 rounded-[8px] px-6 text-sm font-bold text-[#5B36B6] hover:bg-[#7D6AF8]/10 focus-visible:ring-[#7D6AF8] sm:h-12">
-            <Link href="/boutique">Voir la boutique<ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link>
-          </Button>
-        </div>
-      </motion.div>
+    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-24 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+          <h1 className="text-[28px] sm:text-[34px] lg:text-display-lg font-extrabold leading-tight">
+            <span className="text-[#1A1A2E]">Une nouvelle facon</span>
+            <br />
+            <span className="text-[#1A1A2E]">d&apos;apprendre en </span>
+            <span className="text-[#20C997]">Afrique.</span>
+          </h1>
+          <p className="text-sm md:text-body-lg text-[#6B6B7B] max-w-[480px] mt-4 md:mt-6">
+            Petit Baobab aide les enfants a apprendre en creant. Coloriages,
+            histoires, livres personnalises et jeux educatifs reunis dans une
+            seule plateforme pensee pour les familles et les ecoles africaines.
+          </p>
+          <div className="flex gap-3 md:gap-4 mt-5 md:mt-8 flex-wrap">
+            <Button asChild className="h-12 md:h-14 px-6 md:px-8 bg-[#7D6AF8] hover:bg-[#6552E8] text-white font-bold text-sm md:text-[16px] rounded-full shadow-hover hover:scale-[1.02] md:hover:scale-[1.03] transition-all duration-180 md:duration-200 cursor-pointer">
+              <Link href="/signup">Decouvrir la plateforme<ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="h-12 md:h-14 px-6 md:px-8 bg-white text-[#1A1A2E] font-bold text-sm md:text-[16px] rounded-full border border-[#E5E0D5] hover:bg-[#FFF9F2] transition-colors cursor-pointer">
+              <Link href="/boutique">Voir la boutique<ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2" /></Link>
+            </Button>
+          </div>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="relative min-h-[420px] md:min-h-[560px]"
-      >
-        <Image
-          src="/illustrations/about-hero.webp"
-          alt="Enfant africain souriant dans l'univers Petit Baobab"
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-contain"
-        />
-      </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="relative h-[320px] md:h-[480px] lg:h-[560px]"
+        >
+          <Image
+            src="/illustrations/about-hero.webp"
+            alt="Enfant africain souriant dans l'univers Petit Baobab"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-contain"
+          />
+        </motion.div>
+      </div>
     </section>
   );
 }
