@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { getTeacherSession } from "@/lib/school-auth";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { CreateStudentsBulkInput, StudentWithProfile } from "@/types/school";
 
 export async function POST(request: Request) {
@@ -148,6 +149,37 @@ export async function POST(request: Request) {
     console.error("Error in students POST bulk API:", error);
     return NextResponse.json(
       { error: "Une erreur est survenue lors de l'ajout des élèves." },
+      { status: 500 }
+    );
+  }
+}
+
+// GET /api/school/students?classroom_id=xxx
+// Retourne la liste des élèves d'une classe (service_role, contourne RLS client).
+export async function GET(request: Request) {
+  const { errorResponse, account, supabase } = await getTeacherSession();
+  if (errorResponse) return errorResponse;
+  if (!account || !supabase) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const classroomId = searchParams.get("classroom_id");
+    if (!classroomId) {
+      return NextResponse.json({ error: "classroom_id requis" }, { status: 400 });
+    }
+
+    const admin = getSupabaseAdmin();
+    const { data, error } = await admin
+      .from("school_students")
+      .select("*")
+      .eq("classroom_id", classroomId);
+
+    if (error) throw error;
+    return NextResponse.json({ students: data || [] });
+  } catch (error: any) {
+    console.error("Error in students GET API:", error);
+    return NextResponse.json(
+      { error: "Impossible de charger les élèves." },
       { status: 500 }
     );
   }

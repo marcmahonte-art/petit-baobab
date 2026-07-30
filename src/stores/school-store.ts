@@ -325,10 +325,11 @@ export const useSchoolStore = create<SchoolState>()(
               set({ students: mockStudents });
               return;
             }
-            const supabase = getSupabaseClient();
-            const { data, error } = await supabase.from('school_students').select('*').eq('classroom_id', classroomId);
-            if (error) throw error;
-            set({ students: data || [] });
+            // Utilise l'API route (service_role) pour contourner le RLS client
+            const res = await fetch(`/api/school/students?classroom_id=${encodeURIComponent(classroomId)}`);
+            if (!res.ok) throw new Error("Erreur chargement élèves");
+            const json = await res.json();
+            set({ students: json.students || [] });
           } catch (e: any) {
             toast({ title: 'Erreur', description: 'Impossible de charger les élèves.' });
           }

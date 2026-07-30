@@ -485,7 +485,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
                             });
                             if (!res.ok) throw new Error("Upload échoué");
                             const { url } = await res.json();
-                            await updateProfile({ avatar_url: url });
+                            await updateProfile({ name: adminName, mascot: selectedMascot });
                             toast.success("Avatar mis à jour.");
                           } catch (e: any) {
                             toast.error(e.message || "Erreur upload avatar.");
