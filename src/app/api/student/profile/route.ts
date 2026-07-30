@@ -3,6 +3,20 @@ import { getStudentSession, signStudentToken } from "@/lib/auth/student-session"
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin"
 import { getServerUser } from "@/lib/auth"
 
+type MascotId = "bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab"
+type PatchProfileBody = {
+  profileId?: unknown
+  age?: unknown
+  name?: unknown
+  mascot?: unknown
+}
+
+const MASCOT_IDS = new Set<MascotId>(["bobo", "kaya", "zuri", "momo", "kiki", "baobab"])
+
+function isMascotId(value: unknown): value is MascotId {
+  return typeof value === "string" && MASCOT_IDS.has(value as MascotId)
+}
+
 // Résout le profile_id cible :
 //  - mode élève : depuis le cookie sb-student-token
 //  - mode famille : depuis ?profileId= (GET) ou body.profileId (PATCH),
@@ -14,8 +28,8 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   let profileId: string | null = null
   if (request.method === "PATCH") {
     try {
-      const b = await request.clone().json()
-      profileId = b?.profileId ?? null
+      const b = (await request.clone().json()) as PatchProfileBody
+      profileId = typeof b.profileId === "string" ? b.profileId : null
     } catch {
       profileId = null
     }
@@ -29,13 +43,21 @@ async function resolveProfileId(request: NextRequest): Promise<string | null> {
   if (!user) return null
 
   const supabase = getSupabaseAdmin()
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("id")
+    .eq("user_id", user.id)
+    .single()
+
+  if (!account) return null
+
   const { data: profile } = await supabase
     .from("child_profiles")
     .select("id, account_id")
     .eq("id", profileId)
     .single()
 
-  if (!profile || profile.account_id !== user.id) return null
+  if (!profile || profile.account_id !== account.id) return null
   return profileId
 }
 
@@ -59,7 +81,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data)
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("GET /api/student/profile exception:", err)
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })
   }
@@ -72,9 +94,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
-    let body: any
+    let body: PatchProfileBody
     try {
-      body = await request.json()
+      body = (await request.json()) as PatchProfileBody
     } catch {
       return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 })
     }
@@ -82,7 +104,7 @@ export async function PATCH(request: NextRequest) {
     const update: Record<string, unknown> = {}
     if (typeof body.age === "number" && !Number.isNaN(body.age)) update.age = body.age
     if (typeof body.name === "string" && body.name.trim()) update.name = body.name.trim()
-    if (typeof body.mascot === "string" && body.mascot.trim()) update.mascot = body.mascot.trim()
+    if (isMascotId(body.mascot)) update.mascot = body.mascot
 
     if (Object.keys(update).length === 0) {
       return NextResponse.json({ error: "Aucun champ à mettre à jour." }, { status: 400 })
@@ -96,6 +118,11 @@ export async function PATCH(request: NextRequest) {
       .select("id, name, mascot, age")
       .single()
 
+    if (error) {
+      console.error("PATCH /api/student/profile error:", error)
+      return NextResponse.json({ error: "Erreur d\'enregistrement du profil." }, { status: 500 })
+    }
+
     const resultPayload = data || { id: profileId, ...update }
 
     // Si une session élève est active (cookie sb-student-token), mettre à jour le JWT cookie
@@ -106,7 +133,7 @@ export async function PATCH(request: NextRequest) {
       const updatedSession = {
         ...studentSession,
         name: (update.name ?? studentSession.name) as string,
-        mascot: (update.mascot ?? studentSession.mascot) as any,
+        mascot: isMascotId(update.mascot) ? update.mascot : studentSession.mascot,
       }
       const token = await signStudentToken(updatedSession)
       response.cookies.set("sb-student-token", token, {
@@ -119,7 +146,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     return response
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("PATCH /api/student/profile exception:", err)
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 })
   }

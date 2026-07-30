@@ -23,6 +23,7 @@ import Image from "next/image"
 import { getMascotImage, DEFAULT_MASCOT } from "@/lib/mascots"
 import { useProfileStore } from "@/lib/profile-store"
 import { refreshProfile } from "@/lib/hooks/useProfile"
+import { useAuthStore } from "@/lib/auth-store"
 import { toast } from "@/components/ui/use-toast"
 
 const mascottes = [
@@ -35,6 +36,16 @@ const mascottes = [
 ]
 
 export default function ParametresPage() {
+  const {
+    user,
+    studentSession,
+    activeProfileId: authActiveProfileId,
+    isInitialized,
+    checkSession,
+  } = useAuthStore()
+  const profileStoreActiveProfileId = useProfileStore((s) => s.activeProfileId)
+  const activeProfileId = authActiveProfileId || profileStoreActiveProfileId
+
   // State variables with local storage support
   const [childName, setChildName] = useState("Awa")
   const [childAge, setChildAge] = useState("6")
@@ -49,9 +60,6 @@ export default function ParametresPage() {
   // Load from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("pb_child_name")
-      const storedAge = localStorage.getItem("pb_child_age")
-      const storedMascot = localStorage.getItem("pb_mascot")
       const storedMusic = localStorage.getItem("pb_music")
       const storedSfx = localStorage.getItem("pb_sfx")
       const storedLang = localStorage.getItem("pb_lang")
@@ -59,9 +67,6 @@ export default function ParametresPage() {
       const storedPin = localStorage.getItem("pb_pin")
 
       setTimeout(() => {
-        if (storedName) setChildName(storedName)
-        if (storedAge) setChildAge(storedAge)
-        if (storedMascot) setSelectedMascot(storedMascot)
         if (storedMusic) setMusicEnabled(storedMusic === "true")
         if (storedSfx) setSfxEnabled(storedSfx === "true")
         if (storedLang) setLanguage(storedLang)
@@ -71,9 +76,15 @@ export default function ParametresPage() {
     }
   }, [])
 
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
+
   // Charger nom + mascotte + âge depuis le profil enfant actif (DB)
   useEffect(() => {
-    const activeProfileId = useProfileStore.getState().activeProfileId
+    if (!studentSession && !activeProfileId && !isInitialized) return
+    if (!studentSession && user && !activeProfileId) return
+
     const url = activeProfileId
       ? `/api/student/profile?profileId=${encodeURIComponent(activeProfileId)}`
       : "/api/student/profile"
@@ -85,13 +96,10 @@ export default function ParametresPage() {
         if (data && typeof data.mascot === "string") setSelectedMascot(data.mascot)
       })
       .catch(() => {})
-  }, [])
+  }, [activeProfileId, isInitialized, studentSession, user])
 
   // Save settings handler
   const handleSave = async () => {
-    localStorage.setItem("pb_child_name", childName)
-    localStorage.setItem("pb_child_age", childAge)
-    localStorage.setItem("pb_mascot", selectedMascot)
     localStorage.setItem("pb_music", String(musicEnabled))
     localStorage.setItem("pb_sfx", String(sfxEnabled))
     localStorage.setItem("pb_lang", language)
@@ -103,7 +111,6 @@ export default function ParametresPage() {
     if (childName.trim()) body.name = childName.trim()
     if (selectedMascot) body.mascot = selectedMascot
     if (!Number.isNaN(ageNum)) body.age = ageNum
-    const activeProfileId = useProfileStore.getState().activeProfileId
     if (activeProfileId) body.profileId = activeProfileId
 
     try {
@@ -113,13 +120,13 @@ export default function ParametresPage() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok && res.status !== 401) {
+      if (!res.ok) {
         toast({ title: "Erreur", description: data.error || "Impossible d'enregistrer les paramètres." })
         return
       }
       if (data.name) setChildName(data.name)
       if (data.mascot) setSelectedMascot(data.mascot)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn("API profile update warning:", err)
     }
 
