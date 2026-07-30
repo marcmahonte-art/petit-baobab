@@ -24,6 +24,7 @@ export interface ProfileState {
   switchProfile: (id: string) => void
   addPoints: (id: string, points: number) => void
   addBadge: (id: string, badge: string) => void
+  updateProfile: (updates: Partial<ChildProfile>) => void
   canAddProfile: () => boolean
 }
 
@@ -87,6 +88,13 @@ export const useProfileStore = create<ProfileState>()(
           ),
         })),
 
+      updateProfile: (updates) =>
+        set((state) => ({
+          profiles: state.profiles.map((p) =>
+            p.id === state.activeProfileId ? { ...p, ...updates } : p,
+          ),
+        })),
+
       canAddProfile: () => {
         const { profiles, plan } = get()
         return profiles.length < maxProfilesForPlan(plan)
@@ -101,6 +109,13 @@ export const useProfileStore = create<ProfileState>()(
 
 export function getActiveProfile(): ChildProfile | undefined {
   const { profiles, activeProfileId } = useProfileStore.getState()
+  return profiles.find((p) => p.id === activeProfileId)
+}
+
+// Hook React pour accéder au profil actif
+export function useProfile(): ChildProfile | undefined {
+  const activeProfileId = useProfileStore((s) => s.activeProfileId)
+  const profiles = useProfileStore((s) => s.profiles)
   return profiles.find((p) => p.id === activeProfileId)
 }
 

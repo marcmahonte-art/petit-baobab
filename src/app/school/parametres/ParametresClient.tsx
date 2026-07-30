@@ -52,6 +52,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { getSupabaseClient } from "@/lib/supabase-client";
 import { useAuthStore } from "@/lib/auth-store";
+import { useProfile, useProfileStore } from "@/lib/profile-store";
+import { getMascotImage } from "@/lib/mascots";
 import type { BillingData } from "@/lib/billing/server";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -104,8 +106,47 @@ export default function ParametresClient({ user, account, billing, teacherProfil
   const [passwordForm, setPasswordForm] = useState({ current: "", newPassword: "", confirm: "" });
   const [editingSchool, setEditingSchool] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [editingAdminName, setEditingAdminName] = useState(false);
+  const [adminName, setAdminName] = useState("");
+  const [selectedMascot, setSelectedMascot] = useState<"bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab">("bobo");
 
   const supabase = getSupabaseClient();
+  const profile = useProfile();
+  const updateProfile = useProfileStore((s) => s.updateProfile);
+
+  // Initialiser les valeurs d'édition quand on clique sur modifier
+  const startEditingAdmin = () => {
+    setAdminName(profile?.name || teacherProfile?.full_name || user.email.split("@")[0]);
+    setSelectedMascot((profile?.mascot as any) || "bobo");
+    setEditingAdminName(true);
+  };
+
+  async function handleUpdateAdminName() {
+    if (!adminName.trim()) {
+      toast.error("Le nom ne peut pas être vide.");
+      return;
+    }
+    try {
+      // Mettre à jour child_profiles (la table utilisée par le dropdown)
+      const { error } = await supabase
+        .from("child_profiles")
+        .update({
+          name: adminName,
+          mascot: selectedMascot,
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Rafraîchir le store pour que le dropdown se mette à jour
+      await updateProfile({ name: adminName, mascot: selectedMascot });
+
+      toast.success("Nom et mascotte mis à jour.");
+      setEditingAdminName(false);
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la mise à jour.");
+    }
+  }
   const initials = teacherProfile?.full_name
     ? teacherProfile.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : user.email.slice(0, 2).toUpperCase();
@@ -417,17 +458,93 @@ export default function ParametresClient({ user, account, billing, teacherProfil
           <SectionCard icon={User} title="Compte administrateur" index={1}>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <Avatar className="w-14 h-14">
-                  <AvatarImage src={teacherProfile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-[#7D6AF8] text-white font-bold text-lg">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-bold text-[#3B2416]">{teacherName}</p>
-                  <p className="text-xs text-[#7A6A5E]">{user.email}</p>
-                  <p className="text-xs text-[#7A6A5E]">Administrateur</p>
+                <div className="relative w-14 h-14 shrink-0">
+                  <Avatar className="w-14 h-14">
+                    <AvatarImage src={getMascotImage(profile?.mascot || "bobo")} />
+                    <AvatarFallback className="bg-[#7D6AF8] text-white font-bold text-lg">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {editingAdminName && (
+                    <label className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#7D6AF8] flex items-center justify-center cursor-pointer shadow-md hover:bg-[#6552E8] transition-colors">
+                      <Pencil className="w-3 h-3 text-white" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingLogo(true);
+                          try {
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            const res = await fetch("/api/school/upload", {
+                              method: "POST",
+                              body: formData,
+                            });
+                            if (!res.ok) throw new Error("Upload échoué");
+                            const { url } = await res.json();
+                            await updateProfile({ avatar_url: url });
+                            toast.success("Avatar mis à jour.");
+                          } catch (e: any) {
+                            toast.error(e.message || "Erreur upload avatar.");
+                          } finally {
+                            setUploadingLogo(false);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
+                <div className="flex-1">
+                  {editingAdminName ? (
+                    <div className="space-y-2">
+                      <Input
+                        value={adminName}
+                        onChange={(e) => setAdminName(e.target.value)}
+                        placeholder="Nom administrateur"
+                        className="text-sm font-bold"
+                      />
+                      <select
+                        value={selectedMascot}
+                        onChange={(e) => setSelectedMascot(e.target.value as any)}
+                        className="w-full text-xs border border-[#E5E0D5] rounded-lg px-2 py-1"
+                      >
+                        <option value="bobo">Bobo</option>
+                        <option value="kaya">Kaya</option>
+                        <option value="zuri">Zuri</option>
+                        <option value="momo">Momo</option>
+                        <option value="kiki">Kiki</option>
+                        <option value="baobab">Baobab</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setEditingAdminName(true)}
+                    >
+                      <p className="text-sm font-bold text-[#3B2416] hover:underline">{profile?.name || teacherName}</p>
+                      <p className="text-xs text-[#7A6A5E]">{user.email}</p>
+                      <p className="text-xs text-[#7A6A5E]">Administrateur</p>
+                    </div>
+                  )}
+                </div>
+                {editingAdminName ? (
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => setEditingAdminName(false)} className="cursor-pointer">
+                        <X className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" onClick={handleUpdateAdminName} className="cursor-pointer">
+                        <Check className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={startEditingAdmin} className="cursor-pointer">
+                      <Pencil className="w-4 h-4" />
+                      Modifier
+                    </Button>
+                  )}
               </div>
 
               <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-[#FFF9F2] text-xs">
