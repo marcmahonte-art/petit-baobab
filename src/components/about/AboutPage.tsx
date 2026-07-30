@@ -320,10 +320,10 @@ function AboutHero() {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.34, ease: "easeOut" }}
-        className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[#DFF3FF] shadow-[0_24px_60px_rgba(59,36,22,0.12)] md:min-h-[520px]"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative min-h-[360px] md:min-h-[520px]"
       >
         <Image
           src="/illustrations/about-hero.webp"
@@ -331,7 +331,7 @@ function AboutHero() {
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover"
+          className="object-contain"
         />
       </motion.div>
     </section>
