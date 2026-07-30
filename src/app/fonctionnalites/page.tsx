@@ -45,7 +45,7 @@ export default function FonctionnalitesPage() {
     <div className="min-h-screen bg-[#FFF9F2] text-[#3B2416] font-sans antialiased">
       <Header />
       <main>
-        <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
             Tout ce que Petit Baobab offre
