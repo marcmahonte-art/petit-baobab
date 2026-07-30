@@ -326,8 +326,8 @@ function AboutHero() {
         className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[#DFF3FF] shadow-[0_24px_60px_rgba(59,36,22,0.12)] md:min-h-[520px]"
       >
         <Image
-          src="/illustrations/awa-village-girafe.webp"
-          alt="Enfant africain souriant avec un livre de coloriage, un baobab, une girafe et des crayons"
+          src="/illustrations/about-hero.webp"
+          alt="Enfant africain souriant dans l'univers Petit Baobab"
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 50vw"
@@ -426,7 +426,7 @@ function CTASection() {
             </div>
           </div>
           <div className="relative mx-auto h-64 w-full max-w-[360px] lg:h-72">
-            <Image src="/illustrations/mascots/baobab-guide.png" alt="Mascotte baobab joyeuse de Petit Baobab" fill sizes="(max-width: 1024px) 80vw, 360px" className="object-contain drop-shadow-2xl" />
+            <Image src="/illustrations/mascots/petit-baobab-guide-magique.png" alt="Guide magique Petit Baobab" fill sizes="(max-width: 1024px) 80vw, 360px" className="object-contain drop-shadow-2xl" />
           </div>
         </div>
         <div className="absolute right-8 top-8 h-24 w-24 rounded-full bg-[#FFD95C]/20 blur-2xl" />
