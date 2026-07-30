@@ -294,7 +294,7 @@ function ValueCard({ card }: { card: IconCard }) {
 
 function AboutHero() {
   return (
-    <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-10 lg:py-24 relative">
+      <section className="max-w-[1280px] mx-auto px-6 lg:px-10 py-4 lg:py-6 relative">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         <motion.div initial="hidden" animate="visible" variants={fadeUp}>
           <h1 className="text-[28px] sm:text-[34px] lg:text-display-lg font-extrabold leading-tight">
