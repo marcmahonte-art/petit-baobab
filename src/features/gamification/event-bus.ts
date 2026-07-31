@@ -6,8 +6,18 @@ export type AnyEventPayload =
   | (BookEventPayload & { type: "BOOK_CREATED" | "BOOK_PRINTED" })
   | (GameEventPayload & { type: "GAME_COMPLETED" })
   | (QuizEventPayload & { type: "QUIZ_COMPLETED" })
+  | (BookEventPayload & { type: "STORY_CREATED" })
   | (ShopEventPayload & { type: "SHOP_PURCHASE" | "SHOP_REVIEW" })
   | (StarsEventPayload & { type: "STARS_USED" | "STARS_EARNED" })
+
+export type EmitPayload =
+  | EventPayload
+  | DrawingEventPayload
+  | BookEventPayload
+  | GameEventPayload
+  | QuizEventPayload
+  | ShopEventPayload
+  | StarsEventPayload
 
 type EventHandler = (payload: AnyEventPayload) => void | Promise<void>
 
@@ -33,7 +43,7 @@ class EventBus {
     return () => GAME_EVENTS.forEach((event) => this.off(event, handler))
   }
 
-  async emit(event: GameEventType, payload: EventPayload): Promise<void> {
+  async emit(event: GameEventType, payload: EmitPayload): Promise<void> {
     const fullPayload = { ...payload, type: event } as AnyEventPayload
 
     this.history.push(fullPayload)
@@ -70,7 +80,11 @@ import { GAME_EVENTS } from "./constants"
 
 export const eventBus = new EventBus()
 
-export function emit(event: GameEventType, payload: EventPayload): Promise<void> {
+export function emit(event: GameEventType, payload: EmitPayload): Promise<void> {
+  return eventBus.emit(event, payload)
+}
+
+export function emitGameEvent(event: GameEventType, payload: EmitPayload): Promise<void> {
   return eventBus.emit(event, payload)
 }
 

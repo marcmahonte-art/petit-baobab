@@ -7,6 +7,7 @@ export type GameEventType =
   | "COLORING_COMPLETED"
   | "GAME_COMPLETED"
   | "QUIZ_COMPLETED"
+  | "STORY_CREATED"
   | "LOGIN"
   | "DAILY_LOGIN"
   | "STREAK_DAY"
