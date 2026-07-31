@@ -52,8 +52,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { getSupabaseClient } from "@/lib/supabase-client";
 import { useAuthStore } from "@/lib/auth-store";
-import { useProfile, useProfileStore } from "@/lib/profile-store";
-import { getMascotImage } from "@/lib/mascots";
+import { useSchoolStore } from "@/stores/school-store";
 import type { BillingData } from "@/lib/billing/server";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -108,16 +107,13 @@ export default function ParametresClient({ user, account, billing, teacherProfil
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [editingAdminName, setEditingAdminName] = useState(false);
   const [adminName, setAdminName] = useState("");
-  const [selectedMascot, setSelectedMascot] = useState<"bobo" | "kaya" | "zuri" | "momo" | "kiki" | "baobab">("bobo");
 
   const supabase = getSupabaseClient();
-  const profile = useProfile();
-  const updateProfile = useProfileStore((s) => s.updateProfile);
+  const refreshSchoolProfile = useSchoolStore((s) => s.fetchDashboard);
 
   // Initialiser les valeurs d'édition quand on clique sur modifier
   const startEditingAdmin = () => {
-    setAdminName(profile?.name || teacherProfile?.full_name || user.email.split("@")[0]);
-    setSelectedMascot((profile?.mascot as any) || "bobo");
+    setAdminName(teacherProfile?.full_name || user.email.split("@")[0]);
     setEditingAdminName(true);
   };
 
@@ -127,21 +123,23 @@ export default function ParametresClient({ user, account, billing, teacherProfil
       return;
     }
     try {
-      // Mettre à jour child_profiles (la table utilisée par le dropdown)
+      // Source de vérité = table `profiles` (id = auth.users.id)
       const { error } = await supabase
-        .from("child_profiles")
-        .update({
-          name: adminName,
-          mascot: selectedMascot,
-        })
-        .eq("user_id", user.id);
+        .from("profiles")
+        .update({ full_name: adminName })
+        .eq("id", user.id);
 
       if (error) throw error;
 
-      // Rafraîchir le store pour que le dropdown se mette à jour
-      await updateProfile({ name: adminName, mascot: selectedMascot });
+      // Rafraîchir le store école pour que le Dashboard reflète le changement
+      // immédiatement (sans reconnecter).
+      try {
+        await refreshSchoolProfile();
+      } catch {
+        /* non bloquant */
+      }
 
-      toast.success("Nom et mascotte mis à jour.");
+      toast.success("Nom mis à jour.");
       setEditingAdminName(false);
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de la mise à jour.");
@@ -460,7 +458,7 @@ export default function ParametresClient({ user, account, billing, teacherProfil
               <div className="flex items-center gap-4">
                 <div className="relative w-14 h-14 shrink-0">
                   <Avatar className="w-14 h-14">
-                    <AvatarImage src={getMascotImage(profile?.mascot || "bobo")} />
+                    <AvatarImage src={teacherProfile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-[#7D6AF8] text-white font-bold text-lg">
                       {initials}
                     </AvatarFallback>
@@ -485,7 +483,15 @@ export default function ParametresClient({ user, account, billing, teacherProfil
                             });
                             if (!res.ok) throw new Error("Upload échoué");
                             const { url } = await res.json();
-                            await updateProfile({ name: adminName, mascot: selectedMascot });
+                            // Sauvegarder l'avatar dans profiles (source de vérité)
+                            const { error } = await supabase
+                              .from("profiles")
+                              .update({ avatar_url: url })
+                              .eq("id", user.id);
+                            if (error) throw error;
+                            try {
+                              await refreshSchoolProfile();
+                            } catch {}
                             toast.success("Avatar mis à jour.");
                           } catch (e: any) {
                             toast.error(e.message || "Erreur upload avatar.");
@@ -506,25 +512,13 @@ export default function ParametresClient({ user, account, billing, teacherProfil
                         placeholder="Nom administrateur"
                         className="text-sm font-bold"
                       />
-                      <select
-                        value={selectedMascot}
-                        onChange={(e) => setSelectedMascot(e.target.value as any)}
-                        className="w-full text-xs border border-[#E5E0D5] rounded-lg px-2 py-1"
-                      >
-                        <option value="bobo">Bobo</option>
-                        <option value="kaya">Kaya</option>
-                        <option value="zuri">Zuri</option>
-                        <option value="momo">Momo</option>
-                        <option value="kiki">Kiki</option>
-                        <option value="baobab">Baobab</option>
-                      </select>
                     </div>
                   ) : (
                     <div
                       className="cursor-pointer"
                       onClick={() => setEditingAdminName(true)}
                     >
-                      <p className="text-sm font-bold text-[#3B2416] hover:underline">{profile?.name || teacherName}</p>
+                      <p className="text-sm font-bold text-[#3B2416] hover:underline">{teacherProfile?.full_name || teacherName}</p>
                       <p className="text-xs text-[#7A6A5E]">{user.email}</p>
                       <p className="text-xs text-[#7A6A5E]">Administrateur</p>
                     </div>

@@ -3,9 +3,11 @@ import React from "react";
 import Image from "next/image";
 import { Bell, Star } from "lucide-react";
 import { useSchoolStore } from "@/stores/school-store";
+import { useCurrentUserProfile } from "@/lib/use-current-user-profile";
 
 export default function DashboardHeader() {
   const { dashboardData, loading } = useSchoolStore();
+  const { name: teacherName, avatar: teacherAvatar, schoolName, role } = useCurrentUserProfile();
 
   if (loading || !dashboardData) {
     return (
@@ -22,18 +24,18 @@ export default function DashboardHeader() {
     );
   }
 
-  const { teacher, stars } = dashboardData;
+  const stars = dashboardData.stars;
 
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 bg-white rounded-2xl shadow-sm border border-[#F0E7DA]">
       {/* Greeting */}
        <div className="min-w-0">
         <h1 className="text-lg sm:text-xl font-extrabold text-[#3B2416] truncate">
-          Bonjour, {teacher.name} !
+          Bonjour, {teacherName} !
         </h1>
         <p className="text-xs sm:text-sm text-[#7A6A5E] font-medium">
-          {teacher.school_name
-            ? teacher.school_name
+          {schoolName
+            ? schoolName
             : "Bienvenue dans votre espace enseignant."}
         </p>
       </div>
@@ -60,16 +62,16 @@ export default function DashboardHeader() {
         {/* Avatar */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#7D6AF8] flex items-center justify-center text-white font-bold text-xs sm:text-sm overflow-hidden">
-            {teacher.avatar ? (
+            {teacherAvatar ? (
               <Image
-                src={teacher.avatar}
-                alt={teacher.name}
+                src={teacherAvatar}
+                alt={teacherName || "Admin"}
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
               />
             ) : (
-              teacher.name
+              (teacherName || "A")
                 .split(" ")
                 .map((n) => n[0])
                 .join("")
@@ -77,8 +79,8 @@ export default function DashboardHeader() {
             )}
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-bold text-[#3B2416]">{teacher.name}</p>
-            <p className="text-xs text-[#7A6A5E]">{teacher.role}</p>
+            <p className="text-sm font-bold text-[#3B2416]">{teacherName}</p>
+            <p className="text-xs text-[#7A6A5E]">{role || "Enseignant"}</p>
           </div>
         </div>
       </div>
