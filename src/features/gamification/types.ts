@@ -23,6 +23,9 @@ export type GameEventType =
   | "STARS_EARNED"
   | "LEVEL_UP"
   | "BADGE_UNLOCKED"
+  | "CHALLENGE_COMPLETED"
+  | "WORLD_OBJECT_UNLOCKED"
+  | "WORLD_MEMORY_CREATED"
 
 export type Difficulty = "easy" | "medium" | "hard"
 

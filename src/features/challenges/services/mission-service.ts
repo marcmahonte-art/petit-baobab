@@ -14,7 +14,7 @@ import {
   MAX_DAILY_MISSIONS,
   MAX_WEEKLY_MISSIONS,
 } from "../constants"
-import { eventBus } from "../../gamification/event-bus"
+import { eventBus, emitGameEvent } from "../../gamification/event-bus"
 import { challengeEngine } from "../../gamification/challenge-engine"
 import { toEngineChallenge, registerMissionInEngine } from "../rewards/rewards-engine"
 import type { GameEventType } from "../../gamification/types"
@@ -277,7 +277,7 @@ export async function loadChildWeeklyProgress(supabase: Supabase, childId: strin
   return map
 }
 
-export async function registerMissionsInEngine(missionResult: MissionGenerationResult, childId: string): Promise<void> {
+export async function registerMissionsInEngine(missionResult: MissionGenerationResult): Promise<void> {
   for (const m of missionResult.daily) {
     registerMissionInEngine(
       toEngineChallenge(m.id, m.title, m.description, m.event, m.target, m.reward, endOfDay().toISOString()),
@@ -303,6 +303,7 @@ export async function listenToMissionEvents(
   missionIds: string[],
   onProgress: (missionId: string, progress: number, completed: boolean) => void,
 ): Promise<() => void> {
+  const completedMap = new Map<string, boolean>()
   return eventBus.onAny((payload) => {
     if (payload.childId !== childId) return
     const event = payload.type as GameEventType
@@ -310,7 +311,16 @@ export async function listenToMissionEvents(
     for (const missionId of missionIds) {
       const challenge = challengeEngine.getById(missionId)
       if (challenge && challenge.requirement.event === event) {
-        onProgress(missionId, count, challenge.completed)
+        const completed = challenge.completed
+        const wasCompleted = completedMap.get(missionId) ?? false
+        if (completed && !wasCompleted) {
+          void emitGameEvent("CHALLENGE_COMPLETED", {
+            childId,
+            metadata: { missionId, event },
+          })
+        }
+        completedMap.set(missionId, completed)
+        onProgress(missionId, count, completed)
       }
     }
   })

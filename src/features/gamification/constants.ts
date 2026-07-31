@@ -25,6 +25,9 @@ export const GAME_EVENTS: GameEventType[] = [
   "STARS_EARNED",
   "LEVEL_UP",
   "BADGE_UNLOCKED",
+  "CHALLENGE_COMPLETED",
+  "WORLD_OBJECT_UNLOCKED",
+  "WORLD_MEMORY_CREATED",
 ]
 
 export const XP_PER_EVENT: Record<string, number> = {
@@ -52,6 +55,9 @@ export const XP_PER_EVENT: Record<string, number> = {
   STARS_EARNED: 0,
   LEVEL_UP: 0,
   BADGE_UNLOCKED: 0,
+  CHALLENGE_COMPLETED: 0,
+  WORLD_OBJECT_UNLOCKED: 0,
+  WORLD_MEMORY_CREATED: 0,
 }
 
 export const STARS_PER_EVENT: Record<string, number> = {
