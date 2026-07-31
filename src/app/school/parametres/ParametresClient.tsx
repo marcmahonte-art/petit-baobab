@@ -123,13 +123,16 @@ export default function ParametresClient({ user, account, billing, teacherProfil
       return;
     }
     try {
-      // Source de vérité = table `profiles` (id = auth.users.id)
-      const { error } = await supabase
-        .from("profiles")
-        .update({ full_name: adminName })
-        .eq("id", user.id);
-
-      if (error) throw error;
+      // Source de vérité = auth.users.user_metadata (via Admin API serveur).
+      const res = await fetch("/api/school/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: adminName }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Erreur mise à jour profil");
+      }
 
       // Rafraîchir le store école pour que le Dashboard reflète le changement
       // immédiatement (sans reconnecter).
@@ -483,12 +486,13 @@ export default function ParametresClient({ user, account, billing, teacherProfil
                             });
                             if (!res.ok) throw new Error("Upload échoué");
                             const { url } = await res.json();
-                            // Sauvegarder l'avatar dans profiles (source de vérité)
-                            const { error } = await supabase
-                              .from("profiles")
-                              .update({ avatar_url: url })
-                              .eq("id", user.id);
-                            if (error) throw error;
+                            // Sauvegarder l'avatar dans user_metadata (source de vérité)
+                            const avatarRes = await fetch("/api/school/profile", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ avatar_url: url }),
+                            });
+                            if (!avatarRes.ok) throw new Error("Erreur sauvegarde avatar");
                             try {
                               await refreshSchoolProfile();
                             } catch {}

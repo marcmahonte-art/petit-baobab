@@ -13,22 +13,15 @@ export async function GET() {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  // Nom réel de l'enseignant = table `profiles` (id = auth.users.id), source de vérité unique.
-  // On ne lit PAS user_metadata (qui n'est pas mis à jour par les Paramètres).
-  const { data: profileRow } = await supabase
-    .from("profiles")
-    .select("full_name, avatar_url")
-    .eq("id", user.id)
-    .single();
-
+  // Nom réel de l'enseignant = auth.users.user_metadata (source de vérité unique
+  // pour le profil admin). La table `profiles` ne contient PAS full_name/avatar_url.
   const teacherName =
-    profileRow?.full_name ||
     (user?.user_metadata?.full_name as string | undefined) ||
     (user?.user_metadata?.name as string | undefined) ||
     (user?.email ? user.email.split("@")[0].replace(/[._-]/g, " ") : null) ||
     "Enseignant";
 
-  const teacherAvatar = profileRow?.avatar_url || null;
+  const teacherAvatar = (user?.user_metadata?.avatar_url as string | undefined) || null;
 
   try {
     const accountId = account.id;

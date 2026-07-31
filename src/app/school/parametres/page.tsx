@@ -23,11 +23,13 @@ export default async function ParametresPage() {
 
   const billing = await getBillingData();
 
-  const { data: teacherProfile } = await supabase
-    .from("profiles")
-    .select("full_name, avatar_url")
-    .eq("id", user.id)
-    .single();
+  // Source de vérité du profil admin = auth.users.user_metadata
+  // (la table `profiles` ne contient pas full_name/avatar_url).
+  const meta = (user.user_metadata || {}) as { full_name?: string; avatar_url?: string };
+  const teacherProfile = {
+    full_name: meta.full_name ?? null,
+    avatar_url: meta.avatar_url ?? null,
+  };
 
   return (
     <ParametresClient
