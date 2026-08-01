@@ -8,6 +8,7 @@ import { getTimeOfDay } from "../constants"
 
 export function useWorld(childId?: string) {
   const store = useWorldStore()
+  const setTimeOfDay = useWorldStore((s) => s.setTimeOfDay)
   const initializedRef = useRef(false)
 
   const initialize = useCallback(
@@ -31,12 +32,12 @@ export function useWorld(childId?: string) {
 
   useEffect(() => {
     const updateTime = () => {
-      store.setTimeOfDay(getTimeOfDay().time)
+      setTimeOfDay(getTimeOfDay().time)
     }
     updateTime()
     const interval = setInterval(updateTime, 60000)
     return () => clearInterval(interval)
-  }, [store])
+  }, [setTimeOfDay])
 
   const createMemory = useCallback(
     async (event: string, metadata: Record<string, unknown>) => {
