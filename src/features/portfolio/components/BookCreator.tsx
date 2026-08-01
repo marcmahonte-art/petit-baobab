@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BUTTON_IN } from '../animations';
 import { usePortfolioStore } from '../store/portfolio-store';
-import { fabric } from 'fabric';
+import { Canvas, FabricImage } from 'fabric';
 
 /**
  * BookCreator – composant UI permettant à l'enfant de créer un livre illustré.
@@ -28,10 +28,9 @@ export function BookCreator() {
     if (!res.ok) return;
     const { imageUrl } = await res.json();
     // Insérer l'image dans le canvas
-    const canvas = new fabric.Canvas(`canvas-page-${pageIndex}`);
-    fabric.Image.fromURL(imageUrl, (img) => {
-      canvas.setWidth(600);
-      canvas.setHeight(800);
+    const canvas = new Canvas(`canvas-page-${pageIndex}`);
+    FabricImage.fromURL(imageUrl).then((img) => {
+      canvas.setDimensions({ width: 600, height: 800 });
       canvas.add(img);
     });
   };

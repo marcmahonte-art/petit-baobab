@@ -35,7 +35,8 @@ import { usePortfolio, usePortfolioGallery } from "@/features/portfolio/hooks"
 import { portfolioEngine } from "@/features/portfolio/engine/portfolio-engine"
 import { generateSouvenirBookPdf } from "@/features/portfolio/exports/pdf"
 import { printPortfolio, shareToWhatsApp } from "@/features/portfolio/exports"
-import type { AlbumSummary, PortfolioEvent } from "@/features/portfolio/types"
+import type { PortfolioEvent } from "@/features/portfolio/types"
+import type { AlbumSummary } from "@/features/portfolio/albums"
 
 function normalizePlan(plan: string | undefined): PlanType {
   if (plan === "super_baobab") return "super-baobab"
@@ -283,7 +284,7 @@ export default function PortfolioPage() {
 
             <section>
               <h2 className="mb-3 text-lg font-extrabold text-[#3B2416]">Certificats</h2>
-              <PortfolioCertificateCard certificates={certificates} onDownload={handleDownloadCertificate} />
+              <PortfolioCertificateCard certificates={certificates} onDownload={(c) => { void handleDownloadCertificate(c as LearningCertificate) }} />
               <div className="hidden">
                 {certificates.map((cert) => (
                   <QRCodeCanvas

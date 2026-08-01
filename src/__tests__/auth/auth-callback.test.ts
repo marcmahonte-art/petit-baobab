@@ -83,25 +83,25 @@ describe("auth callback — redirection par rôle", () => {
     vi.clearAllMocks();
   });
 
-  it("Parent simple (plan: 'free', has_family_sub: true) → redirect /dashboard", async () => {
+  it("Parent simple (plan: 'free', has_family_sub: true) → redirect /parents", async () => {
     setupMocks("free", true, false);
     const res = await GET(makeRequest("code123"));
     const loc = await getRedirect(res);
-    expect(loc).toContain("/dashboard");
+    expect(loc).toContain("/parents");
     expect(loc).not.toContain("/select-space");
     expect(loc).not.toContain("/school/dashboard");
   });
 
-  it("Parent decouverte → redirect /dashboard", async () => {
+  it("Parent decouverte → redirect /parents", async () => {
     setupMocks("decouverte", true, false);
     const res = await GET(makeRequest("code123"));
-    expect(await getRedirect(res)).toContain("/dashboard");
+    expect(await getRedirect(res)).toContain("/parents");
   });
 
-  it("Parent super_baobab → redirect /dashboard", async () => {
+  it("Parent super_baobab → redirect /parents", async () => {
     setupMocks("super_baobab", true, false);
     const res = await GET(makeRequest("code123"));
-    expect(await getRedirect(res)).toContain("/dashboard");
+    expect(await getRedirect(res)).toContain("/parents");
   });
 
   it("Enseignant pur (ecole_pro, has_family_sub: false, has_school_sub: true) → /school/dashboard", async () => {

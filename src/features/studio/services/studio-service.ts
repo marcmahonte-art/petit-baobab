@@ -64,7 +64,7 @@ export const studioService = {
       .upsert({
         ...page,
         created_at: new Date().toISOString(),
-      }, { onConflict: ["project_id", "page_number"] })
+      }, { onConflict: "project_id,page_number" })
       .select()
       .single();
     if (error) throw error;

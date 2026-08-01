@@ -1,10 +1,10 @@
 // src/features/analytics/services/__tests__/analytics-service.test.ts
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { analyticsService } from '@/features/analytics/services/analytics-service';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 vi.mock('@/lib/supabaseServer', () => ({
-  createServerSupabaseClient: vi.fn()
+  getSupabaseServer: vi.fn()
 }));
 
 describe('analyticsService', () => {
@@ -14,12 +14,13 @@ describe('analyticsService', () => {
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      then: vi.fn().mockResolvedValue({ data: [{ id: 1 }], error: null })
+      then: (onFulfilled: (value: unknown) => unknown) =>
+        Promise.resolve({ data: [{ id: 1 }], error: null }).then(onFulfilled)
     }))
   } as any;
 
   beforeAll(() => {
-    (createServerSupabaseClient as any).mockReturnValue(mockSupabase);
+    (getSupabaseServer as any).mockResolvedValue(mockSupabase);
   });
 
   afterEach(() => {

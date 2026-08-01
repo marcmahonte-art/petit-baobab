@@ -44,3 +44,8 @@ export const CONFETTI: Variants = {
   hidden: { opacity: 0, scale: 0.6 },
   visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 200, damping: 15 } },
 }
+
+export const BUTTON_IN: Variants = {
+  hidden: { opacity: 0, scale: 0.96, y: 8 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3 } },
+}

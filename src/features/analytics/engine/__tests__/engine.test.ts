@@ -1,10 +1,10 @@
 // src/features/analytics/engine/__tests__/engine.test.ts
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { trackEvent } from '@/features/analytics/engine';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 vi.mock('@/lib/supabaseServer', () => ({
-  createServerSupabaseClient: vi.fn()
+  getSupabaseServer: vi.fn()
 }));
 
 describe('trackEvent', () => {
@@ -13,7 +13,7 @@ describe('trackEvent', () => {
   const mockSupabase = { from: mockFrom } as any;
 
   beforeAll(() => {
-    (createServerSupabaseClient as any).mockReturnValue(mockSupabase);
+    (getSupabaseServer as any).mockResolvedValue(mockSupabase);
   });
 
   afterEach(() => {

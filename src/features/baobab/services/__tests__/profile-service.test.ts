@@ -17,7 +17,9 @@ vi.mock('@supabase/supabase-js', () => {
         };
         if (table === 'baobab_profiles') {
           mock.single.mockResolvedValue({ data: { id: 'uuid-1', child_profile_id: 'child-1', current_level: 2, xp: 150, updated_at: new Date().toISOString() }, error: null });
-          mock.upsert.mockResolvedValue({ data: { id: 'uuid-1', child_profile_id: 'child-1', current_level: 3, xp: 300, updated_at: new Date().toISOString() }, error: null });
+          mock.upsert.mockImplementation(() => ({
+            single: vi.fn().mockResolvedValue({ data: { id: 'uuid-1', child_profile_id: 'child-1', current_level: 3, xp: 300, updated_at: new Date().toISOString() }, error: null }),
+          }));
         } else {
           mock.single.mockResolvedValue({ data: null, error: new Error('Table not mocked') });
         }

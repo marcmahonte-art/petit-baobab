@@ -2,29 +2,31 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { getAnimals, addAnimal } from '@/features/baobab/services/animal-service';
 
-vi.mock('@supabase/supabase-js', () => {
-  const actual = vi.importActual('@supabase/supabase-js');
+vi.mock('@/lib/supabaseClient', () => {
+  const makeQuery = (defaultResult: { data: any; error: any }, insertResult: { data: any; error: any }) => {
+    const query: any = {};
+    for (const m of ['select', 'eq', 'order', 'ilike', 'limit', 'maybeSingle']) {
+      query[m] = () => query;
+    }
+    query.insert = () => {
+      query.single = () => insertResult;
+      return query;
+    };
+    query.single = () => defaultResult;
+    query.then = (resolve: (value: any) => void) => Promise.resolve(defaultResult).then(resolve);
+    return query;
+  };
+
   return {
-    ...actual,
-    createClient: vi.fn(() => {
-      const mockFrom = (table: string) => {
-        const mock = {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn(),
-          upsert: vi.fn().mockReturnThis(),
-          insert: vi.fn().mockReturnThis(),
-        };
-        if (table === 'baobab_animals') {
-          mock.select.mockReturnThis();
-          mock.eq.mockReturnThis();
-          mock.single.mockResolvedValue({ data: [{ id: 'a1', animal_type: 'lion', level: 1, unlocked: true, equipped: false }], error: null });
-          mock.insert.mockResolvedValue({ data: { id: 'a2', animal_type: 'giraffe', level: 1, unlocked: true, equipped: false }, error: null });
-        }
-        return mock;
-      };
-      return { from: mockFrom } as any;
-    })
+    supabase: {
+      from: (table: string) =>
+        table === 'baobab_profiles'
+          ? makeQuery({ data: { id: 'prof-1' }, error: null }, { data: { id: 'prof-1' }, error: null })
+          : makeQuery(
+              { data: [{ id: 'a1', animal_type: 'lion', level: 1, unlocked: true, equipped: false }], error: null },
+              { data: { id: 'a2', animal_type: 'giraffe', level: 1, unlocked: true, equipped: false }, error: null }
+            ),
+    },
   };
 });
 

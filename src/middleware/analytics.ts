@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { trackEvent } from '@/features/analytics/engine/index';
-import { EventName } from '@/features/analytics/events/types';
+import { EventName, AnalyticsEvent } from '@/features/analytics/events/types';
 import { getServerUser } from '@/lib/auth';
 
 /**
  * Middleware intercepting all API requests.
  * Maps known routes/methods to analytics events and tracks them.
  */
-export async function middleware(request) {
-  const { pathname, method } = request.nextUrl;
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const method = request.method;
   const user = await getServerUser();
 
   const mapping: Record<string, { method: string; event: EventName }> = {
@@ -37,13 +39,12 @@ export async function middleware(request) {
 
   const key = pathname;
   if (mapping[key] && mapping[key].method === method) {
-    const event = {
-      account_id: user?.account?.id ?? null,
-      child_id: user?.child?.id ?? null,
-      school_id: user?.school?.id ?? null,
+    const meta = user?.user_metadata ?? {};
+    const event: AnalyticsEvent = {
+      account_id: typeof meta.account_id === "string" ? meta.account_id : null,
+      child_id: typeof meta.child_id === "string" ? meta.child_id : null,
+      school_id: typeof meta.school_id === "string" ? meta.school_id : null,
       event_name: mapping[key].event,
-      resource_type: undefined,
-      resource_id: undefined,
       metadata: { path: pathname, method },
     };
     await trackEvent(event);

@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 import { AnalyticsEvent } from '@/features/analytics/events/types';
 import { EventName } from '@/features/analytics/events/types';
 
@@ -8,14 +8,14 @@ import { EventName } from '@/features/analytics/events/types';
  */
 export const analyticsService = {
   async track(event: AnalyticsEvent) {
-    const supabase = createServerSupabaseClient();
+    const supabase = await getSupabaseServer();
     const { data, error } = await supabase.from('analytics_events').insert([event]);
     if (error) console.error('Analytics track error', error);
     return data;
   },
 
   async getKPIs(filters: { startDate?: string; endDate?: string; schoolId?: string }) {
-    const supabase = createServerSupabaseClient();
+    const supabase = await getSupabaseServer();
     const query = supabase
       .from('analytics_daily')
       .select('*');
@@ -28,7 +28,7 @@ export const analyticsService = {
   },
 
   async getDailyStats(dateFrom: string, dateTo: string) {
-    const supabase = createServerSupabaseClient();
+    const supabase = await getSupabaseServer();
     const { data, error } = await supabase
       .from('analytics_daily')
       .select('*')
@@ -39,7 +39,7 @@ export const analyticsService = {
   },
 
   async getSchoolStats(schoolId: string, dateFrom: string, dateTo: string) {
-    const supabase = createServerSupabaseClient();
+    const supabase = await getSupabaseServer();
     const { data, error } = await supabase
       .from('analytics_school')
       .select('*')
@@ -51,7 +51,7 @@ export const analyticsService = {
   },
 
   async getProductStats(productId: string, dateFrom: string, dateTo: string) {
-    const supabase = createServerSupabaseClient();
+    const supabase = await getSupabaseServer();
     const { data, error } = await supabase
       .from('analytics_products')
       .select('*')

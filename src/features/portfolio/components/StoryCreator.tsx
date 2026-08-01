@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BUTTON_IN } from '../animations';
 import { usePortfolioStore } from '../store/portfolio-store';
-import { fabric } from 'fabric';
+import { Canvas, FabricImage } from 'fabric';
 
 /**
  * StoryCreator – composant UI permettant à l'enfant de créer une histoire personnalisée.
@@ -25,10 +25,9 @@ export function StoryCreator() {
     });
     if (!res.ok) return;
     const { imageUrl } = await res.json();
-    const canvas = new fabric.Canvas(`canvas-chapter-${index}`);
-    fabric.Image.fromURL(imageUrl, (img) => {
-      canvas.setWidth(600);
-      canvas.setHeight(800);
+    const canvas = new Canvas(`canvas-chapter-${index}`);
+    FabricImage.fromURL(imageUrl).then((img) => {
+      canvas.setDimensions({ width: 600, height: 800 });
       canvas.add(img);
     });
   };

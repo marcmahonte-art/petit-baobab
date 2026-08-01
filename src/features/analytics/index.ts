@@ -6,4 +6,4 @@ export * from './dashboard';
 export * from './hooks';
 export * from './services';
 export * from './components';
-export * from './types';
+// export * from './types'; // supprimé car le fichier n'existe pas
