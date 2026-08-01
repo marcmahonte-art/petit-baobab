@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    include: ["src/__tests__/**/*.test.ts", "src/__tests__/**/*.test.tsx"],
+    include: ["src/**/*.test.ts"],
     setupFiles: [],
     // Charge .env.local (et .env) pour que STUDENT_JWT_SECRET et les
     // variables Supabase soient dispos lors des tests d'auth.
