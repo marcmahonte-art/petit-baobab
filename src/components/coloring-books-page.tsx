@@ -151,6 +151,8 @@ export function ColoringBooksPage() {
   const viewerContainerRef = useRef<HTMLDivElement>(null)
   const generationTimerRef = useRef<number | null>(null)
   const [step2Tab, setStep2Tab] = useState<"couverture" | "style" | "format" | "options">("couverture")
+  const [expanded, setExpanded] = useState(false)
+  const drawingsGridRef = useRef<HTMLDivElement>(null)
 
   const { status: genStatus, error: genError, generate } = useBookPdf()
 
@@ -284,6 +286,16 @@ export function ColoringBooksPage() {
     const matchesCategory = selectedCat === "all" || drawing.category === selectedCat
     return matchesSearch && matchesCategory
   })
+
+  // UX: show only the first 8 drawings by default; "Voir plus" reveals the rest.
+  const visibleDrawings = expanded
+    ? filteredDrawings
+    : filteredDrawings.slice(0, 8)
+
+  const handleFilterChange = (apply: () => void) => {
+    setExpanded(false)
+    apply()
+  }
   const handleDownloadPdf = () => {
     void generate(book)
   }
@@ -404,7 +416,7 @@ export function ColoringBooksPage() {
                       <Input
                         placeholder="Rechercher un dessin (ex : éléphant, école...)"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => handleFilterChange(() => setSearchTerm(e.target.value))}
                         className="pl-11 pr-4 h-[46px] rounded-2xl border border-[#E5E7EB] bg-[#FAFAFC] text-sm font-semibold text-[#1F2937] placeholder-[#64748B]/60 focus-visible:ring-1 focus-visible:ring-[#6D4CFF]"
                       />
                     </div>
@@ -413,7 +425,7 @@ export function ColoringBooksPage() {
                       {categories.map((cat) => (
                         <button
                           key={cat.id}
-                          onClick={() => setSelectedCat(cat.id)}
+                          onClick={() => handleFilterChange(() => setSelectedCat(cat.id))}
                           className={cn(
                             "flex items-center gap-1.5 px-4 h-9 rounded-full font-extrabold text-[13px] border transition-all shrink-0 cursor-pointer",
                             selectedCat === cat.id
@@ -429,16 +441,23 @@ export function ColoringBooksPage() {
                   </div>
 
                   {/* Drawings Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <AnimatePresence>
-                      {filteredDrawings.map((draw) => {
+                  <motion.div
+                    ref={drawingsGridRef}
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AnimatePresence initial={false}>
+                      {visibleDrawings.map((draw) => {
                         const isSelected = selectedIds.includes(draw.id)
                         return (
                           <motion.div
                             key={draw.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
+                            layout
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 12 }}
+                            transition={{ duration: 0.3 }}
                             whileHover={{ scale: 1.03 }}
                             onClick={() => handleToggleSelect(draw.id)}
                             className={cn(
@@ -490,7 +509,47 @@ export function ColoringBooksPage() {
                         Aucun dessin trouvé dans cette catégorie.
                       </div>
                     )}
-                  </div>
+                  </motion.div>
+
+                  {/* Voir plus / Voir moins */}
+                  {filteredDrawings.length > 8 && (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex flex-col items-center gap-2 pt-2"
+                    >
+                      <button
+                        onClick={() => {
+                          if (expanded) {
+                            setExpanded(false)
+                            drawingsGridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+                          } else {
+                            setExpanded(true)
+                          }
+                        }}
+                        className="flex items-center gap-2 px-6 h-11 rounded-full bg-[#6D4CFF] text-white text-sm font-extrabold shadow-sm hover:bg-[#5B3FDF] transition-colors cursor-pointer"
+                      >
+                        {expanded ? (
+                          <>
+                            <ChevronUp className="w-4 h-4" />
+                            Voir moins
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4" />
+                            Voir plus ({filteredDrawings.length - 8})
+                          </>
+                        )}
+                      </button>
+                      <p className="text-[11px] font-bold text-[#64748B]">
+                        {expanded
+                          ? `${filteredDrawings.length} dessins affichés`
+                          : `Affichage de 8 sur ${filteredDrawings.length} dessins`}
+                      </p>
+                    </motion.div>
+                  )}
                 </Card>
 
                 {/* Selected drawings list at bottom */}
