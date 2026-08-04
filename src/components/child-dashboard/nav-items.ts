@@ -1,4 +1,4 @@
-import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Settings, Award } from "lucide-react"
+import { Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Settings, Award, Map, BrainCircuit } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -20,6 +20,8 @@ export const commonNavItems: NavItem[] = [
   { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },
+  { icon: Map, label: "Parcours", href: "/learn/parcours" },
+  { icon: BrainCircuit, label: "Coach IA", href: "/learn/coach" },
   { icon: Award, label: "Mon portfolio", href: "/learn/portfolio" },
 ]
 
