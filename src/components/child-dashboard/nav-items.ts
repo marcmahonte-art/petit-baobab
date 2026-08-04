@@ -1,4 +1,4 @@
-import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Settings } from "lucide-react"
+import { Home, Palette, BookOpen, Gamepad2, Bookmark, Tent, Sparkles, Settings, Award } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 export interface NavItem {
@@ -20,6 +20,7 @@ export const commonNavItems: NavItem[] = [
   { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
   { icon: Bookmark, label: "Histoires", href: "#" },
   { icon: Tent, label: "Activités", href: "#" },
+  { icon: Award, label: "Mon portfolio", href: "/learn/portfolio" },
 ]
 
 /** Lien Paramètres — commun aux deux sidebars, toujours en dernière position. */

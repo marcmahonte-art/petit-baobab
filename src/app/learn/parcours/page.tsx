@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { Sidebar } from "@/app/learn/_components/sidebar"
 import { Header } from "@/app/learn/_components/header"
+import { useLearnSession } from "@/app/learn/_components/learn-session"
+import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/auth-store"
 import { useProfile } from "@/lib/profile-store"
 import { useGamification } from "@/features/gamification/hooks/use-gamification"
@@ -11,6 +13,7 @@ import { useProgression } from "@/features/progression/hooks/use-progression"
 import { useChallenges } from "@/features/challenges/hooks/use-challenges"
 import { useWorldObjects } from "@/features/baobab-world/hooks"
 import { useLearningPaths } from "@/features/learning-paths/hooks"
+import { useLearningMap } from "@/features/learning-paths/hooks/use-learning-map"
 import { pathEngine } from "@/features/learning-paths/engine/path-engine"
 import {
   LearningCard,
@@ -21,10 +24,21 @@ import {
   CertificateCard,
   RewardPopup,
   PathCompletedModal,
+  WorldMap,
+  RegionDetail,
+  SkillRadarChart,
+  NextObjective,
+  DailyQuests,
+  SideQuests,
+  HistoryTimeline,
+  BaobabAdvice,
+  MapRewardPopup,
 } from "@/features/learning-paths/components"
 import { getPathBySlug, getDifficulty } from "@/features/learning-paths/constants"
+import { SKILL_AXES } from "@/features/learning-paths/constants/map-constants"
 import { useLearningStore } from "@/features/learning-paths/store/learning-store"
 import { FADE_UP, STAGGER } from "@/features/learning-paths/animations"
+import type { HistoryItem } from "@/features/learning-paths/components/map/HistoryTimeline"
 import type { PlanType } from "@/features/gamification/types"
 
 const MASCOT_PREFERENCES: Record<string, string[]> = {
@@ -43,6 +57,8 @@ function normalizePlan(plan: string | undefined): PlanType {
 }
 
 export default function LearningPathsPage() {
+  const router = useRouter()
+  const { role } = useLearnSession()
   const { account, isInitialized, checkSession } = useAuthStore()
   const profile = useProfile()
   const childId = profile?.id
@@ -56,13 +72,25 @@ export default function LearningPathsPage() {
     level,
     preferences: profile?.mascot ? MASCOT_PREFERENCES[profile.mascot] ?? [] : [],
   })
+  const map = useLearningMap(childId)
   const challenges = useChallenges(childId, account?.plan ?? "free")
   const { animals, props, decorations } = useWorldObjects()
 
   const store = useLearningStore()
 
+  const [view, setView] = useState<"map" | "paths">("map")
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null)
+  const [busyMissionId, setBusyMissionId] = useState<string | null>(null)
+  const [busyQuestId, setBusyQuestId] = useState<string | null>(null)
   const selectedPath = selectedSlug ? getPathBySlug(selectedSlug) ?? null : null
+
+  // Garde enfant : la carte et les parcours sont réservés aux enfants connectés.
+  useEffect(() => {
+    if (isInitialized && role !== "student" && !childId) {
+      router.replace("/learn/dashboard")
+    }
+  }, [isInitialized, role, childId, router])
 
   useEffect(() => {
     if (!isInitialized) checkSession()
@@ -98,12 +126,100 @@ export default function LearningPathsPage() {
     return mission ? `${mission.title} (défi du jour)` : "Choisis un parcours et commence ton aventure !"
   }, [learning.inProgress, challenges.daily])
 
+  // -------------------------------------------------------------------------
+  // Vue Carte — dérivations des 8 sections
+  // -------------------------------------------------------------------------
+
+  const selectedRegion = selectedRegionId ? map.regions.find((r) => r.id === selectedRegionId) ?? null : null
+  const selectedRegionMissions = selectedRegion ? map.missionsByRegion[selectedRegion.id] ?? [] : []
+
+  const historyItems: HistoryItem[] = useMemo(() => {
+    const items: HistoryItem[] = map.missionProgress
+      .filter((p) => p.status === "completed" && p.completed_at)
+      .map((p) => {
+        const mission = map.missions.find((m) => m.id === p.mission_id)
+        const region = mission ? map.regions.find((r) => r.id === mission.region_id) : undefined
+        return {
+          id: `mission_${p.mission_id}`,
+          title: mission?.title ?? "Mission terminée",
+          description: region ? `Mission dans ${region.title}` : "Mission accomplie",
+          icon: "🎯",
+          date: p.completed_at!,
+          type: "mission" as const,
+        }
+      })
+
+    for (const d of map.dailyProgress) {
+      if (d.completed) {
+        items.push({
+          id: `daily_${d.mission.id}`,
+          title: `Quête du jour : ${d.mission.title}`,
+          description: `+${d.mission.xp} XP`,
+          icon: d.mission.icon,
+          date: new Date().toISOString(),
+          type: "quest" as const,
+        })
+      }
+    }
+
+    return items
+  }, [map.missionProgress, map.missions, map.regions, map.dailyProgress])
+
+  const strongestAxis = useMemo(() => {
+    return [...SKILL_AXES].sort((a, b) => (map.radar[b.key] ?? 0) - (map.radar[a.key] ?? 0))[0]
+  }, [map.radar])
+
+  const advice = useMemo(() => {
+    if (!map.currentMission) {
+      return "La carte est entièrement débloquée, quel explorateur ! Continue d'enrichir tes compétences chaque jour."
+    }
+    const axis = strongestAxis
+    if (axis && map.radar[axis.key] > 0) {
+      return `Tu brilles en ${axis.label.toLowerCase()} ! La mission « ${map.currentMission.title} » est parfaite pour faire grandir cette force.`
+    }
+    return `Ta prochaine aventure : « ${map.currentMission.title} ». Chaque mission te rapproche du prochain niveau !`
+  }, [map.currentMission, map.radar, strongestAxis])
+
+  const recommendation = useMemo(() => {
+    if (learning.recommendations[0]) {
+      return `Pour continuer, je te recommande le parcours « ${learning.recommendations[0].path.title} ».`
+    }
+    return undefined
+  }, [learning.recommendations])
+
+  const handleStartMission = async (missionId: string) => {
+    setBusyMissionId(missionId)
+    try {
+      await map.startMission(missionId)
+    } finally {
+      setBusyMissionId(null)
+    }
+  }
+
+  const handleCompleteMission = async (missionId: string) => {
+    setBusyMissionId(missionId)
+    try {
+      await map.completeMission(missionId)
+    } finally {
+      setBusyMissionId(null)
+    }
+  }
+
+  const handleCompleteQuest = async (type: "daily" | "weekly", questId: string) => {
+    setBusyQuestId(questId)
+    try {
+      await map.completeQuest(type, questId)
+    } finally {
+      setBusyQuestId(null)
+    }
+  }
+
   if (!isInitialized || !childId) {
     return (
       <div className="min-h-screen bg-[#FFF9F2] flex items-center justify-center select-none">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 border-[#3B2416] border-t-transparent rounded-full animate-spin" />
-          <span className="text-[#3B2416] font-bold text-sm">Chargement de tes parcours...</span>
+          <span className="text-[#3B2416] font-bold text-sm">Chargement de ton aventure...</span>
         </div>
       </div>
     )
@@ -128,7 +244,129 @@ export default function LearningPathsPage() {
         <main className="flex flex-col gap-6 min-h-[calc(100vh-48px)]">
           <Header />
 
-          {!selectedPath ? (
+          {/* Toggle Carte / Parcours */}
+          <div className="flex w-fit items-center gap-1 rounded-full border border-[#F1E7DA] bg-white p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setView("map")}
+              className={`cursor-pointer rounded-full px-4 py-2 text-xs font-extrabold transition-colors ${
+                view === "map" ? "bg-[#20C997] text-white shadow" : "text-[#7A6A5E] hover:text-[#3B2416]"
+              }`}
+            >
+              🗺️ Carte du monde
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("paths")}
+              className={`cursor-pointer rounded-full px-4 py-2 text-xs font-extrabold transition-colors ${
+                view === "paths" ? "bg-[#7D6AF8] text-white shadow" : "text-[#7A6A5E] hover:text-[#3B2416]"
+              }`}
+            >
+              📚 Parcours
+            </button>
+          </div>
+
+          {view === "map" ? (
+            /* -----------------------------------------------------------------
+             * VUE CARTE DU MONDE — PHASE 9
+             * 1. Carte africaine  2. Prochain objectif  3. Mission du jour
+             * 4. Région active    5. Quêtes secondaires  6. Roue radar
+             * 7. Conseil du Baobab  8. Historique
+             * -------------------------------------------------------------- */
+            <motion.div variants={STAGGER} initial="hidden" animate="visible" className="flex flex-col gap-6">
+              <WorldMap
+                regions={map.regions}
+                regionProgress={map.regionProgress}
+                totalXp={map.totalXp}
+                selectedRegionId={selectedRegionId}
+                onSelectRegion={setSelectedRegionId}
+                loading={map.loading}
+              />
+
+              <NextObjective
+                region={map.nextObjective ?? null}
+                mission={map.currentMission}
+                regionJustUnlocked={map.regionJustUnlocked}
+                totalXp={map.totalXp}
+              />
+
+              {/* Mission du jour + progression globale */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <DailyQuests dailies={map.dailyProgress} onComplete={handleCompleteQuest} busyQuestId={busyQuestId} />
+
+                <motion.div variants={FADE_UP} className="rounded-[24px] border border-[#F1E7DA] bg-white p-5 shadow-[0_10px_30px_rgba(59,36,22,0.06)]">
+                  <h3 className="mb-3 text-sm font-extrabold text-[#3B2416]">Ma progression</h3>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between rounded-2xl bg-[#F7F4FF] p-3">
+                      <span className="text-xs font-bold text-[#5B4AE0]">{map.levelInfo.icon} Niveau {map.levelInfo.level} · {map.levelInfo.title}</span>
+                      <span className="text-xs font-extrabold text-[#5B4AE0]">{map.levelInfo.progress}%</span>
+                    </div>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#F5F0EB]">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-[#7D6AF8] to-[#20C997]"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${map.levelInfo.progress}%` }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-2xl bg-[#FFF4D6] p-3 text-center">
+                        <p className="text-lg font-extrabold text-[#D96A00]">{map.totalXp}</p>
+                        <p className="text-[10px] font-bold uppercase text-[#7A6A5E]">XP</p>
+                      </div>
+                      <div className="rounded-2xl bg-[#20C997]/10 p-3 text-center">
+                        <p className="text-lg font-extrabold text-[#128A6B]">
+                          {map.regionProgress.filter((r) => r.status === "completed").length}
+                        </p>
+                        <p className="text-[10px] font-bold uppercase text-[#7A6A5E]">Régions</p>
+                      </div>
+                      <div className="rounded-2xl bg-[#7D6AF8]/10 p-3 text-center">
+                        <p className="text-lg font-extrabold text-[#5B4AE0]">{map.completedMissionIds.size}</p>
+                        <p className="text-[10px] font-bold uppercase text-[#7A6A5E]">Missions</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Détail de la région sélectionnée */}
+              {selectedRegion && (
+                <RegionDetail
+                  region={selectedRegion}
+                  missions={selectedRegionMissions}
+                  missionProgress={map.missionProgress}
+                  totalXp={map.totalXp}
+                  onStartMission={handleStartMission}
+                  onCompleteMission={handleCompleteMission}
+                  busyMissionId={busyMissionId}
+                />
+              )}
+
+              {/* Quêtes secondaires */}
+              <SideQuests sideQuests={map.sideQuests} onStart={handleStartMission} busyMissionId={busyMissionId} />
+
+              {/* Roue radar + conseil du Baobab */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <motion.div variants={FADE_UP} className="flex flex-col items-center rounded-[24px] border border-[#F1E7DA] bg-white p-5 shadow-[0_10px_30px_rgba(59,36,22,0.06)]">
+                  <h3 className="mb-2 self-start text-sm font-extrabold text-[#3B2416]">Mes compétences</h3>
+                  <SkillRadarChart radar={map.radar} size={240} />
+                </motion.div>
+
+                <BaobabAdvice
+                  advice={advice}
+                  recommendation={recommendation}
+                  levelTitle={map.levelInfo.title}
+                  levelIcon={map.levelInfo.icon}
+                />
+              </div>
+
+              {/* Historique */}
+              <HistoryTimeline items={historyItems} />
+            </motion.div>
+          ) : !selectedPath ? (
+            /* -----------------------------------------------------------------
+             * VUE PARCOURS — dashboard existant
+             * -------------------------------------------------------------- */
             <motion.div variants={STAGGER} initial="hidden" animate="visible" className="flex flex-col gap-6">
               <LearningHero childName={profile?.name} mascot={profile?.mascot} objective={dailyObjective} stats={stats} />
 
@@ -293,6 +531,12 @@ export default function LearningPathsPage() {
           store.closePathCompleted()
           setSelectedSlug(null)
         }}
+      />
+      <MapRewardPopup
+        open={map.showReward}
+        reward={map.lastReward}
+        regionUnlocked={map.regionJustUnlocked}
+        onClose={() => map.closeReward()}
       />
     </div>
   )

@@ -8,6 +8,8 @@ import { Sidebar } from "@/app/learn/_components/sidebar"
 import { Header } from "@/app/learn/_components/header"
 import { useAuthStore } from "@/lib/auth-store"
 import { useProfile } from "@/lib/profile-store"
+import { useLearnSession } from "@/app/learn/_components/learn-session"
+import { useRouter } from "next/navigation"
 import { useGamification } from "@/features/gamification/hooks/use-gamification"
 import { useProgression } from "@/features/progression/hooks/use-progression"
 import { useWorldObjects } from "@/features/baobab-world/hooks"
@@ -45,6 +47,8 @@ function normalizePlan(plan: string | undefined): PlanType {
 }
 
 export default function PortfolioPage() {
+  const router = useRouter()
+  const { role } = useLearnSession()
   const { account, isInitialized, checkSession } = useAuthStore()
   const profile = useProfile()
   const childId = profile?.id
@@ -72,6 +76,15 @@ export default function PortfolioPage() {
   useEffect(() => {
     if (!isInitialized) checkSession()
   }, [isInitialized, checkSession])
+
+  // Garde enfant : le Portfolio est réservé aux enfants connectés.
+  // Un adulte sans session enfant (ni élève, ni profil actif) est renvoyé
+  // vers son espace apprenant.
+  useEffect(() => {
+    if (isInitialized && role !== "student" && !childId) {
+      router.replace("/learn/dashboard")
+    }
+  }, [isInitialized, role, childId, router])
 
   useEffect(() => {
     if (childId) {

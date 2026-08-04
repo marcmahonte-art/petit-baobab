@@ -7,6 +7,7 @@ const features = [
   { title: "Jeux éducatifs", illustration: "/illustrations/puzzle.webp", topColor: "#B9DDFF", bottomColor: "#0094FF", href: "#", imgW: 130, imgH: 130 },
   { title: "Histoires", illustration: "/illustrations/reading-girl.webp", topColor: "#FFC6D3", bottomColor: "#FF557E", href: "#", imgW: 130, imgH: 130 },
   { title: "Activités", illustration: "/illustrations/crayons.webp", topColor: "#BFF5ED", bottomColor: "#13C6A2", href: "#", imgW: 130, imgH: 130 },
+  { title: "Mon portfolio", illustration: "/illustrations/Collection-livres.webp", topColor: "#FFE7A0", bottomColor: "#FF8A00", href: "/learn/portfolio", imgW: 130, imgH: 130 },
 ]
 
 export function FeatureModules() {

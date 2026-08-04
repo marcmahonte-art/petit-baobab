@@ -191,3 +191,153 @@ export interface ThemeDefinition {
   secondary: string
   accent: string
 }
+
+// ---------------------------------------------------------------------------
+// PHASE 9 — Learning Map (le "GPS" de l'enfant)
+// ---------------------------------------------------------------------------
+
+export interface LearningRegion {
+  id: string
+  slug: string
+  title: string
+  description: string
+  icon: string
+  color: string
+  position_x: number
+  position_y: number
+  required_xp: number
+  order_index: number
+  is_active: boolean
+  created_at?: string
+}
+
+export type MissionType =
+  | "COLORING"
+  | "MAGIC_DRAWING"
+  | "BOOK"
+  | "GAME"
+  | "QUIZ"
+  | "STORY"
+  | "VIDEO"
+  | "CHALLENGE"
+  | "MISSION"
+  | "COLLECTION"
+
+export interface LearningMission {
+  id: string
+  region_id: string
+  title: string
+  description: string
+  level: number
+  order_index: number
+  xp: number
+  stars: number
+  badge: string | null
+  illustration: string | null
+  type: MissionType
+  duration: number
+  difficulty: PathDifficulty
+  prerequisites: string[]
+  created_at?: string
+}
+
+export interface MissionReward {
+  id: string
+  mission_id: string
+  xp: number
+  stars: number
+  badge: string | null
+  item: string | null
+}
+
+export interface ChildMissionProgress {
+  id?: string
+  child_id: string
+  mission_id: string
+  status: "locked" | "available" | "in_progress" | "completed"
+  progress: number
+  started_at: string | null
+  completed_at: string | null
+  created_at?: string
+}
+
+export interface DailyMission {
+  id: string
+  title: string
+  description: string
+  type: MissionType
+  xp: number
+  stars: number
+  icon: string
+  day_key: string
+  is_active: boolean
+}
+
+export interface WeeklyMission {
+  id: string
+  title: string
+  description: string
+  type: MissionType
+  xp: number
+  stars: number
+  badge: string | null
+  icon: string
+  week_offset: number
+  is_active: boolean
+}
+
+export interface SkillRadar {
+  creativity: number
+  reading: number
+  observation: number
+  logic: number
+  perseverance: number
+  imagination: number
+}
+
+export interface LearningStatistics {
+  child_id: string
+  creativity: number
+  reading: number
+  observation: number
+  logic: number
+  perseverance: number
+  imagination: number
+  total_xp: number
+  time_spent_seconds: number
+  missions_completed: number
+  regions_unlocked: number
+  updated_at?: string
+}
+
+export type RegionStatus = "locked" | "available" | "in_progress" | "completed"
+
+export interface RegionProgress {
+  region: LearningRegion
+  status: RegionStatus
+  missions: MissionProgress[]
+  completedMissions: number
+  totalMissions: number
+  progress: number
+  currentMission: LearningMission | null
+  nextMission: LearningMission | null
+}
+
+export interface MissionProgress {
+  mission: LearningMission
+  status: ChildMissionProgress["status"]
+  progress: number
+  completedAt: string | null
+}
+
+export interface DailyMissionProgress {
+  mission: DailyMission
+  status: "locked" | "available" | "completed"
+  completed: boolean
+}
+
+export interface WeeklyMissionProgress {
+  mission: WeeklyMission
+  status: "locked" | "available" | "completed"
+  completed: boolean
+}
