@@ -46,10 +46,10 @@ export function Hero() {
 
         {/* Hero Illustration / Banner Image */}
         <div className="relative flex justify-center items-center">
-          <div className="relative w-full max-w-md aspect-[4/3] rounded-[20px] overflow-hidden shadow-xl border-4 border-white">
+          <div className="relative w-full max-w-md aspect-[4/3] rounded-[20px] overflow-hidden shadow-xl">
             <Image
-              src="/illustrations/Collection-livres.webp"
-              alt="Collection de livres Petit Baobab"
+              src="/illustrations/boutique.png"
+              alt="Boutique Petit Baobab"
               fill
               className="object-cover"
               priority
