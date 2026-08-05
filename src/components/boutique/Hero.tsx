@@ -46,7 +46,7 @@ export function Hero() {
 
         {/* Hero Illustration / Banner Image */}
         <div className="relative flex justify-center items-center">
-          <div className="relative w-full max-w-md aspect-[4/3] rounded-[20px] overflow-hidden shadow-xl">
+          <div className="relative w-full max-w-md aspect-[4/3] rounded-2xl overflow-hidden">
             <Image
               src="/illustrations/boutique.png"
               alt="Boutique Petit Baobab"
