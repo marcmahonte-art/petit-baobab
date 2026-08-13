@@ -46,12 +46,13 @@ export function Hero() {
 
         {/* Hero Illustration / Banner Image */}
         <div className="relative flex justify-center items-center">
-          <div className="relative w-full max-w-md aspect-[4/3] rounded-2xl overflow-hidden">
+          <div className="relative w-full max-w-lg">
             <Image
               src="/illustrations/hero_boutique.png"
               alt="Boutique Petit Baobab"
-              fill
-              className="object-cover"
+              width={600}
+              height={500}
+              className="w-full h-auto object-contain drop-shadow-md"
               priority
             />
           </div>
