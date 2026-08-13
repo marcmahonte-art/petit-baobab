@@ -48,7 +48,7 @@ export function Hero() {
         <div className="relative flex justify-center items-center">
           <div className="relative w-full max-w-md aspect-[4/3] rounded-2xl overflow-hidden">
             <Image
-              src="/illustrations/boutique.png"
+              src="/illustrations/hero_boutique.png"
               alt="Boutique Petit Baobab"
               fill
               className="object-cover"
