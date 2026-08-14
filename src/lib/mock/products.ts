@@ -12,9 +12,9 @@ export const PRODUCTS: Product[] = [
     price: 3500,
     currency: "FCFA",
     images: [
-      "/illustrations/Collection-livres.webp",
-      "/illustrations/lion.webp",
-      "/illustrations/Baobab.webp",
+      "/illustrations/couverture-animaux-savane.png",
+      "/illustrations/page-interne-animaux-savane.png",
+      "/illustrations/derniere-page-animaux-savane.png",
     ],
     rating: 4.9,
     reviewCount: 28,
