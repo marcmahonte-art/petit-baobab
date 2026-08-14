@@ -8,7 +8,7 @@ interface ShareClassWidgetProps {
   className: string;
 }
 
-const JOIN_URL = "https://petit-baobab.vercel.app/school";
+const JOIN_URL = "https://www.monpetitbaobab.com/school";
 
 export default function ShareClassWidget({
   classCode,

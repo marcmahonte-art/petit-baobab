@@ -135,7 +135,7 @@ export const MASCOT_IMAGES: Record<string, string> = {
 export const CERTIFICATE_SIGNATURE = "Petit Baobab"
 
 export const CERTIFICATE_VERIFY_URL =
-  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL) || "https://petit-baobab.app"
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_APP_URL) || "https://www.monpetitbaobab.com"
 
 // ---------------------------------------------------------------------------
 // Contenu des parcours (canonique)

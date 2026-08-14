@@ -27,7 +27,7 @@ export class PayDunyaProvider {
     params: PayDunyaCheckoutParams
   ): Promise<PaymentCheckoutResult> {
     const { accountId, packId, planId, amountXof, stars, label, successUrl, cancelUrl, months } = params;
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://petit-baobab.vercel.app";
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://www.monpetitbaobab.com";
 
     const customData: Record<string, string> = {
       account_id: accountId,
