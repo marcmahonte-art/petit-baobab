@@ -16,7 +16,7 @@ export const CATEGORIES: Category[] = [
     title: "Color by Number",
     description: "Apprendre les chiffres et les couleurs tout en révélant de magnifiques tableaux.",
     icon: "Hash",
-    image: "/illustrations/Choisis.webp",
+    image: "/illustrations/color-by-number.webp",
     productCount: 8,
   },
   {
