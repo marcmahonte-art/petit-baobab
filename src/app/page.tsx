@@ -39,7 +39,7 @@ export default function LandingPage() {
       <Header />
 
       {/* BEGIN: HeroSection */}
-      <section className="relative pt-6 md:pt-8 pb-16 px-6 overflow-hidden">
+      <section className="relative mt-[15px] pt-6 md:pt-8 pb-16 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           
           <div className="animate-fade-in-up">
