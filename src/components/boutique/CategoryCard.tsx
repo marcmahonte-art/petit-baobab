@@ -47,12 +47,12 @@ export function CategoryCard({ category, isSelected = false, onClick }: Category
           : "border-transparent hover:border-white/70 shadow-sm"
       }`}
     >
-      <div className="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3 bg-white/70">
+      <div className="relative w-full aspect-[4/3] rounded-[16px] overflow-hidden mb-3">
         <Image
           src={category.image}
           alt={category.title}
           fill
-          className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+          className="object-contain group-hover:scale-105 transition-transform duration-500"
         />
         <div className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center ${accent.text} shadow-sm`}>
           {getIcon(category.icon)}
