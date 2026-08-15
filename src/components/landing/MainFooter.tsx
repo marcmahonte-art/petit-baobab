@@ -49,7 +49,7 @@ export default function MainFooter() {
             <ul className="space-y-4 text-sm text-gray-500">
               <li><a className="hover:text-[#6D4CFF]" href="#">Aide</a></li>
               <li><a className="hover:text-[#6D4CFF]" href="#">Guide parents</a></li>
-              <li><a className="hover:text-[#6D4CFF]" href="#">Confidentialité</a></li>
+              <li><a className="hover:text-[#6D4CFF]" href="/confidentialite">Confidentialité</a></li>
               <li><a className="hover:text-[#6D4CFF]" href="#">Conditions</a></li>
             </ul>
           </div>

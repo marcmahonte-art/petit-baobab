@@ -67,6 +67,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/confidentialite" className="hover:text-[#7D6AF8] transition-colors">
+                Politique de confidentialité
+              </Link>
+            </li>
+            <li>
               <Link href="/#testimonials" className="hover:text-[#7D6AF8] transition-colors">
                 À propos de nous
               </Link>
