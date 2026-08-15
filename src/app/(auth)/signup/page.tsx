@@ -155,7 +155,7 @@ function SignupFormContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          scopes: "public_profile",
+          scopes: provider === "facebook" ? "public_profile" : undefined,
           redirectTo: `${getSiteUrl()}/api/auth/callback?accountType=${accountType === "school" ? "school" : "family"}`,
         },
       })
