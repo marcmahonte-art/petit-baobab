@@ -114,14 +114,14 @@ export const PRODUCTS: Product[] = [
     slug: "pack-stickers-baobab-magic",
     title: "Pack de 20 Stickers Baobab Magic",
     description:
-      "Un lot de 20 autocollants vinyles étanches et ultra résistants pour décorer cahiers, gourdes, tablettes et cartables. Illustrations vibrantes et inspirantes.",
-    shortDescription: "20 super autocollants résistants à l'eau et aux frottements.",
+      "Un lot de 20 autocollants vinyles étanches et ultra résistants aux couleurs de la savane africaine. Découvre les animaux de la savane — éléphants, girafes, hippopotames et autres mascottes — pour décorer cahiers, gourdes, tablettes et cartables. Illustrations vibrantes, inspirantes et 100 % africaines.",
+    shortDescription: "20 autocollants animaux de la savane, résistants à l'eau et aux frottements.",
     category: "stickers",
     price: 2500,
     currency: "FCFA",
     images: [
-      "/illustrations/Télécharge.webp",
-      "/illustrations/crayons.webp",
+      "/illustrations/stickers-animaux-savane-1.webp",
+      "/illustrations/stickers-animaux-savane-2.webp",
     ],
     rating: 4.9,
     reviewCount: 22,
