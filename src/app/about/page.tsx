@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/about",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "A propos | Petit Baobab",
+    description:
+      "Decouvrez Petit Baobab, la plateforme africaine qui aide les enfants a apprendre grace aux coloriages, histoires, livres personnalises et jeux educatifs.",
+  },
   openGraph: {
     title: "A propos | Petit Baobab",
     description:

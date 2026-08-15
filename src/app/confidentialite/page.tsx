@@ -5,6 +5,22 @@ export const metadata = {
   title: "Politique de confidentialité | Petit Baobab",
   description:
     "Découvrez comment Petit Baobab collecte, utilise et protège les données personnelles des enfants, des parents et des enseignants.",
+  alternates: { canonical: "/confidentialite" },
+  openGraph: {
+    title: "Politique de confidentialité | Petit Baobab",
+    description:
+      "Découvrez comment Petit Baobab collecte, utilise et protège les données personnelles des enfants, des parents et des enseignants.",
+    url: "/confidentialite",
+    siteName: "Petit Baobab",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Politique de confidentialité | Petit Baobab",
+    description:
+      "Découvrez comment Petit Baobab collecte, utilise et protège les données personnelles des enfants, des parents et des enseignants.",
+  },
 };
 
 export default function ConfidentialitePage() {

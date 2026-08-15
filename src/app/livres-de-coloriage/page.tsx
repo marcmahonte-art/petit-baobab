@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { Sidebar } from "@/components/sidebar"
 import { ColoringBooksPage } from "@/components/coloring-books-page"
 import { MobileBottomNav } from "@/components/child-dashboard/mobile-bottom-nav"
 import Image from "next/image"
+
+export const metadata: Metadata = {
+  title: "Livres de coloriage",
+  description:
+    "Créez et imprimez vos propres livres de coloriage personnalisés avec Petit Baobab. Des histoires où l'enfant devient le héros, inspirées de l'Afrique.",
+  alternates: { canonical: "/livres-de-coloriage" },
+  openGraph: {
+    title: "Livres de coloriage | Petit Baobab",
+    description:
+      "Créez et imprimez vos propres livres de coloriage personnalisés, inspirés de l'Afrique.",
+    url: "/livres-de-coloriage",
+  },
+};
 
 export default function LivresDeColoriage() {
   return (

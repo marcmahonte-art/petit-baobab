@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, Heart, Package, Star } from "lucide-react";
 import { StoreAuthGate } from "@/components/store/StoreAuthGate";
@@ -7,6 +8,11 @@ import { OrderCard } from "@/components/store/StoreCards";
 import { ensureStoreProfile, getCurrentStoreUser } from "@/lib/store/auth";
 import { getStoreDownloadsForUser, getStoreOrdersForUser, getStoreReviews, getStoreWishlist } from "@/lib/store/customer-data";
 import { formatFcfa, initials } from "@/lib/store/format";
+
+export const metadata: Metadata = {
+  title: "Mon espace boutique",
+  robots: { index: false, follow: true },
+};
 
 export const dynamic = "force-dynamic";
 

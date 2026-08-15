@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/landing/Header";
 import MainFooter from "@/components/landing/MainFooter";
 import { PricingPageContent } from "@/components/pricing-page-content";
 import { Sparkles } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Tarifs et formules",
+  description:
+    "Découvrez les formules Petit Baobab : Découverte, Super Baobab et Espace École. Des étoiles pour créer sans limites au prix juste, avec paiement Orange Money et Moov Money.",
+  alternates: { canonical: "/tarification" },
+  openGraph: {
+    title: "Tarifs et formules | Petit Baobab",
+    description:
+      "Découvrez les formules Petit Baobab : Découverte, Super Baobab et Espace École. Des étoiles pour créer sans limites au prix juste.",
+    url: "/tarification",
+  },
+};
 
 export default function TarificationPage() {
   return (

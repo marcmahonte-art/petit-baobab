@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { BoutiqueHeader } from "@/components/boutique/BoutiqueHeader";
 import { Footer } from "@/components/boutique/Footer";
 import { Hero } from "@/components/boutique/Hero";
@@ -7,6 +8,19 @@ import { TrustSection } from "@/components/boutique/TrustSection";
 import { MiniCart } from "@/components/boutique/MiniCart";
 import { CATEGORIES } from "@/lib/mock/categories";
 import { PRODUCTS } from "@/lib/mock/products";
+
+export const metadata: Metadata = {
+  title: "Boutique",
+  description:
+    "Découvrez la boutique Petit Baobab : livres de coloriage, color by number, color by code, t-shirts et stickers inspirés de l'Afrique. Téléchargeables et imprimables.",
+  alternates: { canonical: "/boutique" },
+  openGraph: {
+    title: "Boutique | Petit Baobab",
+    description:
+      "Livres de coloriage, color by number, t-shirts et stickers inspirés de l'Afrique, à télécharger et imprimer.",
+    url: "/boutique",
+  },
+};
 
 // Page publique de la boutique — 100% statique côté données (mock),
 // panier géré via Zustand + LocalStorage (stores/cart-store.ts).
