@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Header } from "@/components/landing/Header";
-import Footer from "@/components/landing/Footer";
+import MainFooter from "@/components/landing/MainFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +82,7 @@ export default function FonctionnalitesPage() {
         </div>
       </section>
       </main>
-      <Footer />
+      <MainFooter />
     </div>
   );
 }

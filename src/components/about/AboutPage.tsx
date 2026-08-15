@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Header } from "@/components/landing/Header";
-import Footer from "@/components/landing/Footer";
+import MainFooter from "@/components/landing/MainFooter";
 import { Button } from "@/components/ui/button";
 
 const fadeUp: Variants = {
@@ -449,7 +449,7 @@ export default function AboutPage() {
         <ImpactSection />
         <CTASection />
       </main>
-      <Footer />
+      <MainFooter />
     </div>
   );
 }

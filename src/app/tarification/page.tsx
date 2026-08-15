@@ -1,4 +1,5 @@
 import { Header } from "@/components/landing/Header";
+import MainFooter from "@/components/landing/MainFooter";
 import { PricingPageContent } from "@/components/pricing-page-content";
 import { Sparkles } from "lucide-react";
 
@@ -29,17 +30,7 @@ export default function TarificationPage() {
         <PricingPageContent />
       </main>
 
-      {/* Footer simple */}
-      <footer className="border-t border-gray-100 bg-[#fef5e0] px-6 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-          <span>© {new Date().getFullYear()} Petit Baobab — Le coloriage qui éveille la créativité.</span>
-          <div className="flex items-center gap-6 font-semibold">
-            <a className="hover:text-[#6D4CFF] transition-colors" href="/">Accueil</a>
-            <a className="hover:text-[#6D4CFF] transition-colors" href="/tarification">Tarifs</a>
-            <a className="hover:text-[#6D4CFF] transition-colors" href="/signup">S'inscrire</a>
-          </div>
-        </div>
-      </footer>
+      <MainFooter />
     </div>
   );
 }
