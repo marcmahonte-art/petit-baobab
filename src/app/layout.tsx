@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: "Petit Baobab",
   description: "Le coloriage qui éveille la créativité et célèbre l'Afrique",
   icons: {
-    icon: "/favicon.webp",
+    icon: [
+      { url: "/favicon.webp", type: "image/webp" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
   },
 };
 
