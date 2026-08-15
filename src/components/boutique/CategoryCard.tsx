@@ -52,7 +52,11 @@ export function CategoryCard({ category, isSelected = false, onClick }: Category
           src={category.image}
           alt={category.title}
           fill
-          className="object-contain group-hover:scale-105 transition-transform duration-500"
+          className={`object-contain transition-transform duration-500 ${
+            category.slug === "stickers"
+              ? "scale-125 group-hover:scale-[1.3]"
+              : "group-hover:scale-105"
+          }`}
         />
         <div className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center ${accent.text} shadow-sm`}>
           {getIcon(category.icon)}
