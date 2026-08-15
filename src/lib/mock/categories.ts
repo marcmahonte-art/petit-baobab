@@ -34,7 +34,7 @@ export const CATEGORIES: Category[] = [
     title: "T-shirts",
     description: "Des vêtements confortables et stylés 100% coton pour enfants fiers et créatifs.",
     icon: "Shirt",
-    image: "/illustrations/Personnalise.webp",
+    image: "/illustrations/tshirt-categories.webp",
     productCount: 5,
   },
   {
