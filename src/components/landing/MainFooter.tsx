@@ -6,7 +6,7 @@ export default function MainFooter() {
       {/* Absolutely Positioned Baobab Landscape on the right */}
       <img
         alt="Paysage Baobab"
-        className="absolute bottom-0 right-0 h-[200px] md:h-[240px] w-auto object-contain pointer-events-none select-none z-0"
+          className="absolute bottom-0 right-0 h-[132px] md:h-[158px] w-auto object-contain pointer-events-none select-none z-0"
         src="/illustrations/Baobab.webp"
       />
 
