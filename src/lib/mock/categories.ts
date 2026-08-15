@@ -7,7 +7,7 @@ export const CATEGORIES: Category[] = [
     title: "Livres de coloriage",
     description: "Des illustrations uniques célébrant la faune, la culture et l'imaginaire africain.",
     icon: "Palette",
-    image: "/illustrations/Collection-livres.webp",
+    image: "/illustrations/livres-coloriage-categories.webp",
     productCount: 12,
   },
   {
