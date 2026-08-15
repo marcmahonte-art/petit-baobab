@@ -50,10 +50,10 @@ export function Header() {
           className="flex items-center cursor-pointer"
           onClick={() => router.push("/")}
         >
-          <div className="h-[56px] md:h-[68px] flex items-center justify-center">
+          <div className="h-[112px] md:h-[136px] flex items-center justify-center">
             <img
               alt="Logo Petit Baobab"
-              className="h-[56px] md:h-[68px] w-auto object-contain"
+              className="h-[112px] md:h-[136px] w-auto object-contain"
               src="/illustrations/logo-petit-baobab.svg"
             />
           </div>
