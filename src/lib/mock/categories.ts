@@ -43,7 +43,7 @@ export const CATEGORIES: Category[] = [
     title: "Stickers",
     description: "Des autocollants ludiques et colorés pour personnaliser cahiers et affaires.",
     icon: "Sticker",
-    image: "/illustrations/Télécharge.webp",
+    image: "/illustrations/stickers-categories.webp",
     productCount: 10,
   },
 ];
