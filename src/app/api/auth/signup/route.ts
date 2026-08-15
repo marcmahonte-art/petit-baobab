@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { adjustStars, STARS_REASONS } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/emails/send";
 import { logger } from "@/lib/logger";
 
 function getDisplayNameFromEmail(email: string): string {
@@ -162,6 +163,11 @@ export async function POST(request: Request) {
     }
 
     logger.info("signup", "Compte créé avec succès", { email, isSchool, plan, defaultSpace });
+
+    // Email de bienvenue (l'UI affiche "un e-mail de confirmation vous a été envoyé").
+    sendWelcomeEmail(email, getDisplayNameFromEmail(email)).catch((e) =>
+      logger.warn("signup", "welcome email non envoyé", { email, err: String(e) })
+    );
 
     return NextResponse.json({
       success: true,

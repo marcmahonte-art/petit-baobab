@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getSupabaseSsrClient } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { setAuthCookies, setRoleCookie } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/emails/send";
 import { logger } from "@/lib/logger";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -151,6 +152,13 @@ export async function GET(request: Request) {
     // Poser les cookies d'auth et rediriger vers le bon tableau de bord
     await setAuthCookies(session.access_token, session.refresh_token);
     await setRoleCookie(plan || "free");
+
+    // Email de bienvenue (inscription Google incluse) — non bloquant.
+    if (!existingAccount && user.email) {
+      sendWelcomeEmail(user.email, getDisplayNameFromEmail(user.email)).catch((e) =>
+        logger.warn("oauth-callback", "welcome email non envoyé", { email: user.email, err: String(e) })
+      );
+    }
 
     const redirectTo = isStore ? "/store" : getRedirectPath({ plan, defaultSpace, hasFamilySub, hasSchoolSub });
     logger.info("oauth-callback", "Redirection post-connexion", { email: user.email, plan, defaultSpace, hasFamilySub, hasSchoolSub, redirectTo });

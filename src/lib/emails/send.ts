@@ -2,6 +2,7 @@
 import { Resend } from "resend";
 import { orderConfirmationHtml } from "@/emails/order-confirmation";
 import { paymentFailedHtml } from "@/emails/payment-failed";
+import { welcomeHtml } from "@/emails/welcome";
 import { getAppUrl } from "@/lib/paydunya/config";
 import type { ShopOrderRow } from "@/lib/paydunya/webhook";
 
@@ -14,6 +15,18 @@ function getResend(): Resend | null {
     return null;
   }
   return new Resend(key);
+}
+
+export async function sendWelcomeEmail(email: string, name: string): Promise<void> {
+  const resend = getResend();
+  if (!resend) return;
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "Bienvenue chez Petit Baobab 🌳",
+    html: welcomeHtml(email, name),
+  });
+  if (error) throw new Error(`Resend: ${error.message}`);
 }
 
 export async function sendOrderConfirmationEmail(
