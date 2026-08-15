@@ -71,12 +71,12 @@ export default function Footer() {
   return (
     <footer className="bg-bg pt-10 lg:pt-16 pb-6 lg:pb-8 border-t border-border relative overflow-hidden">
       {/* Decorative bush */}
-      <div className="absolute bottom-0 right-0 w-[200px] h-[200px] z-0 opacity-90">
+      <div className="absolute bottom-2 right-2 lg:bottom-6 lg:right-8 w-[260px] h-[260px] lg:w-[320px] lg:h-[320px] z-0 opacity-100">
         <Image
           src="/illustrations/Baobab.webp"
           alt="Baobab decoration"
-          width={200}
-          height={200}
+          width={320}
+          height={320}
           className="object-contain w-full h-full"
         />
       </div>
