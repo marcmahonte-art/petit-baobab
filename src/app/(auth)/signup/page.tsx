@@ -155,6 +155,7 @@ function SignupFormContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
+          scopes: "public_profile",
           redirectTo: `${getSiteUrl()}/api/auth/callback?accountType=${accountType === "school" ? "school" : "family"}`,
         },
       })
