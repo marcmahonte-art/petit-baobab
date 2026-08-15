@@ -6,6 +6,9 @@ import { Toaster } from "sonner";
 export const metadata: Metadata = {
   title: "Petit Baobab",
   description: "Le coloriage qui éveille la créativité et célèbre l'Afrique",
+  icons: {
+    icon: "/favicon.webp",
+  },
 };
 
 export default function RootLayout({
