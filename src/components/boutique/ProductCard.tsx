@@ -10,6 +10,7 @@ import { ShoppingCart, Eye, Download, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { getCategoryButtonClasses } from "@/lib/boutique/categoryColors";
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCartStore();
   const [added, setAdded] = useState(false);
+  const categoryButtonClasses = getCategoryButtonClasses(product.category);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -109,7 +111,7 @@ export function ProductCard({ product }: ProductCardProps) {
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-bold text-xs transition-all duration-200 shadow-sm cursor-pointer ${
                 added
                   ? "bg-[#1D9E75] text-white"
-                  : "bg-[#7D6AF8] hover:bg-[#6552E8] text-white shadow-[#7D6AF8]/20"
+                  : `text-white ${categoryButtonClasses}`
               }`}
               aria-label="Acheter le produit"
             >

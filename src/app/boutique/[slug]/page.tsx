@@ -13,6 +13,7 @@ import { ProductDescription } from "@/components/boutique/ProductDescription";
 import { RelatedProducts } from "@/components/boutique/RelatedProducts";
 import { PRODUCTS } from "@/lib/mock/products";
 import { REVIEWS } from "@/lib/mock/reviews";
+import { getCategoryButtonClasses } from "@/lib/boutique/categoryColors";
 import { useCartStore } from "@/lib/cart-store";
 import { ShoppingCart, Download, Check, ShieldCheck, Heart } from "lucide-react";
 
@@ -31,6 +32,8 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   if (!product) {
     notFound();
   }
+
+  const categoryButtonClasses = getCategoryButtonClasses(product.category);
 
   const reviews = REVIEWS.filter((r) => r.productId === product.id);
   const relatedProducts = PRODUCTS.filter(
@@ -128,7 +131,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
                   className={`flex-1 py-4 px-6 rounded-full font-extrabold text-sm flex items-center justify-center gap-2 transition-all shadow-md ${
                     added
                       ? "bg-[#1D9E75] text-white"
-                      : "bg-[#7D6AF8] hover:bg-[#6552E8] text-white shadow-[#7D6AF8]/20 hover:scale-[1.01]"
+                      : `text-white ${categoryButtonClasses} hover:scale-[1.01]`
                   }`}
                 >
                   {added ? (
