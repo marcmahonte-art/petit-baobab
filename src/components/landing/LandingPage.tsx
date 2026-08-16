@@ -47,7 +47,7 @@ export default function LandingPage() {
               Chaque <span className="text-[#ff6aab]">enfant</span> a un monde à faire <span className="text-[#1ecc9c]">grandir</span>.
             </h1>
             <p className="text-lg text-gray-600 mb-10 max-w-lg">
-              Des coloriages, des histoires et des livres personnalisés pour apprendre en s'amusant.
+              Livres personnalisés, coloriages magiques avec l’IA, histoires et aventures inspirées de l’Afrique : créez des expériences uniques pour les enfants en quelques minutes.
             </p>
             <div className="flex flex-wrap gap-4 mb-12">
               <button
