@@ -44,7 +44,7 @@ export default function LandingPage() {
           
           <div className="animate-fade-in-up">
             <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.1] mb-6">
-              L'univers créatif qui fait grandir les enfants.
+              Chaque <span className="text-[#ff6aab]">enfant</span> a un monde à faire <span className="text-[#1ecc9c]">grandir</span>.
             </h1>
             <p className="text-lg text-gray-600 mb-10 max-w-lg">
               Des coloriages, des histoires et des livres personnalisés pour apprendre en s'amusant.
