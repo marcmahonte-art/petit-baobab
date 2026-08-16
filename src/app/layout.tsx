@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n-provider";
 import { Toaster } from "sonner";
+import HelpBot from "@/components/help/HelpBot";
 
 const SITE_URL = "https://www.monpetitbaobab.com";
 
@@ -126,6 +127,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <I18nProvider>{children}</I18nProvider>
+        <HelpBot />
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
