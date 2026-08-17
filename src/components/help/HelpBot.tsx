@@ -132,7 +132,7 @@ export default function HelpBot() {
             <img
               src={BOT_ICON}
               alt="Assistant Petit Baobab"
-              className="h-20 w-20 object-contain drop-shadow-xl"
+              className="h-40 w-40 object-contain drop-shadow-xl"
             />
           </button>
         </div>
