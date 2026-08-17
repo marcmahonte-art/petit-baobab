@@ -72,6 +72,9 @@ export const metadata: Metadata = {
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
   },
+  verification: {
+    google: "eME8wGo5hAszgWk7XmquyfpUSNBgSAnhulspwiAA3TU",
+  },
 };
 
 export const viewport: Viewport = {
