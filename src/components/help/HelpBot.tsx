@@ -127,12 +127,12 @@ export default function HelpBot() {
               setOpen(true);
               setShowGreeting(false);
             }}
-            className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#7D6AF8] shadow-lg shadow-[#7D6AF8]/40 transition-transform hover:scale-105"
+            className="block transition-transform hover:scale-105"
           >
             <img
               src={BOT_ICON}
               alt="Assistant Petit Baobab"
-              className="h-14 w-14 rounded-full object-cover"
+              className="h-20 w-20 object-contain drop-shadow-xl"
             />
           </button>
         </div>
