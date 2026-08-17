@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { MessageCircle, X, Send } from "lucide-react";
+import { X, Send } from "lucide-react";
+
+const BOT_ICON = "/illustrations/zuri-galop-boucle.webp";
 
 interface ChatMsg {
   role: "bot" | "user";
@@ -125,9 +127,13 @@ export default function HelpBot() {
               setOpen(true);
               setShowGreeting(false);
             }}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-[#7D6AF8] text-white shadow-lg shadow-[#7D6AF8]/40 transition-transform hover:scale-105"
+            className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#7D6AF8] shadow-lg shadow-[#7D6AF8]/40 transition-transform hover:scale-105"
           >
-            <MessageCircle className="h-6 w-6" />
+            <img
+              src={BOT_ICON}
+              alt="Assistant Petit Baobab"
+              className="h-14 w-14 rounded-full object-cover"
+            />
           </button>
         </div>
       )}
@@ -138,8 +144,12 @@ export default function HelpBot() {
           {/* Header */}
           <div className="flex items-center justify-between bg-[#7D6AF8] px-4 py-3 text-white">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                <MessageCircle className="h-4 w-4" />
+              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/20">
+                <img
+                  src={BOT_ICON}
+                  alt="Assistant Petit Baobab"
+                  className="h-8 w-8 rounded-full object-cover"
+                />
               </span>
               <div className="leading-tight">
                 <p className="text-sm font-bold">Assistant Petit Baobab</p>
