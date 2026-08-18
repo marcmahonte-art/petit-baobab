@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/auth-store";
-import { Menu, X, Home, Users, UserPlus, Palette, TrendingUp, Star, Receipt, Settings, LogOut } from "lucide-react";
+import { Menu, X, Home, Users, UserPlus, Palette, TrendingUp, Star, Receipt, Settings, LogOut, Sparkles } from "lucide-react";
 
 const navItems = [
   { href: "/school/dashboard", label: "Tableau de bord", icon: Home },
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/school/etoiles",   label: "Étoiles",          icon: Star },
   { href: "/school/facturation",label: "Facturation",     icon: Receipt },
   { href: "/school/parametres",label: "Paramètres",       icon: Settings },
+  { href: "/school/assistant", label: "✦ Assistant",      icon: Sparkles },
 ];
 
 export default function SchoolMobileNav() {

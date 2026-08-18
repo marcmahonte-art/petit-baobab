@@ -14,6 +14,7 @@ import {
   Receipt,
   Settings,
   LogOut,
+  Sparkles,
 } from "lucide-react";
 
 const navItems = [
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/school/etoiles", label: "Étoiles", icon: Star },
   { href: "/school/dashboard/billing", label: "Facturation", icon: Receipt },
   { href: "/school/parametres", label: "Paramètres", icon: Settings },
+  { href: "/school/assistant", label: "✦ Assistant", icon: Sparkles },
 ];
 
 export default function SchoolSidebar() {
@@ -51,7 +53,7 @@ export default function SchoolSidebar() {
       </Link>
 
       {/* Navigation items */}
-      <ul className="flex-1 px-3 space-y-1 mt-2">
+      <ul className="flex-1 px-3 space-y-1 mt-2 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact
@@ -78,15 +80,19 @@ export default function SchoolSidebar() {
             );
           }
 
+          const isAssistant = item.href === "/school/assistant";
+
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all
+                className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-all
                   ${
                     isActive
-                      ? "bg-[#7D6AF8]/10 text-[#7D6AF8] font-bold"
-                      : "text-[#7A6A5E] hover:bg-[#F5F0EB] font-medium"
+                      ? isAssistant
+                        ? "bg-[#F2E9FF] text-[#3D1CCB] rounded-[14px] font-bold"
+                        : "bg-[#7D6AF8]/10 text-[#7D6AF8] rounded-xl font-bold"
+                      : "text-[#7A6A5E] hover:bg-[#F5F0EB] rounded-xl font-medium"
                   }
                 `}
               >
