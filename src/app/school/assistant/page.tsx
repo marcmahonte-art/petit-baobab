@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AssistantHeader from "./components/AssistantHeader";
 import AssistantStepper from "./components/AssistantStepper";
 import ProfileSelector from "./components/ProfileSelector";
@@ -14,8 +14,14 @@ import RecentActivities from "./components/RecentActivities";
 import ActivityGenerator from "./components/ActivityGenerator";
 import GenerationResult from "./components/GenerationResult";
 import { Persona, PromptTemplate } from "@/lib/assistant/prompts";
+import { createSheet, getToolStarCost, buildShortTitle } from "@/lib/assistant/queries";
+import { useAuthStore } from "@/lib/auth-store";
+import { AlertCircle } from "lucide-react";
 
 export default function AssistantPage() {
+  const user = useAuthStore((s) => s.user);
+  const account = useAuthStore((s) => s.account);
+
   // State management
   const [starBalance, setStarBalance] = useState<number>(740);
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -25,13 +31,21 @@ export default function AssistantPage() {
   const [customNeed, setCustomNeed] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generationDone, setGenerationDone] = useState<boolean>(false);
-  const [historyItems, setHistoryItems] = useState<Array<{ id: string; title: string; date: string }>>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync star balance with Supabase account if logged in
+  useEffect(() => {
+    if (account?.stars_balance !== undefined) {
+      setStarBalance(account.stars_balance);
+    }
+  }, [account]);
 
   // Handler: Selecting a persona
   const handleSelectPersona = (persona: Persona) => {
     setSelectedPersona(persona);
     setSelectedPrompt(null);
     setFormValues({});
+    setErrorMessage(null);
     if (currentStep === 1) {
       setCurrentStep(2);
     }
@@ -40,6 +54,7 @@ export default function AssistantPage() {
   // Handler: Selecting a prompt tool
   const handleSelectPrompt = (prompt: PromptTemplate) => {
     setSelectedPrompt(prompt);
+    setErrorMessage(null);
     // Initialize default values
     const defaults: Record<string, string> = {};
     prompt.fields.forEach((field) => {
@@ -61,9 +76,21 @@ export default function AssistantPage() {
     setCustomNeed(exampleText);
   };
 
-  // Handler: Trigger AI Generation
+  // Handler: Trigger AI Generation (CRITICAL STEP: Star Balance Check & Deduction)
   const handleStartGeneration = () => {
     if (!selectedPrompt) return;
+    setErrorMessage(null);
+
+    const cost = getToolStarCost(selectedPrompt.id);
+
+    // Verify star balance before generation
+    if (starBalance < cost) {
+      setErrorMessage(
+        `Solde d'étoiles insuffisant (${starBalance} ✦ disponible${starBalance > 1 ? "s" : ""}). Cette génération nécessite ${cost} ✦.`
+      );
+      return; // Block generation, do not proceed
+    }
+
     setIsGenerating(true);
   };
 
@@ -71,8 +98,51 @@ export default function AssistantPage() {
   const handleCompleteGeneration = () => {
     setIsGenerating(false);
     setGenerationDone(true);
-    setStarBalance((prev) => Math.max(0, prev - 5));
     setCurrentStep(4);
+  };
+
+  // Handler: Save to Supabase (pedagogical_sheets)
+  const handleSaveHistory = async (generatedTitle: string, generatedDetails: string) => {
+    if (!selectedPrompt) return;
+    const cost = getToolStarCost(selectedPrompt.id);
+
+    const shortTitle = buildShortTitle(selectedPrompt.label, selectedPersona);
+
+    const allInputs = {
+      ...formValues,
+      customNeed,
+    };
+
+    const mockGeneratedText = `Fiche Pédagogique : ${selectedPrompt.label}\nTarget: ${selectedPersona}\nParameters: ${JSON.stringify(allInputs)}\n${generatedDetails}`;
+
+    if (user && account) {
+      const result = await createSheet({
+        accountId: account.id,
+        teacherId: user.id,
+        title: shortTitle,
+        persona: selectedPersona,
+        toolId: selectedPrompt.id,
+        category: selectedPrompt.category || null,
+        domaineEveil: selectedPrompt.domaine || null,
+        inputValues: allInputs,
+        generatedContent: mockGeneratedText,
+        starsCost: cost,
+      });
+
+      if (result.success) {
+        if (result.newBalance !== undefined) {
+          setStarBalance(result.newBalance);
+          useAuthStore.setState((s) =>
+            s.account ? { ...s, account: { ...s.account, stars_balance: result.newBalance! } } : s
+          );
+        }
+      } else if (result.error) {
+        setErrorMessage(result.error);
+      }
+    } else {
+      // Local fallback for offline/guest mode
+      setStarBalance((prev) => Math.max(0, prev - cost));
+    }
   };
 
   // Handler: Reset flow for new activity
@@ -80,27 +150,23 @@ export default function AssistantPage() {
     setCurrentStep(2);
     setGenerationDone(false);
     setIsGenerating(false);
+    setErrorMessage(null);
   };
 
-  // Handler: Save generated item to local history state
-  const handleSaveHistory = (title: string, details: string) => {
-    const newItem = {
-      id: `hist_${Date.now()}`,
-      title,
-      date: new Date().toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setHistoryItems((prev) => [newItem, ...prev]);
-  };
+  const currentCost = selectedPrompt ? getToolStarCost(selectedPrompt.id) : 5;
 
   return (
     <div className="max-w-[1240px] mx-auto space-y-6 pb-12">
       {/* Top Header */}
       <AssistantHeader starBalance={starBalance} />
+
+      {/* Error / Insufficient Balance Banner */}
+      {errorMessage && (
+        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 shadow-xs animate-in fade-in duration-200">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+          <p className="text-xs sm:text-sm font-bold">{errorMessage}</p>
+        </div>
+      )}
 
       {/* 4-Step Stepper */}
       <AssistantStepper
@@ -137,7 +203,7 @@ export default function AssistantPage() {
                 onFieldChange={handleFieldChange}
                 onGenerate={handleStartGeneration}
                 isGenerating={isGenerating}
-                starCost={5}
+                starCost={currentCost}
               />
             </div>
           )}
