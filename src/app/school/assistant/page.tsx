@@ -23,7 +23,7 @@ export default function AssistantPage() {
   const account = useAuthStore((s) => s.account);
 
   // State management
-  const [starBalance, setStarBalance] = useState<number>(740);
+  const [starBalance, setStarBalance] = useState<number>(0);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [selectedPersona, setSelectedPersona] = useState<Persona>("maitresse_maternelle");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptTemplate | null>(null);
