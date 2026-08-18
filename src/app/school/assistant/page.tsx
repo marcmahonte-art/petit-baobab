@@ -16,7 +16,7 @@ import GenerationResult from "./components/GenerationResult";
 import { Persona, PromptTemplate } from "@/lib/assistant/prompts";
 import { createSheet, getToolStarCost, buildShortTitle } from "@/lib/assistant/queries";
 import { useAuthStore } from "@/lib/auth-store";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, RotateCcw } from "lucide-react";
 
 export default function AssistantPage() {
   const user = useAuthStore((s) => s.user);
@@ -31,6 +31,7 @@ export default function AssistantPage() {
   const [customNeed, setCustomNeed] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generationDone, setGenerationDone] = useState<boolean>(false);
+  const [generatedText, setGeneratedText] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Sync star balance with Supabase account if logged in
@@ -76,73 +77,110 @@ export default function AssistantPage() {
     setCustomNeed(exampleText);
   };
 
-  // Handler: Trigger AI Generation (CRITICAL STEP: Star Balance Check & Deduction)
-  const handleStartGeneration = () => {
+  // Handler: Trigger AI Generation (CRITICAL STEP: Star Balance Check -> API Call -> Star Deduction)
+  const handleStartGeneration = async () => {
     if (!selectedPrompt) return;
     setErrorMessage(null);
 
     const cost = getToolStarCost(selectedPrompt.id);
 
-    // Verify star balance before generation
+    // 1. Check star balance BEFORE API call (Zero API cost if balance insufficient)
     if (starBalance < cost) {
       setErrorMessage(
         `Solde d'étoiles insuffisant (${starBalance} ✦ disponible${starBalance > 1 ? "s" : ""}). Cette génération nécessite ${cost} ✦.`
       );
-      return; // Block generation, do not proceed
+      return; // Block execution
     }
 
+    // 2. Display loader
     setIsGenerating(true);
-  };
 
-  // Handler: Complete Generation (Called by ActivityGenerator timer)
-  const handleCompleteGeneration = () => {
-    setIsGenerating(false);
-    setGenerationDone(true);
-    setCurrentStep(4);
-  };
-
-  // Handler: Save to Supabase (pedagogical_sheets)
-  const handleSaveHistory = async (generatedTitle: string, generatedDetails: string) => {
-    if (!selectedPrompt) return;
-    const cost = getToolStarCost(selectedPrompt.id);
-
-    const shortTitle = buildShortTitle(selectedPrompt.label, selectedPersona);
-
-    const allInputs = {
-      ...formValues,
-      customNeed,
-    };
-
-    const mockGeneratedText = `Fiche Pédagogique : ${selectedPrompt.label}\nTarget: ${selectedPersona}\nParameters: ${JSON.stringify(allInputs)}\n${generatedDetails}`;
-
-    if (user && account) {
-      const result = await createSheet({
-        accountId: account.id,
-        teacherId: user.id,
-        title: shortTitle,
-        persona: selectedPersona,
-        toolId: selectedPrompt.id,
-        category: selectedPrompt.category || null,
-        domaineEveil: selectedPrompt.domaine || null,
-        inputValues: allInputs,
-        generatedContent: mockGeneratedText,
-        starsCost: cost,
+    try {
+      // 3. Call dedicated server API route for OpenAI generation
+      const res = await fetch("/api/assistant/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tool_id: selectedPrompt.id,
+          persona: selectedPersona,
+          input_values: {
+            ...formValues,
+            custom_need: customNeed,
+          },
+        }),
       });
 
-      if (result.success) {
-        if (result.newBalance !== undefined) {
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        // API Failure: DO NOT deduct stars! Keep form values intact.
+        setIsGenerating(false);
+        setErrorMessage(
+          data?.error || "Connexion interrompue ou problème du service IA. Veuillez réinstaller ou réessayer."
+        );
+        return;
+      }
+
+      // API Success: Receive real generated content
+      const realText = data.text;
+      setGeneratedText(realText);
+      setIsGenerating(false);
+      setGenerationDone(true);
+      setCurrentStep(4);
+
+      // Deduct stars & persist to Supabase pedagogical_sheets
+      const shortTitle = buildShortTitle(selectedPrompt.label, selectedPersona);
+      const allInputs = { ...formValues, customNeed };
+
+      if (user && account) {
+        const result = await createSheet({
+          accountId: account.id,
+          teacherId: user.id,
+          title: shortTitle,
+          persona: selectedPersona,
+          toolId: selectedPrompt.id,
+          category: selectedPrompt.category || null,
+          domaineEveil: selectedPrompt.domaine || null,
+          inputValues: allInputs,
+          generatedContent: realText,
+          starsCost: cost,
+        });
+
+        if (result.success && result.newBalance !== undefined) {
           setStarBalance(result.newBalance);
           useAuthStore.setState((s) =>
             s.account ? { ...s, account: { ...s.account, stars_balance: result.newBalance! } } : s
           );
         }
-      } else if (result.error) {
-        setErrorMessage(result.error);
+      } else {
+        // Fallback for guest mode
+        setStarBalance((prev) => Math.max(0, prev - cost));
       }
-    } else {
-      // Local fallback for offline/guest mode
-      setStarBalance((prev) => Math.max(0, prev - cost));
+    } catch (err: any) {
+      console.error("[Assistant Generation Client Error]:", err);
+      setIsGenerating(false);
+      setErrorMessage("La connexion a été interrompue. Veuillez vérifier votre connexion et réessayez.");
     }
+  };
+
+  // Handler: Save to Supabase (pedagogical_sheets) manually if needed
+  const handleSaveHistory = async (title: string, details: string) => {
+    if (!selectedPrompt || !user) return;
+    const cost = getToolStarCost(selectedPrompt.id);
+    const shortTitle = buildShortTitle(selectedPrompt.label, selectedPersona);
+
+    await createSheet({
+      accountId: account?.id || null,
+      teacherId: user.id,
+      title: shortTitle,
+      persona: selectedPersona,
+      toolId: selectedPrompt.id,
+      category: selectedPrompt.category || null,
+      domaineEveil: selectedPrompt.domaine || null,
+      inputValues: { ...formValues, customNeed },
+      generatedContent: generatedText || details,
+      starsCost: cost,
+    });
   };
 
   // Handler: Reset flow for new activity
@@ -150,6 +188,7 @@ export default function AssistantPage() {
     setCurrentStep(2);
     setGenerationDone(false);
     setIsGenerating(false);
+    setGeneratedText("");
     setErrorMessage(null);
   };
 
@@ -160,11 +199,23 @@ export default function AssistantPage() {
       {/* Top Header */}
       <AssistantHeader starBalance={starBalance} />
 
-      {/* Error / Insufficient Balance Banner */}
+      {/* Error Banner with "Réessayer" button (Keeps form inputs intact) */}
       {errorMessage && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 shadow-xs animate-in fade-in duration-200">
-          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-          <p className="text-xs sm:text-sm font-bold">{errorMessage}</p>
+        <div className="flex items-center justify-between gap-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 shadow-xs animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+            <p className="text-xs sm:text-sm font-bold">{errorMessage}</p>
+          </div>
+          {selectedPrompt && !generationDone && (
+            <button
+              type="button"
+              onClick={handleStartGeneration}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Réessayer</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -210,7 +261,7 @@ export default function AssistantPage() {
 
           {/* Loading state during generation */}
           {isGenerating && (
-            <ActivityGenerator onComplete={handleCompleteGeneration} />
+            <ActivityGenerator onComplete={() => {}} />
           )}
 
           {/* Step 4: Generation Result */}
@@ -219,6 +270,8 @@ export default function AssistantPage() {
               prompt={selectedPrompt}
               formValues={formValues}
               customNeed={customNeed}
+              generatedText={generatedText}
+              starCost={currentCost}
               onSaveHistory={handleSaveHistory}
               onReset={handleReset}
             />

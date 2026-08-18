@@ -9,6 +9,8 @@ interface GenerationResultProps {
   prompt: PromptTemplate;
   formValues: Record<string, string>;
   customNeed: string;
+  generatedText?: string;
+  starCost?: number;
   onSaveHistory: (title: string, details: string) => void;
   onReset: () => void;
 }
@@ -17,20 +19,21 @@ export default function GenerationResult({
   prompt,
   formValues,
   customNeed,
+  generatedText,
+  starCost = 5,
   onSaveHistory,
   onReset,
 }: GenerationResultProps) {
   const [saved, setSaved] = useState(false);
 
-  // Generate dynamic mockup content based on prompt and input parameters
-  const topic = formValues.theme || formValues.sujet_prioritaire || formValues.materiel_disponible || customNeed || "Découverte et éveil des sens";
+  const topic = formValues.theme || formValues.sujet_prioritaire || formValues.materiel_disponible || customNeed || "Découverte et éveil";
   const level = formValues.niveau || formValues.tranche_age || (formValues.age_en_mois ? `${formValues.age_en_mois} mois` : `${formValues.age || 4} ans`);
   const duration = formValues.duree || "30";
 
   const activityTitle = `Fiche Pédagogique : ${prompt.label} — ${topic}`;
 
   const handleSave = () => {
-    onSaveHistory(activityTitle, `Niveau: ${level} | Durée: ${duration} min`);
+    onSaveHistory(activityTitle, generatedText || `Niveau: ${level} | Durée: ${duration} min`);
     setSaved(true);
   };
 
@@ -52,7 +55,7 @@ export default function GenerationResult({
             </h3>
             <p className="text-xs text-[#4F7817] font-medium flex items-center gap-1">
               <Star className="w-3.5 h-3.5 fill-[#FF8A00] text-[#FF8A00]" />
-              5 étoiles consommées • Fiche générée avec succès
+              {starCost} étoiles consommées • Fiche IA générée avec succès
             </p>
           </div>
         </div>
@@ -122,86 +125,82 @@ export default function GenerationResult({
             </span>
             <span className="flex items-center gap-1.5 bg-[#F4F9E8] px-3 py-1 rounded-xl border border-[#D5EAA9]">
               <ShieldCheck className="w-4 h-4 text-[#65A916]" />
-              Domaine : <strong className="text-[#35180D]">Psychomoteur & Cognitif</strong>
+              Généré par Petit Baobab AI
             </span>
           </div>
         </div>
 
-        {/* Section 1: Objectifs */}
-        <div className="space-y-2">
-          <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#6535E8]" />
-            1. Objectifs pédagogiques
-          </h3>
-          <ul className="list-disc list-inside text-sm text-[#544375] space-y-1 pl-2 font-medium">
-            <li>Développer l'observation attentive et la curiosité naturelle des enfants.</li>
-            <li>Stimuler le langage oral à travers la désignation et le questionnement.</li>
-            <li>Favoriser la motricité fine et la coordination geste-regard par la manipulation.</li>
-            <li>Renforcer le respect mutuel et l'écoute au sein du groupe classe.</li>
-          </ul>
-        </div>
-
-        {/* Section 2: Matériel */}
-        <div className="space-y-2">
-          <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A00]" />
-            2. Matériel nécessaire (100% Local & Accessible)
-          </h3>
-          <div className="p-4 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl text-sm text-[#35180D] font-medium space-y-1">
-            <p>• Calebasses, coupelles ou récipients en plastique recyclés.</p>
-            <p>• Graines locales (haricot, maïs, neem) ou petits bâtonnets de bois.</p>
-            <p>• Bandes de tissus colorés (motifs Faso dan fani ou cotonnade).</p>
-            <p>• Fiche imprimée ou ardoises d'exercice.</p>
+        {/* Real Generated Content from OpenAI */}
+        {generatedText ? (
+          <div className="p-5 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl text-sm text-[#35180D] font-medium leading-relaxed whitespace-pre-line space-y-4">
+            {generatedText}
           </div>
-        </div>
-
-        {/* Section 3: Déroulé pas-à-pas */}
-        <div className="space-y-3">
-          <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#65A916]" />
-            3. Déroulé pas-à-pas en 3 temps
-          </h3>
-
-          <div className="space-y-3">
-            <div className="p-4 bg-[#FFF9EE] border-l-4 border-[#FF8A00] rounded-r-2xl space-y-1">
-              <h4 className="font-bold text-sm text-[#FF8A00]">
-                Étape 1 : Accueil et Regroupement (5 à 10 minutes)
-              </h4>
-              <p className="text-xs sm:text-sm text-[#554A42] font-medium leading-relaxed">
-                Rassemblez les enfants en cercle sur la nappe. Introduisez le sujet avec une devinette ou une comptine courte. Présentez le matériel local posé au centre du cercle et laissez quelques instants d'observation libre.
-              </p>
+        ) : (
+          <>
+            {/* Structured Fallback Sections */}
+            <div className="space-y-2">
+              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#6535E8]" />
+                1. Objectifs pédagogiques
+              </h3>
+              <ul className="list-disc list-inside text-sm text-[#544375] space-y-1 pl-2 font-medium">
+                <li>Développer l'observation attentive et la curiosité naturelle des enfants.</li>
+                <li>Stimuler le langage oral à travers la désignation et le questionnement.</li>
+                <li>Favoriser la motricité fine et la coordination geste-regard par la manipulation.</li>
+                <li>Renforcer le respect mutuel et l'écoute au sein du groupe classe.</li>
+              </ul>
             </div>
 
-            <div className="p-4 bg-[#F3ECFF] border-l-4 border-[#6535E8] rounded-r-2xl space-y-1">
-              <h4 className="font-bold text-sm text-[#6535E8]">
-                Étape 2 : Activité Guidée & Manipulation (15 à 20 minutes)
-              </h4>
-              <p className="text-xs sm:text-sm text-[#43355C] font-medium leading-relaxed">
-                Invitez les enfants à effectuer le geste demandé (tri, tracés, manipulation ou jeu d'association). Circulez dans le groupe pour encourager la verbalisation : <em>"Qu'as-tu choisi ?"</em>, <em>"De quelle couleur est ton tissu ?"</em>.
-              </p>
+            <div className="space-y-2">
+              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A00]" />
+                2. Matériel nécessaire (100% Local & Accessible)
+              </h3>
+              <div className="p-4 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl text-sm text-[#35180D] font-medium space-y-1">
+                <p>• Calebasses, coupelles ou récipients en plastique recyclés.</p>
+                <p>• Graines locales (haricot, maïs, neem) ou petits bâtonnets de bois.</p>
+                <p>• Bandes de tissus colorés (motifs Faso dan fani ou cotonnade).</p>
+                <p>• Fiche imprimée ou ardoises d'exercice.</p>
+              </div>
             </div>
 
-            <div className="p-4 bg-[#F4F9E8] border-l-4 border-[#65A916] rounded-r-2xl space-y-1">
-              <h4 className="font-bold text-sm text-[#65A916]">
-                Étape 3 : Retour au calme & Rangement (5 minutes)
-              </h4>
-              <p className="text-xs sm:text-sm text-[#2F5204] font-medium leading-relaxed">
-                Proposez un signal sonore doux (tapotement sur calebasse) pour marquer la fin de l'activité. Les enfants rangent le matériel ensemble dans le panier de la classe puis inspirent profondément pour préparer le temps suivant.
-              </p>
-            </div>
-          </div>
-        </div>
+            <div className="space-y-3">
+              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#65A916]" />
+                3. Déroulé pas-à-pas en 3 temps
+              </h3>
 
-        {/* Section 4: Variante & Signal d'alerte */}
-        <div className="p-4 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl space-y-2">
-          <h4 className="font-bold text-xs sm:text-sm text-[#35180D] uppercase tracking-wide">
-            💡 Variante & Conseil de l'Éducatrice
-          </h4>
-          <p className="text-xs sm:text-sm text-[#7A6A5E] font-medium leading-relaxed">
-            <strong>Pour les plus rapides :</strong> proposer de varier les tailles ou de réaliser un motif plus complexe.<br />
-            <strong>Signal d'alerte :</strong> Si un enfant éprouve des difficultés de préhension, ne pas forcer : proposer une calebasse plus grande ou un tissu plus maniable sans poser de diagnostic.
-          </p>
-        </div>
+              <div className="space-y-3">
+                <div className="p-4 bg-[#FFF9EE] border-l-4 border-[#FF8A00] rounded-r-2xl space-y-1">
+                  <h4 className="font-bold text-sm text-[#FF8A00]">
+                    Étape 1 : Accueil et Regroupement (5 à 10 minutes)
+                  </h4>
+                  <p className="text-xs sm:text-sm text-[#554A42] font-medium leading-relaxed">
+                    Rassemblez les enfants en cercle sur la nappe. Introduisez le sujet avec une devinette ou une comptine courte. Présentez le matériel local posé au centre du cercle et laissez quelques instants d'observation libre.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-[#F3ECFF] border-l-4 border-[#6535E8] rounded-r-2xl space-y-1">
+                  <h4 className="font-bold text-sm text-[#6535E8]">
+                    Étape 2 : Activité Guidée & Manipulation (15 à 20 minutes)
+                  </h4>
+                  <p className="text-xs sm:text-sm text-[#43355C] font-medium leading-relaxed">
+                    Invitez les enfants à effectuer le geste demandé (tri, tracés, manipulation ou jeu d'association). Circulez dans le groupe pour encourager la verbalisation : <em>"Qu'as-tu choisi ?"</em>, <em>"De quelle couleur est ton tissu ?"</em>.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-[#F4F9E8] border-l-4 border-[#65A916] rounded-r-2xl space-y-1">
+                  <h4 className="font-bold text-sm text-[#65A916]">
+                    Étape 3 : Retour au calme & Rangement (5 minutes)
+                  </h4>
+                  <p className="text-xs sm:text-sm text-[#2F5204] font-medium leading-relaxed">
+                    Proposez un signal sonore doux (tapotement sur calebasse) pour marquer la fin de l'activité. Les enfants rangent le matériel ensemble dans le panier de la classe puis inspirent profondément pour préparer le temps suivant.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Footer Link to History */}
         {saved && (
