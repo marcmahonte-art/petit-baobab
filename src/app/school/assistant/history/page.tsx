@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, Calendar, Star, Printer, Trash2, BookOpen, Sparkles, Eye, FileText, CheckCircle2, Loader2 } from "lucide-react";
-import { listSheets, toggleFavorite, deleteSheet, PedagogicalSheetRow } from "@/lib/assistant/queries";
+import { ArrowLeft, Search, Calendar, Star, Printer, Trash2, BookOpen, Sparkles, Eye, FileText, CheckCircle2, Loader2, FileDown, Share2 } from "lucide-react";
+import { listSheets, toggleFavorite, deleteSheet, isContentTextual, PedagogicalSheetRow } from "@/lib/assistant/queries";
 import { useAuthStore } from "@/lib/auth-store";
 
 export default function AssistantHistoryPage() {
@@ -13,6 +13,9 @@ export default function AssistantHistoryPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<PedagogicalSheetRow | null>(null);
+  const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
+  const [loadingDocx, setLoadingDocx] = useState<string | null>(null);
+  const [loadingWa, setLoadingWa] = useState<string | null>(null);
 
   // Load sheets from Supabase
   const loadHistory = async () => {
@@ -54,6 +57,76 @@ export default function AssistantHistoryPage() {
     }
 
     await deleteSheet(sheetId);
+  };
+
+  // Handler: Export PDF
+  const handleExportPdf = async (sheetId: string) => {
+    setLoadingPdf(sheetId);
+    try {
+      const res = await fetch(`/api/assistant/export/pdf?sheet_id=${sheetId}`);
+      if (res.headers.get("content-type")?.includes("application/pdf")) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Petit_Baobab_${sheetId.slice(0, 8)}.pdf`;
+        a.click();
+      } else {
+        const data = await res.json();
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setLoadingPdf(null);
+    }
+  };
+
+  // Handler: Export Word (DOCX)
+  const handleExportDocx = async (sheetId: string) => {
+    setLoadingDocx(sheetId);
+    try {
+      const res = await fetch(`/api/assistant/export/docx?sheet_id=${sheetId}`);
+      if (res.headers.get("content-type")?.includes("officedocument")) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Petit_Baobab_${sheetId.slice(0, 8)}.docx`;
+        a.click();
+      } else {
+        const data = await res.json();
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("DOCX export failed:", err);
+    } finally {
+      setLoadingDocx(null);
+    }
+  };
+
+  // Handler: WhatsApp Share (wa.me link with 7-day signed PDF URL)
+  const handleWhatsAppShare = async (sheetId: string, title: string) => {
+    setLoadingWa(sheetId);
+    try {
+      let shareUrl = window.location.href;
+      const res = await fetch(`/api/assistant/export/pdf?sheet_id=${sheetId}&share=true`);
+      const data = await res.json();
+      if (data.downloadUrl) {
+        shareUrl = data.downloadUrl;
+      }
+      const message = `Voici une fiche pédagogique Petit Baobab : ${title}\n\n${shareUrl}`;
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, "_blank");
+    } catch (err) {
+      console.error("WhatsApp share failed:", err);
+    } finally {
+      setLoadingWa(null);
+    }
   };
 
   const filteredItems = sheets.filter(
@@ -125,6 +198,7 @@ export default function AssistantHistoryPage() {
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => {
                 const isSelected = selectedItem?.id === item.id;
+                const showDocx = isContentTextual(item.tool_id);
                 const formattedDate = new Date(item.created_at).toLocaleDateString("fr-FR", {
                   day: "numeric",
                   month: "short",
@@ -204,6 +278,44 @@ export default function AssistantHistoryPage() {
                           <Printer className="w-3.5 h-3.5" />
                           <span>Imprimer</span>
                         </button>
+
+                        {/* Export PDF Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleExportPdf(item.id)}
+                          disabled={loadingPdf === item.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F4F9E8] text-[#65A916] hover:bg-[#65A916] hover:text-white font-bold text-xs transition-all cursor-pointer"
+                          title="Télécharger la fiche au format PDF A4"
+                        >
+                          {loadingPdf === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+                          <span>PDF</span>
+                        </button>
+
+                        {/* Export Word (DOCX) Button - Conditional on isContentTextual */}
+                        {showDocx && (
+                          <button
+                            type="button"
+                            onClick={() => handleExportDocx(item.id)}
+                            disabled={loadingDocx === item.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F3ECFF] text-[#6535E8] hover:bg-[#6535E8] hover:text-white font-bold text-xs transition-all cursor-pointer"
+                            title="Exporter la fiche au format Microsoft Word (.docx)"
+                          >
+                            {loadingDocx === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                            <span>Word (.docx)</span>
+                          </button>
+                        )}
+
+                        {/* WhatsApp Share Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleWhatsAppShare(item.id, item.title)}
+                          disabled={loadingWa === item.id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/10 text-[#128C7E] hover:bg-[#25D366] hover:text-white font-bold text-xs transition-all cursor-pointer"
+                          title="Partager le lien de la fiche sur WhatsApp"
+                        >
+                          {loadingWa === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />}
+                          <span>WhatsApp</span>
+                        </button>
                       </div>
 
                       <button
@@ -269,28 +381,71 @@ export default function AssistantHistoryPage() {
                 <p>{selectedItem.generated_content}</p>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleToggleFavorite(selectedItem.id, selectedItem.is_favorite)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    selectedItem.is_favorite
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-amber-50"
-                  }`}
-                >
-                  <Star className={`w-4 h-4 ${selectedItem.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
-                  <span>{selectedItem.is_favorite ? "Favori ⭐" : "Mettre en favori"}</span>
-                </button>
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFavorite(selectedItem.id, selectedItem.is_favorite)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedItem.is_favorite
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-gray-100 text-gray-700 hover:bg-amber-50"
+                    }`}
+                  >
+                    <Star className={`w-4 h-4 ${selectedItem.is_favorite ? "fill-amber-400 text-amber-400" : ""}`} />
+                    <span>{selectedItem.is_favorite ? "Favori ⭐" : "Mettre en favori"}</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6535E8] text-white font-bold text-xs sm:text-sm hover:bg-[#542AC4] transition-all cursor-pointer shadow-xs"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Imprimer (A4)</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6535E8] text-white font-bold text-xs sm:text-sm hover:bg-[#542AC4] transition-all cursor-pointer shadow-xs"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Imprimer (A4)</span>
+                  </button>
+                </div>
+
+                {/* Export & Share Actions */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-[#F0E7DA] pt-3">
+                  {/* Export PDF Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleExportPdf(selectedItem.id)}
+                    disabled={loadingPdf === selectedItem.id}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F4F9E8] text-[#65A916] hover:bg-[#65A916] hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+                    title="Télécharger la fiche au format PDF A4"
+                  >
+                    {loadingPdf === selectedItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                    <span>PDF</span>
+                  </button>
+
+                  {/* Export Word (DOCX) Button - Conditional on isContentTextual */}
+                  {isContentTextual(selectedItem.tool_id) && (
+                    <button
+                      type="button"
+                      onClick={() => handleExportDocx(selectedItem.id)}
+                      disabled={loadingDocx === selectedItem.id}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F3ECFF] text-[#6535E8] hover:bg-[#6535E8] hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+                      title="Exporter la fiche au format Microsoft Word (.docx)"
+                    >
+                      {loadingDocx === selectedItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                      <span>Word (.docx)</span>
+                    </button>
+                  )}
+
+                  {/* WhatsApp Share Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleWhatsAppShare(selectedItem.id, selectedItem.title)}
+                    disabled={loadingWa === selectedItem.id}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366]/10 border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+                    title="Partager le lien de la fiche sur WhatsApp"
+                  >
+                    {loadingWa === selectedItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                    <span>WhatsApp</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

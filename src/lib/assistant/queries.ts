@@ -19,6 +19,13 @@ export function getToolStarCost(toolId: string): number {
   return TOOL_STAR_COSTS[toolId] ?? DEFAULT_ASSISTANT_STAR_COST;
 }
 
+export function isContentTextual(toolId: string): boolean {
+  // Tous les outils actuels priority v1 sont textuels.
+  // Si un outil visuel/image est ajouté à l'avenir, retourner false ici.
+  if (!toolId) return true;
+  return true;
+}
+
 const PERSONA_SHORT_LABELS: Record<Persona, string> = {
   educatrice_creche: "Crèche",
   maitresse_maternelle: "Maternelle",
@@ -52,6 +59,8 @@ export interface PedagogicalSheetRow {
   generated_content: string;
   stars_cost: number;
   is_favorite: boolean;
+  pdf_path?: string | null;
+  docx_path?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -234,5 +243,52 @@ export async function deleteSheet(sheetId: string): Promise<{ success: boolean; 
   } catch (err: any) {
     console.error("[Assistant Queries] Exception deleteSheet:", err);
     return { success: false, error: err.message || "Erreur lors de la suppression de la fiche." };
+  }
+}
+
+/**
+ * Récupère une fiche pédagogique unique par son ID
+ */
+export async function getSheetById(sheetId: string): Promise<{ data: PedagogicalSheetRow | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from("pedagogical_sheets")
+      .select("*")
+      .eq("id", sheetId)
+      .single();
+
+    if (error || !data) {
+      return { data: null, error: error?.message || "Fiche introuvable." };
+    }
+
+    return { data: data as PedagogicalSheetRow, error: null };
+  } catch (err: any) {
+    return { data: null, error: err.message || "Erreur lors de la récupération de la fiche." };
+  }
+}
+
+/**
+ * Mettre à jour les chemins d'exportation (pdf_path ou docx_path) d'une fiche
+ */
+export async function updateSheetPaths(
+  sheetId: string,
+  paths: { pdf_path?: string; docx_path?: string }
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabase
+      .from("pedagogical_sheets")
+      .update({
+        ...paths,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", sheetId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Erreur de mise à jour des chemins d'export." };
   }
 }

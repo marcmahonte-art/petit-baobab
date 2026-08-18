@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { PromptTemplate } from "@/lib/assistant/prompts";
-import { Sparkles, Save, Printer, PlusCircle, CheckCircle2, Star, BookOpen, Clock, Users, GraduationCap, ShieldCheck } from "lucide-react";
+import { isContentTextual } from "@/lib/assistant/queries";
+import { Sparkles, Save, Printer, PlusCircle, CheckCircle2, Star, BookOpen, Clock, Users, GraduationCap, ShieldCheck, FileDown, FileText, Share2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface GenerationResultProps {
@@ -11,6 +12,7 @@ interface GenerationResultProps {
   customNeed: string;
   generatedText?: string;
   starCost?: number;
+  sheetId?: string | null;
   onSaveHistory: (title: string, details: string) => void;
   onReset: () => void;
 }
@@ -21,16 +23,21 @@ export default function GenerationResult({
   customNeed,
   generatedText,
   starCost = 5,
+  sheetId,
   onSaveHistory,
   onReset,
 }: GenerationResultProps) {
   const [saved, setSaved] = useState(false);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [loadingDocx, setLoadingDocx] = useState(false);
+  const [loadingWa, setLoadingWa] = useState(false);
 
   const topic = formValues.theme || formValues.sujet_prioritaire || formValues.materiel_disponible || customNeed || "Découverte et éveil";
   const level = formValues.niveau || formValues.tranche_age || (formValues.age_en_mois ? `${formValues.age_en_mois} mois` : `${formValues.age || 4} ans`);
   const duration = formValues.duree || "30";
 
   const activityTitle = `Fiche Pédagogique : ${prompt.label} — ${topic}`;
+  const showDocx = isContentTextual(prompt.id);
 
   const handleSave = () => {
     onSaveHistory(activityTitle, generatedText || `Niveau: ${level} | Durée: ${duration} min`);
@@ -39,6 +46,85 @@ export default function GenerationResult({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Handler: Export PDF
+  const handleExportPdf = async () => {
+    if (!sheetId) {
+      // Direct print fallback if not yet saved to DB
+      window.print();
+      return;
+    }
+    setLoadingPdf(true);
+    try {
+      const res = await fetch(`/api/assistant/export/pdf?sheet_id=${sheetId}`);
+      if (res.headers.get("content-type")?.includes("application/pdf")) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Petit_Baobab_${sheetId.slice(0, 8)}.pdf`;
+        a.click();
+      } else {
+        const data = await res.json();
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      window.print();
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
+
+  // Handler: Export Word (DOCX)
+  const handleExportDocx = async () => {
+    if (!sheetId) return;
+    setLoadingDocx(true);
+    try {
+      const res = await fetch(`/api/assistant/export/docx?sheet_id=${sheetId}`);
+      if (res.headers.get("content-type")?.includes("officedocument")) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Petit_Baobab_${sheetId.slice(0, 8)}.docx`;
+        a.click();
+      } else {
+        const data = await res.json();
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.error("DOCX export failed:", err);
+    } finally {
+      setLoadingDocx(false);
+    }
+  };
+
+  // Handler: WhatsApp Share (wa.me link with 7-day signed PDF URL)
+  const handleWhatsAppShare = async () => {
+    setLoadingWa(true);
+    try {
+      let shareUrl = window.location.href;
+      if (sheetId) {
+        const res = await fetch(`/api/assistant/export/pdf?sheet_id=${sheetId}&share=true`);
+        const data = await res.json();
+        if (data.downloadUrl) {
+          shareUrl = data.downloadUrl;
+        }
+      }
+      const message = `Voici une fiche pédagogique Petit Baobab : ${activityTitle}\n\n${shareUrl}`;
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, "_blank");
+    } catch (err) {
+      console.error("WhatsApp share failed:", err);
+    } finally {
+      setLoadingWa(false);
+    }
   };
 
   return (
@@ -60,13 +146,14 @@ export default function GenerationResult({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Save Button */}
           <button
             type="button"
             onClick={handleSave}
             disabled={saved}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs ${
               saved
                 ? "bg-[#65A916] text-white"
                 : "bg-white border border-[#E8DFC9] text-[#35180D] hover:bg-[#F3ECFF] hover:border-[#6535E8]"
@@ -76,19 +163,49 @@ export default function GenerationResult({
             <span>{saved ? "Sauvegardé !" : "Sauvegarder"}</span>
           </button>
 
+          {/* Export PDF Button */}
           <button
             type="button"
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E8DFC9] text-[#35180D] hover:bg-[#FFF8EE] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+            onClick={handleExportPdf}
+            disabled={loadingPdf}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#E8DFC9] text-[#35180D] hover:bg-[#F4F9E8] hover:border-[#65A916] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+            title="Télécharger la fiche au format PDF A4"
           >
-            <Printer className="w-4 h-4 text-[#FF8A00]" />
-            <span>Imprimer (A4)</span>
+            {loadingPdf ? <Loader2 className="w-4 h-4 animate-spin text-[#65A916]" /> : <FileDown className="w-4 h-4 text-[#65A916]" />}
+            <span>PDF</span>
           </button>
 
+          {/* Export Word (DOCX) Button - Conditional on isContentTextual */}
+          {showDocx && (
+            <button
+              type="button"
+              onClick={handleExportDocx}
+              disabled={loadingDocx}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#E8DFC9] text-[#35180D] hover:bg-[#F3ECFF] hover:border-[#6535E8] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+              title="Exporter la fiche au format Microsoft Word (.docx)"
+            >
+              {loadingDocx ? <Loader2 className="w-4 h-4 animate-spin text-[#6535E8]" /> : <FileText className="w-4 h-4 text-[#6535E8]" />}
+              <span>Word (.docx)</span>
+            </button>
+          )}
+
+          {/* WhatsApp Share Button */}
+          <button
+            type="button"
+            onClick={handleWhatsAppShare}
+            disabled={loadingWa}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366]/10 border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+            title="Partager le lien de la fiche sur WhatsApp"
+          >
+            {loadingWa ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+            <span>WhatsApp</span>
+          </button>
+
+          {/* New Activity Reset */}
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6535E8] text-white font-bold text-xs sm:text-sm hover:bg-[#542AC4] transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#6535E8] text-white font-bold text-xs sm:text-sm hover:bg-[#542AC4] transition-all cursor-pointer shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Nouvelle activité</span>
@@ -136,70 +253,9 @@ export default function GenerationResult({
             {generatedText}
           </div>
         ) : (
-          <>
-            {/* Structured Fallback Sections */}
-            <div className="space-y-2">
-              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6535E8]" />
-                1. Objectifs pédagogiques
-              </h3>
-              <ul className="list-disc list-inside text-sm text-[#544375] space-y-1 pl-2 font-medium">
-                <li>Développer l'observation attentive et la curiosité naturelle des enfants.</li>
-                <li>Stimuler le langage oral à travers la désignation et le questionnement.</li>
-                <li>Favoriser la motricité fine et la coordination geste-regard par la manipulation.</li>
-                <li>Renforcer le respect mutuel et l'écoute au sein du groupe classe.</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A00]" />
-                2. Matériel nécessaire (100% Local & Accessible)
-              </h3>
-              <div className="p-4 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl text-sm text-[#35180D] font-medium space-y-1">
-                <p>• Calebasses, coupelles ou récipients en plastique recyclés.</p>
-                <p>• Graines locales (haricot, maïs, neem) ou petits bâtonnets de bois.</p>
-                <p>• Bandes de tissus colorés (motifs Faso dan fani ou cotonnade).</p>
-                <p>• Fiche imprimée ou ardoises d'exercice.</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h3 className="font-extrabold text-base text-[#35180D] flex items-center gap-2 border-b border-[#F0E7DA] pb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#65A916]" />
-                3. Déroulé pas-à-pas en 3 temps
-              </h3>
-
-              <div className="space-y-3">
-                <div className="p-4 bg-[#FFF9EE] border-l-4 border-[#FF8A00] rounded-r-2xl space-y-1">
-                  <h4 className="font-bold text-sm text-[#FF8A00]">
-                    Étape 1 : Accueil et Regroupement (5 à 10 minutes)
-                  </h4>
-                  <p className="text-xs sm:text-sm text-[#554A42] font-medium leading-relaxed">
-                    Rassemblez les enfants en cercle sur la nappe. Introduisez le sujet avec une devinette ou une comptine courte. Présentez le matériel local posé au centre du cercle et laissez quelques instants d'observation libre.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-[#F3ECFF] border-l-4 border-[#6535E8] rounded-r-2xl space-y-1">
-                  <h4 className="font-bold text-sm text-[#6535E8]">
-                    Étape 2 : Activité Guidée & Manipulation (15 à 20 minutes)
-                  </h4>
-                  <p className="text-xs sm:text-sm text-[#43355C] font-medium leading-relaxed">
-                    Invitez les enfants à effectuer le geste demandé (tri, tracés, manipulation ou jeu d'association). Circulez dans le groupe pour encourager la verbalisation : <em>"Qu'as-tu choisi ?"</em>, <em>"De quelle couleur est ton tissu ?"</em>.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-[#F4F9E8] border-l-4 border-[#65A916] rounded-r-2xl space-y-1">
-                  <h4 className="font-bold text-sm text-[#65A916]">
-                    Étape 3 : Retour au calme & Rangement (5 minutes)
-                  </h4>
-                  <p className="text-xs sm:text-sm text-[#2F5204] font-medium leading-relaxed">
-                    Proposez un signal sonore doux (tapotement sur calebasse) pour marquer la fin de l'activité. Les enfants rangent le matériel ensemble dans le panier de la classe puis inspirent profondément pour préparer le temps suivant.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </>
+          <div className="p-5 bg-[#FFFDF8] border border-[#E8DFC9] rounded-2xl text-sm text-[#35180D] font-medium leading-relaxed">
+            Contenu pédagogique prêt à l'exportation.
+          </div>
         )}
 
         {/* Footer Link to History */}

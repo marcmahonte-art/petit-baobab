@@ -32,6 +32,7 @@ export default function AssistantPage() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generationDone, setGenerationDone] = useState<boolean>(false);
   const [generatedText, setGeneratedText] = useState<string>("");
+  const [createdSheetId, setCreatedSheetId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Sync star balance with Supabase account if logged in
@@ -146,11 +147,14 @@ export default function AssistantPage() {
           starsCost: cost,
         });
 
-        if (result.success && result.newBalance !== undefined) {
-          setStarBalance(result.newBalance);
-          useAuthStore.setState((s) =>
-            s.account ? { ...s, account: { ...s.account, stars_balance: result.newBalance! } } : s
-          );
+        if (result.success && result.data) {
+          setCreatedSheetId(result.data.id);
+          if (result.newBalance !== undefined) {
+            setStarBalance(result.newBalance);
+            useAuthStore.setState((s) =>
+              s.account ? { ...s, account: { ...s.account, stars_balance: result.newBalance! } } : s
+            );
+          }
         }
       } else {
         // Fallback for guest mode

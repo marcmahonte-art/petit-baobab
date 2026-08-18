@@ -20,6 +20,10 @@ create table if not exists public.pedagogical_sheets (
 create index if not exists idx_pedagogical_sheets_teacher on public.pedagogical_sheets(teacher_id, created_at desc);
 create index if not exists idx_pedagogical_sheets_account on public.pedagogical_sheets(account_id);
 
+alter table public.pedagogical_sheets
+  add column if not exists pdf_path text,
+  add column if not exists docx_path text;
+
 alter table public.pedagogical_sheets enable row level security;
 
 drop policy if exists "Les enseignants peuvent voir leurs fiches" on public.pedagogical_sheets;
