@@ -21,12 +21,12 @@ const navItems = [
   { href: "/school/dashboard", label: "Tableau de bord", icon: Home, isMain: true, exact: true },
   { href: "/school/classes", label: "Mes classes", icon: Users },
   { href: "/school/students", label: "Mes élèves", icon: UserPlus },
+  { href: "/school/assistant", label: "✦ Assistant", icon: Sparkles },
   { href: "/school/activities", label: "Activités", icon: Palette },
   { href: "/school/progression", label: "Progression", icon: TrendingUp },
   { href: "/school/etoiles", label: "Étoiles", icon: Star },
   { href: "/school/dashboard/billing", label: "Facturation", icon: Receipt },
   { href: "/school/parametres", label: "Paramètres", icon: Settings },
-  { href: "/school/assistant", label: "✦ Assistant", icon: Sparkles },
 ];
 
 export default function SchoolSidebar() {
