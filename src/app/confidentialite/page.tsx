@@ -82,13 +82,19 @@ export default function ConfidentialitePage() {
               <strong>Responsable du traitement :</strong>
             </p>
             <p className="mt-1">
-              <strong>[RAISON SOCIALE / NOM DE L'ENTREPRISE]</strong>
+              <strong>MPIXEL AGENCY SARL</strong>
               <br />
-              Adresse : <strong>[ADRESSE]</strong>
+              Siège : Ouagadougou, Burkina Faso
               <br />
-              Ouagadougou, Burkina Faso
+              RCCM : BF-OUA-01-2023-B13-06427
               <br />
-              E-mail : <strong>[EMAIL DE CONFIDENTIALITÉ]</strong>
+              IFU : 00203331S
+              <br />
+              Téléphone : +226 64 64 66 14
+              <br />
+              E-mail : mpixelagency@outlook.com
+              <br />
+              Site web : www.mpixelgagency.com
             </p>
             <p className="mt-2">
               Lorsque certaines opérations sont confiées à des prestataires
@@ -739,7 +745,7 @@ export default function ConfidentialitePage() {
               confidentialité, vous pouvez nous contacter :
             </p>
             <p className="mt-2">
-              <strong>E-mail : [EMAIL DE CONFIDENTIALITÉ]</strong>
+              <strong>E-mail : mpixelagency@outlook.com</strong>
               <br />
               <strong>Objet : Demande relative à mes données personnelles</strong>
             </p>
@@ -904,15 +910,21 @@ export default function ConfidentialitePage() {
             <p className="mt-2">
               <strong>Petit Baobab</strong>
               <br />
-              <strong>[RAISON SOCIALE]</strong>
+              <strong>MPIXEL AGENCY SARL</strong>
               <br />
-              <strong>[ADRESSE]</strong>
+              Siège : Ouagadougou, Burkina Faso
               <br />
-              Ouagadougou, Burkina Faso
+              RCCM : BF-OUA-01-2023-B13-06427
               <br />
-              <strong>E-mail : [EMAIL DE CONFIDENTIALITÉ]</strong>
+              IFU : 00203331S
               <br />
-              <strong>Site : https://petitbaobab.com</strong>
+              Téléphone : +226 64 64 66 14
+              <br />
+              E-mail : mpixelagency@outlook.com
+              <br />
+              Site web : www.mpixelgagency.com
+              <br />
+              Site : https://petitbaobab.com
             </p>
           </section>
 
