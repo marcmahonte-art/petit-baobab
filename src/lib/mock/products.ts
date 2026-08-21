@@ -145,8 +145,8 @@ export const PRODUCTS: Product[] = [
     price: 3500,
     currency: "FCFA",
     images: [
-      "/illustrations/coloring-balafon.png",
-      "/illustrations/Collection-livres.webp",
+      "/illustrations/instruments-couverture.webp",
+      "/illustrations/instruments-page-interne.webp",
     ],
     rating: 4.8,
     reviewCount: 16,
