@@ -10,7 +10,7 @@ const PROFILES: ProfileItem[] = [
     title: "Éducatrice de crèche",
     subtitle: "Pour les tout-petits",
     ageBadge: "3 mois – 3 ans",
-    imageSrc: "/illustrations/awa.webp",
+    imageSrc: "/illustrations/assistant-educatrice.png",
     accentColor: "#65A916",
   },
   {
@@ -18,7 +18,7 @@ const PROFILES: ProfileItem[] = [
     title: "Maîtresse de maternelle",
     subtitle: "Pour apprendre en s'amusant",
     ageBadge: "3 – 6 ans",
-    imageSrc: "/illustrations/yacouba-enseignant.png",
+    imageSrc: "/illustrations/assistant-maitresse.png",
     accentColor: "#FF8A00",
   },
   {
@@ -26,7 +26,7 @@ const PROFILES: ProfileItem[] = [
     title: "Directrice",
     subtitle: "Pour organiser et accompagner l'équipe",
     ageBadge: "Équipe & gestion",
-    imageSrc: "/illustrations/aminata-maman.png",
+    imageSrc: "/illustrations/assistant-directrice.png",
     accentColor: "#6535E8",
   },
 ];
