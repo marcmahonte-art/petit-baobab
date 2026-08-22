@@ -28,9 +28,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Petit Baobab" }],
   creator: "Petit Baobab",
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,

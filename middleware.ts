@@ -15,10 +15,56 @@ const CHILD_ROUTES = ["/dashboard", "/dashboardstudent", "/learn/dashboard", "/c
 // Route parent (adulte uniquement) : un élève y est renvoyé vers son espace.
 const PARENT_ROUTES = ["/dashboard"];
 
+// Zones privées / utilitaires : ne doivent pas être indexées par les moteurs.
+// (Header X-Robots-Tag — on ne bloque PAS le crawl dans robots.txt afin que
+// Google puisse voir le noindex.)
+const NOINDEX_PREFIXES = [
+  "/dashboard",
+  "/dashboardstudent",
+  "/learn",
+  "/store",
+  "/parents",
+  "/school/dashboard",
+  "/school/assistant",
+  "/school/activities",
+  "/school/classes",
+  "/school/students",
+  "/school/progression",
+  "/school/etoiles",
+  "/school/facturation",
+  "/school/parametres",
+  "/auth",
+  "/select-space",
+  "/parametres",
+  "/coloriage",
+  "/magic-drawing",
+  "/livres-de-coloriage",
+  "/mes-livres",
+  "/boutique/checkout",
+  "/boutique/panier",
+  "/boutique/merci",
+  "/boutique/mes-achats",
+  "/boutique/paiement-echoue",
+];
+
+const NOINDEX_EXACT = ["/login", "/signup"];
+
+function isNoindexPath(pathname: string): boolean {
+  if (NOINDEX_EXACT.includes(pathname)) return true;
+  return NOINDEX_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const adultToken = request.cookies.get(ADULT_TOKEN)?.value;
   const studentToken = request.cookies.get(STUDENT_TOKEN)?.value;
+
+  // SEO : poser X-Robots-Tag: noindex sur les zones privées/utilitaires.
+  const noindex = isNoindexPath(pathname);
+  const withNoindex = (res: NextResponse) => {
+    if (noindex) res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  };
 
   // BLOC 1 — Protéger /school/dashboard (enseignants uniquement)
   if (pathname.startsWith("/school/dashboard")) {
@@ -33,8 +79,8 @@ export async function middleware(request: NextRequest) {
     // page /school/dashboard elle-même (elle lit account.plan et redirige
     // un compte non-école vers /parents). On ne se fie PAS au cookie
     // pb-role ici : il n'est pas toujours posé (login email/mdp) et peut
-    // être résiduel, ce qui redirigeait à tort une école vers /parents.
-    return NextResponse.next();
+    // être résiduel, ce qui redirigerait à tort une école vers /parents.
+    return withNoindex(NextResponse.next());
   }
 
   // BLOC 2 — Routes enfant : adulte OU élève
@@ -71,7 +117,7 @@ export async function middleware(request: NextRequest) {
           if (session.student_id) headers.set("x-student-id", session.student_id);
           if (session.name) headers.set("x-student-name", session.name);
         }
-        return NextResponse.next({ request: { headers } });
+        return withNoindex(NextResponse.next({ request: { headers } }));
       }
       const url = request.nextUrl.clone();
       url.pathname = "/school";
@@ -80,18 +126,30 @@ export async function middleware(request: NextRequest) {
   }
 
   // BLOC 3 — /school (exact), /login, /signup restent publics
-  return NextResponse.next();
+  return withNoindex(NextResponse.next());
 }
 
 export const config = {
   matcher: [
-    "/school/dashboard/:path*",
+    "/school/:path*",
     "/dashboard/:path*",
     "/dashboardstudent/:path*",
+    "/learn/:path*",
+    "/store/:path*",
+    "/parents/:path*",
     "/coloriage/:path*",
     "/magic-drawing/:path*",
     "/livres-de-coloriage/:path*",
     "/mes-livres/:path*",
     "/parametres/:path*",
+    "/auth/:path*",
+    "/select-space/:path*",
+    "/login",
+    "/signup",
+    "/boutique/checkout/:path*",
+    "/boutique/panier/:path*",
+    "/boutique/merci/:path*",
+    "/boutique/mes-achats/:path*",
+    "/boutique/paiement-echoue/:path*",
   ],
 };

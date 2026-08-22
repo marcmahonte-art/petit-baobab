@@ -6,6 +6,9 @@ const SITE_URL = "https://www.monpetitbaobab.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
+  // NOTE : /coloriage et /livres-de-coloriage sont volontairement exclues :
+  // elles sont protégées par le middleware (redirection vers /school si non
+  // connecté) et ne sont donc pas indexables pour Googlebot.
   const staticRoutes = [
     "",
     "/fonctionnalites",
@@ -13,8 +16,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/boutique",
     "/confidentialite",
-    "/coloriage",
-    "/livres-de-coloriage",
   ].map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: now,
