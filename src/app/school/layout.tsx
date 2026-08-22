@@ -1,6 +1,7 @@
 import React from 'react';
 import SchoolSidebar from '@/components/school/SchoolSidebar';
 import SchoolMobileNav from '@/components/school/SchoolMobileNav';
+import SchoolSupportButton from '@/components/school/SchoolSupportButton';
 
 export const metadata = {
   title: 'Espace École – Petit Baobab',
@@ -23,6 +24,9 @@ export default function SchoolLayout({ children }: { children: React.ReactNode }
           </div>
         </main>
       </div>
+
+      {/* Support WhatsApp Business — visible dans tout l'espace école */}
+      <SchoolSupportButton />
     </div>
   );
 }
