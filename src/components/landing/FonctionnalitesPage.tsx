@@ -62,18 +62,18 @@ export default function FonctionnalitesPage() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="bg-white rounded-[20px] border border-[#F1ECE5] p-6 shadow-sm"
+              className="group bg-white rounded-[24px] border border-[#F1ECE5] p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col items-center text-center"
             >
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-4 ${f.color}`}
+                className={`w-24 h-24 rounded-full flex items-center justify-center mb-5 ${f.color} ring-4 ring-white shadow-lg`}
               >
                 <img
                   src={f.icon}
                   alt={f.title}
-                  className="w-8 h-8 object-contain"
+                  className="w-14 h-14 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-200"
                 />
               </div>
-              <h3 className="text-lg font-extrabold mb-2">{f.title}</h3>
+              <h3 className="text-xl font-extrabold mb-2">{f.title}</h3>
               <p className="text-sm text-[#3B2416]/70 leading-relaxed">{f.desc}</p>
             </div>
           ))}
