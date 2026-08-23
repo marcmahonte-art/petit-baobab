@@ -39,7 +39,16 @@ export default function SchoolLoginPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row relative">
       {/* ───────────── Colonne gauche : panneau illustré crème ───────────── */}
-      <div className="lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:h-screen bg-[#FFF9F2] border-r border-gray-100 flex flex-col px-6 md:px-12 lg:px-16 py-8 lg:py-12 overflow-hidden z-10">
+      <div
+        className="lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:h-screen bg-[#FFF9F2] border-r border-gray-100 flex flex-col px-6 md:px-12 lg:px-16 py-8 lg:py-12 overflow-hidden z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,249,242,0.80), rgba(255,249,242,0.80)), url('/illustrations/school-bg-children.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         {/* Logo */}
         <a
           href="https://www.monpetitbaobab.com/"
