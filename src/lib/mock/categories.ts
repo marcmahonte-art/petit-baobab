@@ -22,7 +22,7 @@ export const CATEGORIES: Category[] = [
   {
     id: "cat-3",
     slug: "color-by-code",
-    title: "Color by Code",
+    title: "Kit de Coloriages",
     description: "Développer la logique et l'observation à travers des énigmes colorées.",
     icon: "Code",
     image: "/illustrations/Aperçois.webp",

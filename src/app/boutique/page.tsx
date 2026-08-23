@@ -12,7 +12,7 @@ import { PRODUCTS } from "@/lib/mock/products";
 export const metadata: Metadata = {
   title: "Boutique",
   description:
-    "Découvrez la boutique Petit Baobab : livres de coloriage, color by number, color by code, t-shirts et stickers inspirés de l'Afrique. Téléchargeables et imprimables.",
+    "Découvrez la boutique Petit Baobab : livres de coloriage, color by number, kit de coloriages, t-shirts et stickers inspirés de l'Afrique. Téléchargeables et imprimables.",
   alternates: { canonical: "/boutique" },
   openGraph: {
     title: "Boutique | Petit Baobab",

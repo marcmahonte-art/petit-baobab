@@ -59,7 +59,7 @@ export const PRODUCTS: Product[] = [
   {
     id: "prod-3",
     slug: "color-by-code-logique-et-symboles",
-    title: "Color by Code - Logique & Symboles Adinkra",
+    title: "Kit de Coloriages - Logique & Symboles Adinkra",
     description:
       "Décodage amusant pour enfants curieux ! En suivant les indices et codes de symboles, vos enfants développent leur concentration, leur sens du détail et découvrent la signification des symboles royaux.",
     shortDescription: "Des coloriages sous forme de codes mystères pour développer la mémoire.",
@@ -67,7 +67,7 @@ export const PRODUCTS: Product[] = [
     price: 4000,
     currency: "FCFA",
     images: [
-      "/illustrations/Aperçois.webp",
+      "/illustrations/pot.webp",
       "/illustrations/robot.webp",
     ],
     rating: 4.7,
