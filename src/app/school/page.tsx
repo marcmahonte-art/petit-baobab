@@ -45,9 +45,9 @@ export default function SchoolLoginPage() {
           <Image
             src="/illustrations/logo-petit-baobab.svg"
             alt="Petit Baobab"
-            width={260}
-            height={86}
-            className="h-12 md:h-16 w-auto object-contain"
+            width={780}
+            height={258}
+            className="h-36 md:h-48 w-auto object-contain"
             priority
           />
         </div>
@@ -82,17 +82,6 @@ export default function SchoolLoginPage() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Illustration */}
-        <div className="relative flex-1 mt-8 lg:mt-10 min-h-[180px]">
-          <Image
-            src="/illustrations/Deux enfants lisant ensemble.webp"
-            alt="Enfants africains avec baobab"
-            fill
-            className="object-contain object-bottom"
-            priority
-          />
         </div>
 
         {/* Bandeau bas */}
