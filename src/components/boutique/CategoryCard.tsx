@@ -13,7 +13,7 @@ interface CategoryCardProps {
 const ACCENTS: Record<CategorySlug, { bg: string; text: string }> = {
   "livres-coloriage": { bg: "bg-[#F4E8FF]", text: "text-[#7D6AF8]" },   // violet
   "color-by-number": { bg: "bg-[#EAF8EE]", text: "text-[#20C997]" },    // vert
-  "color-by-code": { bg: "bg-[#FFF4CF]", text: "text-[#FFB300]" },      // orange
+  "kit-de-coloriage": { bg: "bg-[#FFF4CF]", text: "text-[#FFB300]" },      // orange
   "t-shirts": { bg: "bg-[#FFE8EF]", text: "text-[#FF5E83]" },           // rose
   stickers: { bg: "bg-[#E8F5FF]", text: "text-[#1194FF]" },             // bleu
 };

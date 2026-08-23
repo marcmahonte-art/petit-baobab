@@ -63,7 +63,7 @@ export const PRODUCTS: Product[] = [
     description:
       "Décodage amusant pour enfants curieux ! En suivant les indices et codes de symboles, vos enfants développent leur concentration, leur sens du détail et découvrent la signification des symboles royaux.",
     shortDescription: "Des coloriages sous forme de codes mystères pour développer la mémoire.",
-    category: "color-by-code",
+    category: "kit-de-coloriage",
     price: 4000,
     currency: "FCFA",
     images: [

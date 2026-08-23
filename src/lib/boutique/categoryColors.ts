@@ -1,7 +1,7 @@
 export type CategorySlug =
   | "livres-coloriage"
   | "color-by-number"
-  | "color-by-code"
+  | "kit-de-coloriage"
   | "t-shirts"
   | "stickers";
 
@@ -22,7 +22,7 @@ const CATEGORY_BUTTON_COLORS: Record<string, CategoryColor> = {
     hover: "hover:bg-[#6552E8]",
     shadow: "shadow-[#7e6af6]/20",
   },
-  "color-by-code": {
+  "kit-de-coloriage": {
     base: "bg-[#ffaf3c]",
     hover: "hover:bg-[#e69a2e]",
     shadow: "shadow-[#ffaf3c]/20",

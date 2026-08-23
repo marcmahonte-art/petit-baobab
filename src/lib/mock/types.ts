@@ -25,7 +25,7 @@ export interface Product {
 export type CategorySlug =
   | "livres-coloriage"
   | "color-by-number"
-  | "color-by-code"
+  | "kit-de-coloriage"
   | "t-shirts"
   | "stickers";
 
