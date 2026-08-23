@@ -41,7 +41,11 @@ export default function SchoolLoginPage() {
       {/* ───────────── Colonne gauche : panneau illustré crème ───────────── */}
       <div className="lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:h-screen bg-[#FFF9F2] border-r border-gray-100 flex flex-col px-6 md:px-12 lg:px-16 py-8 lg:py-12 overflow-hidden z-10">
         {/* Logo */}
-        <div className="shrink-0">
+        <a
+          href="https://www.monpetitbaobab.com/"
+          className="shrink-0 cursor-pointer"
+          aria-label="Retour à l'accueil Petit Baobab"
+        >
           <Image
             src="/illustrations/logo-petit-baobab.svg"
             alt="Petit Baobab"
@@ -50,7 +54,7 @@ export default function SchoolLoginPage() {
             className="h-36 md:h-48 w-auto object-contain"
             priority
           />
-        </div>
+        </a>
 
         {/* Titre + sous-titre */}
         <div className="mt-8 lg:mt-12">
