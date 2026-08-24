@@ -3,6 +3,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import type { BookPage as BookPageModel } from "../types"
 import type { BookStyle, BookFrame, CoverPalette, CoverTemplate } from "../types"
+import { frameBorderStyle } from "./frameStyles"
 import { BookCover } from "./BookCover"
 import { BookFooter } from "./BookFooter"
 
@@ -101,14 +102,8 @@ function BookPageComponent({
     <div className={cn("relative flex h-full w-full flex-col justify-between", className)}>
       {frame !== "Aucun" && !isPrint && (
         <div
-          className={cn(
-            "pointer-events-none absolute inset-0 border-[8px]",
-            frame === "Faso Dan Fani" && "border-red-100",
-            frame === "Nature" && "border-green-50",
-            frame === "Bogolan" && "border-neutral-200",
-            frame === "Savane" && "border-[#FFB300]/10",
-            frame === "Animaux" && "border-[#6D4CFF]/10",
-          )}
+          className="pointer-events-none absolute inset-0"
+          style={frameBorderStyle(frame)}
           aria-hidden
         />
       )}

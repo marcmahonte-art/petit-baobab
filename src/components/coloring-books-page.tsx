@@ -71,6 +71,7 @@ import { useProfileStore } from "@/lib/profile-store"
 import { storageService } from "@/lib/storageService"
 import { bookService } from "@/features/books"
 import type { CoverTemplate, CoverPalette, BookStyle, BookFrame, BookFormat, BookOrientation } from "@/features/books/types"
+import { frameBorderStyle } from "@/features/coloring-book/components/frameStyles"
 
 export function ColoringBooksPage() {
   const bookIdRef = useRef<string | null>(null)
@@ -1396,14 +1397,11 @@ export function ColoringBooksPage() {
                           <div className="w-full h-full flex flex-col justify-between items-center relative">
                             {/* Selected decorative frame inside book pages */}
                             {decorativeFrame !== "Aucun" && (
-                              <div className={cn(
-                                "absolute inset-0 pointer-events-none border-[8px]",
-                                decorativeFrame === "Faso Dan Fani" && "border-red-100",
-                                decorativeFrame === "Nature" && "border-green-50",
-                                decorativeFrame === "Bogolan" && "border-neutral-200",
-                                decorativeFrame === "Savane" && "border-[#FFB300]/10",
-                                decorativeFrame === "Animaux" && "border-[#6D4CFF]/10"
-                              )} />
+                              <div
+                                className="absolute inset-0 pointer-events-none"
+                                style={frameBorderStyle(decorativeFrame)}
+                                aria-hidden
+                              />
                             )}
 
                             {/* Top header details */}

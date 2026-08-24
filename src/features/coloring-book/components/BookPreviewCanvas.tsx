@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { frameBorderStyle } from "./frameStyles"
 
 
 // Cover Visual Dynamic Preview Component
@@ -48,58 +49,9 @@ export const BookPreviewCanvas = ({
     "ia": "/illustrations/covers/cover-ia.svg",
   }
 
-  const renderFrameBorders = () => {
-    switch (decorativeFrame) {
-      case "Faso Dan Fani":
-        return (
-          <div className="absolute inset-0 pointer-events-none border-[12px] border-transparent"
-               style={{
-                 borderImage: "repeating-linear-gradient(45deg, #FF5E83, #FF5E83 8px, #20C997 8px, #20C997 16px, #FFD95C 16px, #FFD95C 24px) 12"
-               }}
-          />
-        )
-      case "Bogolan":
-        return (
-          <div className="absolute inset-0 pointer-events-none border-[14px] border-[#3B2416]">
-            <div className="absolute inset-1 border-2 border-dashed border-white/60" />
-            <div className="absolute top-1 left-4 right-4 h-1 flex justify-around text-[6px] text-white/50"><span>â–²</span><span>â–¼</span><span>â–²</span><span>â–¼</span></div>
-            <div className="absolute bottom-1 left-4 right-4 h-1 flex justify-around text-[6px] text-white/50"><span>â–²</span><span>â–¼</span><span>â–²</span><span>â–¼</span></div>
-          </div>
-        )
-      case "Nature":
-        return (
-          <div className="absolute inset-0 pointer-events-none border-[10px] border-[#20C997]/20 flex justify-between items-center p-1">
-            <div className="absolute top-1 left-1.5 text-[10px]">ðŸƒ</div>
-            <div className="absolute top-1 right-1.5 text-[10px]">ðŸŒ¿</div>
-            <div className="absolute bottom-1 left-1.5 text-[10px]">ðŸŒ±</div>
-            <div className="absolute bottom-1 right-1.5 text-[10px]">ðŸƒ</div>
-          </div>
-        )
-      case "Savane":
-        return (
-          <div className="absolute inset-0 pointer-events-none border-[10px] border-[#FFB300]/20 flex justify-between items-center p-1">
-            <div className="absolute top-1 left-1.5 text-[10px]">ðŸ¦</div>
-            <div className="absolute top-1 right-1.5 text-[10px]">ðŸŒ³</div>
-            <div className="absolute bottom-1 left-1.5 text-[10px]">ðŸ¦’</div>
-            <div className="absolute bottom-1 right-1.5 text-[10px]">ðŸ˜</div>
-          </div>
-        )
-      case "Animaux":
-        return (
-          <div className="absolute inset-0 pointer-events-none border-[10px] border-[#7D6AF8]/20 flex justify-between items-center p-1">
-            <div className="absolute top-1.5 left-1.5 text-[8px]">ðŸ¾</div>
-            <div className="absolute top-1.5 right-1.5 text-[8px]">ðŸ¾</div>
-            <div className="absolute bottom-1.5 left-1.5 text-[8px]">ðŸ¾</div>
-            <div className="absolute bottom-1.5 right-1.5 text-[8px]">ðŸ¾</div>
-          </div>
-        )
-      case "Aucun":
-      default:
-        return (
-          <div className="absolute inset-0 pointer-events-none border-2 border-[#3B2416]/10 rounded-2xl" />
-        )
-    }
-  }
+  const renderFrameBorders = () => (
+    <div className="absolute inset-0 pointer-events-none" style={frameBorderStyle(decorativeFrame)} aria-hidden />
+  )
 
   const isLandscape = orientation === "Paysage"
   const aspectClass = isLandscape ? "aspect-[47/32]" : "aspect-[32/47]"

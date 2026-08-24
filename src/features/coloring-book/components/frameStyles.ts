@@ -92,9 +92,10 @@ export const FRAME_STYLES: Record<BookFrame, FrameStyle> = {
   Aucun: { borderWidth: "2px", borderImageSource: "none", borderImageSlice: "0", borderImageRepeat: "stretch", fallback: "#3B2416" },
 }
 
-export function frameBorderStyle(frame: BookFrame): CSSProperties {
+export function frameBorderStyle(frame: string): CSSProperties {
   if (frame === "Aucun") return { border: "2px solid rgba(59,36,22,0.1)" }
-  const s = FRAME_STYLES[frame]
+  const s = FRAME_STYLES[frame as BookFrame]
+  if (!s) return { border: "2px solid rgba(59,36,22,0.1)" }
   return {
     borderStyle: "solid",
     borderWidth: s.borderWidth,

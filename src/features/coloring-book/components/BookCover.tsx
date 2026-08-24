@@ -1,6 +1,7 @@
 import { memo } from "react"
 import { cn } from "@/lib/utils"
 import type { BookFrame, BookOrientation, CoverPalette, CoverTemplate } from "../types"
+import { frameBorderStyle } from "./frameStyles"
 
 export interface BookCoverProps {
   cover: CoverTemplate
@@ -40,15 +41,6 @@ const COVER_ART: Record<string, string> = {
   ia: "/illustrations/covers/cover-ia.svg",
 }
 
-const FRAME_BORDER: Record<BookFrame, string> = {
-  "Faso Dan Fani": "border-[12px] border-[#FF5E83]",
-  Bogolan: "border-[14px] border-[#3B2416]",
-  Nature: "border-[10px] border-[#20C997]/20",
-  Savane: "border-[10px] border-[#FFB300]/20",
-  Animaux: "border-[10px] border-[#7D6AF8]/20",
-  Aucun: "border-2 border-[#3B2416]/10",
-}
-
 function BookCoverComponent({
   cover,
   palette,
@@ -76,7 +68,7 @@ function BookCoverComponent({
         className,
       )}
     >
-      <div className={cn("pointer-events-none absolute inset-0 border-2", FRAME_BORDER[frame])} aria-hidden />
+      <div className="pointer-events-none absolute inset-0" style={frameBorderStyle(frame)} aria-hidden />
 
       <div className="z-10 flex items-center justify-between px-1 pt-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#3B2416]/40">Petit Baobab</span>
