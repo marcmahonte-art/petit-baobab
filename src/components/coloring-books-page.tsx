@@ -1934,45 +1934,6 @@ export function ColoringBooksPage() {
                   </motion.div>
                 </Card>
 
-                {/* Premium Upsell Card */}
-                <Card className="rounded-[24px] border border-[#6D4CFF]/25 p-5 bg-gradient-to-br from-[#F5F0FF] to-[#EFF6FF] shadow-sm flex flex-col gap-3 relative overflow-hidden">
-                  {/* decorative glow */}
-                  <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#6D4CFF]/10 pointer-events-none" />
-
-                  <div className="flex items-center gap-2 relative z-10">
-                    <div className="w-8 h-8 rounded-xl bg-[#6D4CFF] flex items-center justify-center shrink-0">
-                      <Sparkles className="w-4 h-4 text-white fill-white" />
-                    </div>
-                    <div>
-                      <span className="text-[12px] font-black text-[#4C3BAF] uppercase tracking-wider">Premium</span>
-                      <p className="text-[10px] font-semibold text-[#6D5DE8] leading-none">Accès illimité</p>
-                    </div>
-                    <span className="ml-auto text-[10px] font-black bg-[#6D4CFF] text-white px-2.5 py-1 rounded-full shadow-sm">
-                      <Flame className="w-3.5 h-3.5 inline-block" /> Populaire
-                    </span>
-                  </div>
-
-                  <ul className="flex flex-col gap-1.5 relative z-10">
-                    {[
-                      "Livres illimités sans filigrane",
-                      "Toutes les palettes et cadres",
-                      "Impression haute qualité incluse",
-                      "Bibliothèque de 500+ dessins",
-                    ].map((feat, i) => (
-                      <li key={i} className="flex items-center gap-2 text-[11px] font-semibold text-[#374151]">
-                        <Star className="w-3.5 h-3.5 fill-[#6D4CFF] text-[#6D4CFF] shrink-0" />
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="relative z-10">
-                    <Button className="w-full h-10 rounded-[14px] bg-[#6D4CFF] text-white hover:bg-[#6D5DE8] font-bold text-xs flex items-center justify-center gap-2 border-none cursor-pointer shadow-md shadow-[#6D4CFF]/25">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Découvrir Premium — 4,99 €/mois
-                    </Button>
-                  </motion.div>
-                </Card>
               </div>
             </motion.div>
           )}
