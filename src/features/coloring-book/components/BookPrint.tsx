@@ -29,7 +29,6 @@ function BookPrintComponent({ book, className }: BookPrintProps) {
             author={book.author}
             childName={book.childName}
             palette={book.palette}
-            frame={book.frame}
             style={book.style}
             pageNumbers={book.settings.pageNumbers}
             variant="print"

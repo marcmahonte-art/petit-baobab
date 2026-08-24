@@ -1,7 +1,6 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { frameBorderStyle } from "./frameStyles"
 
 
 // Cover Visual Dynamic Preview Component
@@ -12,7 +11,6 @@ export const BookPreviewCanvas = ({
   subtitle,
   childName,
   author,
-  decorativeFrame,
   orientation,
   scale = 1.0,
 }: { 
@@ -22,7 +20,6 @@ export const BookPreviewCanvas = ({
   subtitle: string
   childName: string
   author: string
-  decorativeFrame: string
   orientation: string
   scale?: number
 
@@ -49,10 +46,6 @@ export const BookPreviewCanvas = ({
     "ia": "/illustrations/covers/cover-ia.svg",
   }
 
-  const renderFrameBorders = () => (
-    <div className="absolute inset-0 pointer-events-none" style={frameBorderStyle(decorativeFrame)} aria-hidden />
-  )
-
   const isLandscape = orientation === "Paysage"
   const aspectClass = isLandscape ? "aspect-[47/32]" : "aspect-[32/47]"
 
@@ -70,8 +63,6 @@ export const BookPreviewCanvas = ({
         height: isLandscape ? "238px" : "410px",
       }}
     >
-      {renderFrameBorders()}
-
       <div className="w-full flex items-center justify-between z-10 px-1 pt-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#3B2416]/40 leading-none">
           Petit Baobab

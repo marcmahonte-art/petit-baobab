@@ -2,8 +2,7 @@ import { memo } from "react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import type { BookPage as BookPageModel } from "../types"
-import type { BookStyle, BookFrame, CoverPalette, CoverTemplate } from "../types"
-import { frameBorderStyle } from "./frameStyles"
+import type { BookStyle, CoverPalette, CoverTemplate } from "../types"
 import { BookCover } from "./BookCover"
 import { BookFooter } from "./BookFooter"
 
@@ -16,7 +15,6 @@ export interface BookPageProps {
   author?: string
   childName: string
   palette: CoverPalette
-  frame: BookFrame
   style: BookStyle
   pageNumbers: boolean
   /** "print" = rendu statique (aucune animation), "interactive" = écran. */
@@ -39,7 +37,6 @@ function BookPageComponent({
   author,
   childName,
   palette,
-  frame,
   style,
   pageNumbers,
   variant = "interactive",
@@ -57,7 +54,6 @@ function BookPageComponent({
           subtitle={subtitle}
           childName={childName}
           author={author}
-          frame={frame}
           variant={variant}
           className="h-full"
         />
@@ -100,14 +96,6 @@ function BookPageComponent({
   const src = page.svgPath || page.image
   return (
     <div className={cn("relative flex h-full w-full flex-col justify-between", className)}>
-      {frame !== "Aucun" && !isPrint && (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={frameBorderStyle(frame)}
-          aria-hidden
-        />
-      )}
-
       <div className="z-10 flex w-full justify-between text-[10px] font-black uppercase tracking-widest text-[#6D4CFF]/40">
         <span>{title}</span>
         <span>Coloriage</span>

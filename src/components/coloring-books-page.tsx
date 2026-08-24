@@ -31,15 +31,12 @@ import {
   Compass,
   FileText,
   HardDrive,
-  PawPrint,
-  Leaf,
   Flag,
   Pencil,
   Save,
   Contrast,
   Minus,
   Palette,
-  Ban,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -71,7 +68,6 @@ import { useProfileStore } from "@/lib/profile-store"
 import { storageService } from "@/lib/storageService"
 import { bookService } from "@/features/books"
 import type { CoverTemplate, CoverPalette, BookStyle, BookFrame, BookFormat, BookOrientation } from "@/features/books/types"
-import { frameBorderStyle } from "@/features/coloring-book/components/frameStyles"
 
 export function ColoringBooksPage() {
   const bookIdRef = useRef<string | null>(null)
@@ -105,8 +101,6 @@ export function ColoringBooksPage() {
     setBookFormat,
     orientation,
     setOrientation,
-    decorativeFrame,
-    setDecorativeFrame,
     pageNumbers,
     setPageNumbers,
     addTitlePage,
@@ -160,7 +154,7 @@ export function ColoringBooksPage() {
   // Modèle de domaine unique consommé par l'impression et le PDF.
   const book: ColoringBook = useMemo(
     () => toColoringBook(useBookStore.getState()),
-    [bookPages, title, subtitle, author, childName, selectedCover, selectedPalette, drawingStyle, decorativeFrame, bookFormat, orientation, pageNumbers, addTitlePage, belongsTo, optimizeInk, rectoOnly, cutMarks, bindingMargin, bleed],
+    [bookPages, title, subtitle, author, childName, selectedCover, selectedPalette, drawingStyle, bookFormat, orientation, pageNumbers, addTitlePage, belongsTo, optimizeInk, rectoOnly, cutMarks, bindingMargin, bleed],
   )
 
   const [savedDrawings, setSavedDrawings] = useState<SavedDrawing[]>([])
@@ -337,7 +331,7 @@ export function ColoringBooksPage() {
         cover: selectedCover as CoverTemplate,
         palette: selectedPalette as CoverPalette,
         style: drawingStyle as BookStyle,
-        frame: decorativeFrame as BookFrame,
+        frame: "Aucun" as BookFrame,
         format: bookFormat as BookFormat,
         orientation: orientation as BookOrientation,
         pages: pagesRef,
@@ -647,7 +641,6 @@ export function ColoringBooksPage() {
                       subtitle={subtitle}
                       childName={childName}
                       author={author}
-                      decorativeFrame={decorativeFrame}
                       orientation={orientation}
                     />
                   </div>
@@ -784,7 +777,6 @@ export function ColoringBooksPage() {
                             subtitle={subtitle}
                             childName={childName}
                             author={author}
-                            decorativeFrame={decorativeFrame}
                             orientation={orientation}
                           />
                           <div className="grid grid-cols-2 gap-3 text-xs font-semibold bg-white p-4 rounded-xl border border-neutral-100">
@@ -1085,38 +1077,6 @@ export function ColoringBooksPage() {
                           })}
                         </div>
                       </div>
-
-                      <div className="bg-white rounded-[20px] border border-[#E5E7EB]/80 p-4 shadow-sm">
-                        <h4 className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider mb-3">Cadre décoratif</h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {[
-                            { id: "Faso Dan Fani", name: "🇧🇫 Faso Dan Fani", desc: "Tissu" },
-                            { id: "Bogolan", name: "🇲🇱 Bogolan", desc: "Motifs" },
-                            { id: "Nature", name: "Nature", desc: "Feuilles", Icon: Leaf },
-                            { id: "Savane", name: "Savane", desc: "Animaux" },
-                            { id: "Animaux", name: "Animaux", desc: "Empreintes", Icon: PawPrint },
-                            { id: "Aucun", name: "Aucun", desc: "Sans cadre", Icon: Ban },
-                          ].map((fr) => {
-                            const active = decorativeFrame === fr.id
-                            return (
-                              <button
-                                key={fr.id}
-                                onClick={() => setDecorativeFrame(fr.id)}
-                                className={cn(
-                                  "rounded-[14px] border-2 p-3 flex flex-col items-center gap-1 cursor-pointer transition-all",
-                                  active
-                                    ? "border-[#6D4CFF] ring-2 ring-[#6D4CFF]/15 bg-[#6D4CFF]/5"
-                                    : "border-[#E5E7EB] hover:border-[#6D4CFF]/40"
-                                )}
-                              >
-                                {fr.Icon && <fr.Icon className="w-4 h-4 mb-1 text-[#3B2416]" />}
-                                <span className="text-[10px] font-black text-[#1F2937] text-center leading-tight">{fr.name}</span>
-                                <span className="text-[8px] font-bold text-[#64748B]">{fr.desc}</span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
                     </motion.div>
                   )}
 
@@ -1245,7 +1205,6 @@ export function ColoringBooksPage() {
                       subtitle={subtitle}
                       childName={childName}
                       author={author}
-                      decorativeFrame={decorativeFrame}
                       orientation={orientation}
                     />
                   </div>
@@ -1364,7 +1323,6 @@ export function ColoringBooksPage() {
                               subtitle={subtitle}
                               childName={childName}
                               author={author}
-                              decorativeFrame={decorativeFrame}
                               orientation={orientation}
                               scale={zoomScale}
                             />
@@ -1395,15 +1353,6 @@ export function ColoringBooksPage() {
                         ) : (
                           // Drawing pages
                           <div className="w-full h-full flex flex-col justify-between items-center relative">
-                            {/* Selected decorative frame inside book pages */}
-                            {decorativeFrame !== "Aucun" && (
-                              <div
-                                className="absolute inset-0 pointer-events-none"
-                                style={frameBorderStyle(decorativeFrame)}
-                                aria-hidden
-                              />
-                            )}
-
                             {/* Top header details */}
                             <div className="w-full flex justify-between items-center text-[10px] font-black text-[#6D4CFF]/40 z-10">
                               <span className="uppercase tracking-widest">{title}</span>
@@ -1553,11 +1502,6 @@ export function ColoringBooksPage() {
                       <span className="font-extrabold">{drawingStyle}</span>
                     </div>
 
-                    <div className="flex justify-between py-1.5 border-b border-neutral-50">
-                      <span className="text-[#64748B]">Bordure / Cadre</span>
-                      <span className="font-extrabold">{decorativeFrame}</span>
-                    </div>
-
                     <div className="flex justify-between py-2 bg-[#FAFAFC] p-2.5 rounded-xl border border-neutral-100 mt-1">
                       <span className="text-[#64748B] font-bold">PDF Estimé</span>
                       <span className="font-black text-[#20C997]">{calculatedPdfWeight} MB</span>
@@ -1576,7 +1520,6 @@ export function ColoringBooksPage() {
                       { label: "Dessins sélectionnés", done: selectedIds.length > 0 },
                       { label: "Couverture personnalisée", done: true },
                       { label: "Numérotation des pages", done: pageNumbers },
-                      { label: "Cadre décoratif", done: decorativeFrame !== "Aucun" },
                       { label: "Qualité impression 300 DPI", done: true },
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3 text-xs font-bold text-[#1F2937]">

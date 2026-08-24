@@ -1,7 +1,6 @@
 import { memo } from "react"
 import { cn } from "@/lib/utils"
-import type { BookFrame, BookOrientation, CoverPalette, CoverTemplate } from "../types"
-import { frameBorderStyle } from "./frameStyles"
+import type { BookOrientation, CoverPalette, CoverTemplate } from "../types"
 
 export interface BookCoverProps {
   cover: CoverTemplate
@@ -10,7 +9,6 @@ export interface BookCoverProps {
   subtitle?: string
   childName?: string
   author?: string
-  frame?: BookFrame
   orientation?: BookOrientation
   /** "print" = rendu statique pour impression/PDF, "interactive" = écran. */
   variant?: "interactive" | "print"
@@ -48,7 +46,6 @@ function BookCoverComponent({
   subtitle,
   childName,
   author,
-  frame = "Aucun",
   orientation = "Portrait",
   variant = "interactive",
   className,
@@ -68,8 +65,6 @@ function BookCoverComponent({
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0" style={frameBorderStyle(frame)} aria-hidden />
-
       <div className="z-10 flex items-center justify-between px-1 pt-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#3B2416]/40">Petit Baobab</span>
         <div className="flex gap-0.5">
