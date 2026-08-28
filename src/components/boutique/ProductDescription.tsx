@@ -65,6 +65,21 @@ export function ProductDescription({ product, reviews }: ProductDescriptionProps
         </p>
       </div>
 
+      {/* Kit contents */}
+      {product.kitContents && product.kitContents.length > 0 && (
+        <div className="bg-white p-6 md:p-8 rounded-[20px] border border-[#E5E0D5] space-y-4">
+          <h3 className="text-xl font-bold text-[#3B2416]">Ce que contient le kit</h3>
+          <ul className="space-y-2">
+            {product.kitContents.map((item) => (
+              <li key={item} className="flex items-center gap-3 text-sm md:text-base text-[#3B2416]/80">
+                <CheckCircle className="w-5 h-5 text-[#1D9E75] shrink-0" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Reviews Section */}
       <div className="bg-white p-6 md:p-8 rounded-[20px] border border-[#E5E0D5] space-y-6">
         <div className="flex items-center justify-between">

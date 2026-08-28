@@ -3,7 +3,8 @@ export type CategorySlug =
   | "color-by-number"
   | "kit-de-coloriage"
   | "t-shirts"
-  | "stickers";
+  | "stickers"
+  | "jeux-et-jouets";
 
 interface CategoryColor {
   base: string;

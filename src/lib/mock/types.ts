@@ -20,6 +20,7 @@ export interface Product {
   tags: string[];
   isNew?: boolean;
   bestSeller?: boolean;
+  kitContents?: string[];
 }
 
 export type CategorySlug =
@@ -27,7 +28,8 @@ export type CategorySlug =
   | "color-by-number"
   | "kit-de-coloriage"
   | "t-shirts"
-  | "stickers";
+  | "stickers"
+  | "jeux-et-jouets";
 
 export interface Category {
   id: string;

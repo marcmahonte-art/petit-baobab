@@ -46,4 +46,13 @@ export const CATEGORIES: Category[] = [
     image: "/illustrations/stickers-categories.webp",
     productCount: 10,
   },
+  {
+    id: "cat-6",
+    slug: "jeux-et-jouets",
+    title: "Jeux et Jouets",
+    description: "Des kits créatifs et éducatifs pour apprendre en s'amusant.",
+    icon: "Puzzle",
+    image: "/illustrations/livres-coloriage-categories.webp",
+    productCount: 1,
+  },
 ];

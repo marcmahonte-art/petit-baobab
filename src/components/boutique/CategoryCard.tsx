@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Category, CategorySlug } from "@/lib/mock/types";
-import { Palette, Hash, Code, Shirt, Sticker } from "lucide-react";
+import { Palette, Hash, Code, Shirt, Sticker, Puzzle } from "lucide-react";
 
 interface CategoryCardProps {
   category: Category;
@@ -16,6 +16,7 @@ const ACCENTS: Record<CategorySlug, { bg: string; text: string }> = {
   "kit-de-coloriage": { bg: "bg-[#FFF4CF]", text: "text-[#FFB300]" },      // orange
   "t-shirts": { bg: "bg-[#FFE8EF]", text: "text-[#FF5E83]" },           // rose
   stickers: { bg: "bg-[#E8F5FF]", text: "text-[#1194FF]" },             // bleu
+  "jeux-et-jouets": { bg: "bg-[#EAF8EE]", text: "text-[#20C997]" },    // vert
 };
 
 export function CategoryCard({ category, isSelected = false, onClick }: CategoryCardProps) {
@@ -33,6 +34,8 @@ export function CategoryCard({ category, isSelected = false, onClick }: Category
         return <Shirt className="w-5 h-5" />;
       case "Sticker":
         return <Sticker className="w-5 h-5" />;
+      case "Puzzle":
+        return <Puzzle className="w-5 h-5" />;
       default:
         return <Palette className="w-5 h-5" />;
     }
