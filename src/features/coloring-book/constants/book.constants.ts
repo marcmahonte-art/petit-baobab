@@ -183,6 +183,7 @@ export const libraryDrawings: LibraryDrawing[] = [
 
 export const categories: DrawingCategory[] = [
   { id: "all", label: "Tous", icon: LayoutGrid },
+  { id: "my-drawings", label: "Mes dessins", icon: Palette },
   { id: "animals", label: "Animaux", icon: Cat },
   { id: "culture", label: "Afrique", icon: Drum },
   { id: "jobs", label: "Métiers", icon: Briefcase },

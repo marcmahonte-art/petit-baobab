@@ -17,10 +17,11 @@ export interface LibraryDrawing {
   image: string
   category: string
   isPersonal?: boolean
+  origin?: "coloriage" | "ia" | "custom"
+  isColored?: boolean
   /** Optional vector SVG string (colored drawing) for high-quality PDF export */
   svg?: string
 }
-
 
 export interface DrawingCategory {
   id: string

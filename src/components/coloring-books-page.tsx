@@ -56,9 +56,11 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import Image from "next/image"
+import Link from "next/link"
 import { categories, libraryDrawings } from "@/features/coloring-book/constants/book.constants"
 import { useBookWizard } from "@/features/coloring-book/hooks/useBookWizard"
 import type { SavedDrawing } from "@/features/drawings/types"
+import type { LibraryDrawing } from "@/features/coloring-book/types/Book"
 import { useBookStore } from "@/features/coloring-book/store/useBookStore"
 import { drawingService } from "@/features/drawings/DrawingService"
 import { BookHeader } from "@/features/coloring-book/components/BookHeader"
@@ -160,36 +162,54 @@ export function ColoringBooksPage() {
   const [savedDrawings, setSavedDrawings] = useState<SavedDrawing[]>([])
 
   useEffect(() => {
-    drawingService.list().then((list) => {
-      window.setTimeout(() => {
-        setSavedDrawings(list)
-        
-        // Populate customDrawings list in useBookStore
-        const mappedList = list.map((draw) => ({
-          id: draw.id,
-          name: draw.name,
-          image: draw.isColored ? draw.image : draw.template.image,
-          category: draw.category,
-          isPersonal: draw.isColored,
-        }))
-        useBookStore.getState().setCustomDrawings(mappedList)
-      }, 0)
-    }).catch((e) => {
-      console.error("Error loading saved drawings for book selector:", e)
-    })
-  }, [])
+    drawingService
+      .list()
+      .then((list) => {
+        // Déduplication par identifiant unique
+        const uniqueMap = new Map<string, SavedDrawing>()
+        for (const item of list) {
+          if (!uniqueMap.has(item.id)) {
+            uniqueMap.set(item.id, item)
+          }
+        }
+        const uniqueList = Array.from(uniqueMap.values())
 
-  const allAvailableDrawings = [
-    ...libraryDrawings,
-    ...savedDrawings.map((draw) => ({
+        window.setTimeout(() => {
+          setSavedDrawings(uniqueList)
+
+          // Populate customDrawings list in useBookStore
+          const mappedList: LibraryDrawing[] = uniqueList.map((draw) => ({
+            id: draw.id,
+            name: draw.name,
+            image: draw.isColored ? draw.image : (draw.image || draw.template?.image || ""),
+            category: draw.category || "custom",
+            isPersonal: true,
+            origin: draw.origin,
+            isColored: draw.isColored,
+            svg: draw.isColored ? getDrawingSvg(draw.id) : undefined,
+          }))
+          useBookStore.getState().setCustomDrawings(mappedList)
+        }, 0)
+      })
+      .catch((e) => {
+        console.error("Error loading saved drawings for book selector:", e)
+      })
+  }, [activeProfileId])
+
+  const allAvailableDrawings: LibraryDrawing[] = useMemo(() => {
+    const personalMapped: LibraryDrawing[] = savedDrawings.map((draw) => ({
       id: draw.id,
       name: draw.name,
-      image: draw.isColored ? draw.image : draw.template.image,
-      category: draw.category,
-      isPersonal: draw.isColored,
+      image: draw.isColored ? draw.image : (draw.image || draw.template?.image || ""),
+      category: draw.category || "custom",
+      isPersonal: true,
+      origin: draw.origin,
+      isColored: draw.isColored,
       svg: draw.isColored ? getDrawingSvg(draw.id) : undefined,
-    })),
-  ]
+    }))
+
+    return [...libraryDrawings, ...personalMapped]
+  }, [savedDrawings])
 
   // Auto-fill book info from active profile (only when no book has been loaded)
   useEffect(() => {
@@ -276,11 +296,20 @@ export function ColoringBooksPage() {
   }
 
   // Filter drawings list
-  const filteredDrawings = allAvailableDrawings.filter((drawing) => {
-    const matchesSearch = drawing.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCat === "all" || drawing.category === selectedCat
-    return matchesSearch && matchesCategory
-  })
+  const filteredDrawings = useMemo(() => {
+    return allAvailableDrawings.filter((drawing) => {
+      const matchesSearch = !searchTerm || drawing.name.toLowerCase().includes(searchTerm.toLowerCase())
+      let matchesCategory = false
+      if (selectedCat === "all") {
+        matchesCategory = true
+      } else if (selectedCat === "my-drawings") {
+        matchesCategory = Boolean(drawing.isPersonal)
+      } else {
+        matchesCategory = drawing.category === selectedCat
+      }
+      return matchesSearch && matchesCategory
+    })
+  }, [allAvailableDrawings, searchTerm, selectedCat])
 
   // UX: show only the first 8 drawings by default; "Voir plus" reveals the rest.
   const visibleDrawings = expanded
@@ -469,8 +498,20 @@ export function ColoringBooksPage() {
                             )}
 
                             {draw.isPersonal && (
-                              <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#22C55E] text-white text-[9px] font-black uppercase tracking-wider z-10 shadow-sm">
-                                Mes dessins
+                              <div className="absolute top-2 left-2 z-10 shadow-sm">
+                                {draw.origin === "ia" ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-[#7D6AF8] text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" /> IA
+                                  </span>
+                                ) : draw.isColored ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-[#1D9E75] text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                                    <Palette className="w-2.5 h-2.5" /> Coloré
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full bg-[#F59E0B] text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                                    <Pencil className="w-2.5 h-2.5" /> Créé
+                                  </span>
+                                )}
                               </div>
                             )}
 
@@ -499,8 +540,40 @@ export function ColoringBooksPage() {
                       })}
                     </AnimatePresence>
 
-                    {filteredDrawings.length === 0 && (
-                      <div className="col-span-4 text-center py-10 text-xs font-bold text-[#64748B]">
+                    {filteredDrawings.length === 0 && selectedCat === "my-drawings" && (
+                      <div className="col-span-2 sm:col-span-4 flex flex-col items-center justify-center text-center p-6 sm:p-8 bg-[#FAFAFC] rounded-[24px] border border-dashed border-[#E5E7EB] gap-4 my-2">
+                        <div className="w-14 h-14 rounded-2xl bg-[#6D4CFF]/10 text-[#6D4CFF] flex items-center justify-center shadow-inner">
+                          <Palette className="w-7 h-7" />
+                        </div>
+                        <div className="space-y-1 max-w-md">
+                          <h3 className="text-base font-extrabold text-[#1F2937]">
+                            Tes dessins apparaîtront ici 🎨
+                          </h3>
+                          <p className="text-xs text-[#64748B] leading-relaxed">
+                            Crée ton premier dessin avec l&apos;IA ou colorie une illustration pour la retrouver ici et l&apos;ajouter à ton livre de coloriage.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                          <Link
+                            href="/learn/magic-drawing"
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#6D4CFF] text-white text-xs font-extrabold hover:bg-[#5B3FDF] transition-colors shadow-sm cursor-pointer"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Créer un dessin avec l&apos;IA</span>
+                          </Link>
+                          <Link
+                            href="/learn/coloriage"
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white border border-[#E5E7EB] text-[#1F2937] text-xs font-extrabold hover:bg-neutral-50 transition-colors shadow-sm cursor-pointer"
+                          >
+                            <Palette className="w-3.5 h-3.5 text-[#22C55E]" />
+                            <span>Commencer à colorier</span>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {filteredDrawings.length === 0 && selectedCat !== "my-drawings" && (
+                      <div className="col-span-2 sm:col-span-4 text-center py-10 text-xs font-bold text-[#64748B]">
                         Aucun dessin trouvé dans cette catégorie.
                       </div>
                     )}
