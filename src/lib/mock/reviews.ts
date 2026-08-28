@@ -23,9 +23,9 @@ export const REVIEWS: Review[] = [
     id: "rev-3",
     productId: "prod-2",
     author: "Aïcha S.",
-    rating: 4,
+    rating: 5,
     date: "20 Mai 2026",
-    comment: "Très bon exercice pour l'apprentissage des chiffres avec mon fils de 5 ans.",
+    comment: "Ma fille adore les magnifiques robes des princesses et tous les détails culturels. Téléchargement très rapide !",
     verified: true,
   },
   {

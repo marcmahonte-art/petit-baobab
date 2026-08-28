@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
+  async redirects() {
+    return [
+      {
+        source: "/boutique/color-by-number-contes-africains",
+        destination: "/boutique/princesse-d-afrique",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
