@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Header } from "@/components/landing/Header";
 import MainFooter from "@/components/landing/MainFooter";
 import { PricingPageContent } from "@/components/pricing-page-content";
 import { PricingHowItWorks } from "@/components/pricing/pricing-how-it-works";
 import { PricingFaqSection } from "@/components/pricing/pricing-faq-section";
-import { Sparkles, ShieldCheck, HeartHandshake, CheckCircle } from "lucide-react";
+import { Sparkles, ShieldCheck, HeartHandshake, CheckCircle, MessageCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Tarifs et formules | Petit Baobab",
@@ -52,8 +53,8 @@ export default function TarificationPage() {
             {" "}Que vous soyez un parent souhaitant partager des moments créatifs à la maison ou une école cherchant à enrichir l'apprentissage en classe, Petit Baobab propose une formule adaptée à vos besoins.
           </p>
 
-          {/* Bandeau de réassurance paiement local */}
-          <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 rounded-2xl bg-white/90 border border-[#F0E4D4] shadow-xs text-xs sm:text-sm font-bold text-[#26190B]">
+          {/* Bandeau de réassurance paiement local & WhatsApp */}
+          <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 px-4 sm:px-6 py-2.5 rounded-2xl bg-white/95 border border-[#F0E4D4] shadow-xs text-xs sm:text-sm font-bold text-[#26190B]">
             <span className="text-[#008560] flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 fill-[#008560]/20" />
               Commencez gratuitement
@@ -61,8 +62,41 @@ export default function TarificationPage() {
             <span className="text-[#D0C2B4]">·</span>
             <span className="flex items-center gap-1.5 text-[#5A4838]">
               <ShieldCheck className="w-4 h-4 text-[#4A4EBE]" />
-              Paiement simple et sécurisé (Orange Money · Moov Money)
+              Paiement sécurisé par
             </span>
+            <div className="inline-flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-[#FFF9F2] px-2.5 py-1 rounded-lg border border-[#FFE2BE] shadow-2xs">
+                <Image
+                  src="/payments/orange-money.png"
+                  alt="Orange Money"
+                  width={24}
+                  height={18}
+                  className="h-4 sm:h-4.5 w-auto object-contain"
+                />
+                <span className="text-[11px] sm:text-xs font-black text-[#D97706]">Orange Money</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-[#F0F8FD] px-2.5 py-1 rounded-lg border border-[#D0E6F8] shadow-2xs">
+                <Image
+                  src="/payments/moov-money.png"
+                  alt="Moov Money"
+                  width={24}
+                  height={18}
+                  className="h-4 sm:h-4.5 w-auto object-contain"
+                />
+                <span className="text-[11px] sm:text-xs font-black text-[#0C447C]">Moov Money</span>
+              </div>
+            </div>
+            <span className="text-[#D0C2B4] hidden md:inline">·</span>
+            <a
+              href="https://wa.me/22664556565?text=Bonjour%20Petit%20Baobab%2C%20j%27ai%20une%20question%20sur%20vos%20tarifs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#E7F6ED] hover:bg-[#D3EFE0] text-[#00694B] font-extrabold text-xs transition-colors border border-[#C5E8D3] shadow-2xs"
+              title="Assistance WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4 fill-[#008560] text-[#008560]" />
+              <span>Assistance WhatsApp</span>
+            </a>
           </div>
         </div>
 

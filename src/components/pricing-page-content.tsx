@@ -64,7 +64,7 @@ export function PricingPageContent() {
       id: "super-baobab",
       name: "Super Baobab",
       tagline: "La formule préférée pour des créations infinies",
-      badge: "⭐ Coup de cœur des familles",
+      badge: "Coup de cœur des familles",
       price: "4 500 FCFA",
       period: "/ mois (3 mois · 13 500 FCFA)",
       credits: "250",
@@ -303,11 +303,35 @@ export function PricingPageContent() {
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </button>
 
-                  <p className="text-[11px] text-center font-medium text-[#8C7665] mt-2.5">
-                    {plan.space === "school"
-                      ? "Accès immédiat · Idéal pour écoles et associations"
-                      : "Paiement Orange Money · Moov Money"}
-                  </p>
+                  <div className="text-[11px] text-center font-medium text-[#8C7665] mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">
+                    {plan.space === "school" ? (
+                      <span>Accès immédiat · Idéal pour écoles et associations</span>
+                    ) : (
+                      <>
+                        <span>Paiement sécurisé :</span>
+                        <span className="inline-flex items-center gap-1 bg-[#FFF9F2] px-1.5 py-0.5 rounded border border-[#FFE2BE]">
+                          <Image
+                            src="/payments/orange-money.png"
+                            alt="Orange Money"
+                            width={16}
+                            height={16}
+                            className="h-3.5 w-auto object-contain inline"
+                          />
+                          <span className="text-[10px] font-bold text-[#D97706]">Orange</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-[#F0F8FD] px-1.5 py-0.5 rounded border border-[#D0E6F8]">
+                          <Image
+                            src="/payments/moov-money.png"
+                            alt="Moov Money"
+                            width={16}
+                            height={16}
+                            className="h-3.5 w-auto object-contain inline"
+                          />
+                          <span className="text-[10px] font-bold text-[#0C447C]">Moov</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );
@@ -320,13 +344,27 @@ export function PricingPageContent() {
             <ShieldCheck className="w-5 h-5 text-[#008560]" />
             <span>Paiement 100% sécurisé sans carte bancaire</span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full bg-[#FFF0E6] text-[#D97706] font-bold text-xs border border-[#FFE2BE]">
-              Orange Money
-            </span>
-            <span className="px-3 py-1 rounded-full bg-[#EBF5FB] text-[#0C447C] font-bold text-xs border border-[#D0E6F8]">
-              Moov Money
-            </span>
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-[#FFE2BE] shadow-2xs">
+              <Image
+                src="/payments/orange-money.png"
+                alt="Orange Money"
+                width={26}
+                height={20}
+                className="h-5 w-auto object-contain"
+              />
+              <span className="font-extrabold text-xs text-[#D97706]">Orange Money</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-[#D0E6F8] shadow-2xs">
+              <Image
+                src="/payments/moov-money.png"
+                alt="Moov Money"
+                width={26}
+                height={20}
+                className="h-5 w-auto object-contain"
+              />
+              <span className="font-extrabold text-xs text-[#0C447C]">Moov Money</span>
+            </div>
             <span className="hidden sm:inline-block font-semibold text-[#8C7665]">
               · Activation instantanée de vos étoiles
             </span>

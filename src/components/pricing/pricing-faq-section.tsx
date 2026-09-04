@@ -21,7 +21,7 @@ export function PricingFaqSection() {
     {
       question: "Comment fonctionne le paiement par Orange Money et Moov Money ?",
       answer:
-        "Le paiement est 100% simple, local et sécurisé. Lors de la commande, vous indiquez votre numéro de téléphone et vous recevez un message de confirmation sécurisé sur votre mobile pour valider la transaction. Aucune carte bancaire n'est nécessaire.",
+        "Le paiement est 100% simple, local et sécurisé via Orange Money et Moov Money. Lors de la commande, vous indiquez simplement votre numéro de téléphone et vous validez la transaction directement sur votre mobile. Vos étoiles sont créditées instantanément. En cas de question, notre équipe vous assiste en direct sur WhatsApp via notre bouton d'assistance.",
     },
     {
       question: "Puis-je utiliser mon compte sur plusieurs appareils (tablette, téléphone) ?",
@@ -114,28 +114,31 @@ export function PricingFaqSection() {
       </div>
 
       {/* Bloc contact WhatsApp direct */}
-      <div className="max-w-3xl mx-auto mt-8 p-6 sm:p-7 rounded-[26px] bg-gradient-to-r from-[#E7F6ED] to-[#F1F9F4] border border-[#C5E8D3] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+      <div className="max-w-3xl mx-auto mt-8 p-6 sm:p-7 rounded-[26px] bg-gradient-to-r from-[#E7F6ED] via-[#F2FBF6] to-[#E7F6ED] border-2 border-[#A3E3BE] flex flex-col sm:flex-row items-center justify-between gap-5 shadow-[0_10px_25px_rgba(0,133,96,0.08)]">
         <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="w-12 h-12 rounded-2xl bg-[#008560] text-white flex items-center justify-center shrink-0 shadow-md">
-            <MessageCircle className="w-6 h-6" />
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#008560] text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-[#008560]/15">
+            <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
           <div>
-            <h4 className="text-[16px] sm:text-[17px] font-extrabold text-[#003827]">
-              Une question spécifique ou besoin d'un devis scolaire ?
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008560]/10 text-[#00694B] text-[11px] font-black uppercase tracking-wider mb-1">
+              <span>Assistance & Devis WhatsApp</span>
+            </div>
+            <h4 className="text-[16px] sm:text-[18px] font-black text-[#003827]">
+              Une question spécifique, besoin d'aide pour payer ou devis école ?
             </h4>
-            <p className="text-xs sm:text-[13px] text-[#2F614E] font-medium mt-0.5">
-              Notre équipe d'assistance est joignable directement sur WhatsApp avec le sourire.
+            <p className="text-xs sm:text-[13px] text-[#2F614E] font-medium mt-1">
+              Notre équipe d'assistance est à votre écoute directement sur WhatsApp pour vous guider.
             </p>
           </div>
         </div>
 
         <a
-          href="https://wa.me/22600000000?text=Bonjour%20Petit%20Baobab%2C%20j%27ai%20une%20question%20sur%20vos%20formules%20de%20tarifs"
+          href="https://wa.me/22664556565?text=Bonjour%20Petit%20Baobab%2C%20j%27ai%20une%20question%20sur%20vos%20formules%20de%20tarifs"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#008560] text-white font-extrabold text-xs sm:text-sm hover:bg-[#006E50] transition-colors shrink-0 shadow-sm"
+          className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#008560] hover:bg-[#006E50] text-white font-extrabold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0 shadow-md shadow-[#008560]/20"
         >
-          <Sparkles className="w-4 h-4 text-[#7DF9C6]" />
+          <MessageCircle className="w-5 h-5 fill-white text-white" />
           <span>Discuter sur WhatsApp</span>
         </a>
       </div>

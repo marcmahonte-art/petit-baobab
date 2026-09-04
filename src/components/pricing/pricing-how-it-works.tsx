@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Gift, Palette, Sparkles, RotateCcw, Smartphone, CheckCircle2 } from "lucide-react";
 
 export function PricingHowItWorks() {
@@ -36,6 +37,7 @@ export function PricingHowItWorks() {
       themeColor: "text-[#C026D3]",
       bgColor: "bg-[#FAE8FF]",
       badge: "Local & Simple",
+      isPayment: true,
     },
   ];
 
@@ -55,7 +57,8 @@ export function PricingHowItWorks() {
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FFAE2E]/20 text-[#835400] text-xs font-black uppercase tracking-wide mb-1">
-              <span>🎁 Plan Gratuit Inclus pour tous</span>
+              <Gift className="w-3.5 h-3.5 text-[#835400] shrink-0" />
+              <span>Plan Gratuit Inclus pour tous</span>
             </div>
             <h3 className="text-[18px] sm:text-[20px] font-black text-[#26190B]">
               3 coloriages magiques offerts chaque jour à votre enfant
@@ -113,6 +116,30 @@ export function PricingHowItWorks() {
                 <p className="text-xs text-[#736355] leading-relaxed font-medium">
                   {step.desc}
                 </p>
+
+                {step.isPayment && (
+                  <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-[#F5E6F7]">
+                    <div className="bg-[#FFF4E5] px-1.5 py-0.5 rounded-md border border-[#FFE2BE] shadow-2xs flex items-center">
+                      <Image
+                        src="/payments/orange-money.png"
+                        alt="Orange Money"
+                        width={20}
+                        height={16}
+                        className="h-3.5 w-auto object-contain"
+                      />
+                    </div>
+                    <div className="bg-[#EBF5FB] px-1.5 py-0.5 rounded-md border border-[#D0E6F8] shadow-2xs flex items-center">
+                      <Image
+                        src="/payments/moov-money.png"
+                        alt="Moov Money"
+                        width={20}
+                        height={16}
+                        className="h-3.5 w-auto object-contain"
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-[#8C7665]">Direct & sécurisé</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

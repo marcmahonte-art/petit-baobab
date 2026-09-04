@@ -39,7 +39,7 @@ export default function MainFooter() {
               <li><a className="hover:text-[#6D4CFF]" href="/about">À propos</a></li>
               <li><a className="hover:text-[#6D4CFF]" href="#">Notre mission</a></li>
               <li><a className="hover:text-[#6D4CFF]" href="#">Blog</a></li>
-              <li><a className="hover:text-[#6D4CFF]" href="#">Contact</a></li>
+              <li><a className="hover:text-[#6D4CFF]" href="https://wa.me/22664556565" target="_blank" rel="noopener noreferrer">Contact (WhatsApp)</a></li>
             </ul>
           </div>
 
