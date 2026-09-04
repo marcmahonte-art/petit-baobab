@@ -88,27 +88,35 @@ export function PricingPageContent() {
       name: "École / Pro",
       tagline: "Conçu pour les classes, ateliers & enseignants",
       badge: "Pour les éducateurs",
-      price: "25 000 FCFA",
-      period: "par mois · Sans engagement",
-      credits: "1 000",
-      creditsLabel: "étoiles / mois",
+      price: "Sur devis",
+      period: "Formule sur-mesure pour vos classes",
+      credits: "Sur-mesure",
+      creditsLabel: "étoiles adaptées à vos besoins",
       icon: School,
-      ctaText: "Choisir École / Pro",
+      ctaText: "Demander un devis",
       space: "school",
       features: [
-        "1 000 étoiles renouvelées chaque mois",
+        "Volume d'étoiles adapté à votre établissement",
         "Tous les styles de dessin",
         "Livres et jeux complets",
         "Téléchargement illimité",
-        "Gestion multi-utilisateurs",
-        "Support prioritaire",
+        "Gestion multi-utilisateurs pour vos classes",
+        "Support prioritaire & accompagnement dédié",
       ],
       theme: "green",
     },
   ];
 
   const handleChoose = (plan: PlanItem) => {
-    if (plan.space === "school") {
+    if (plan.id === "ecole-pro") {
+      window.open(
+        "https://wa.me/22664556565?text=" +
+          encodeURIComponent(
+            "Bonjour Petit Baobab, je souhaite obtenir un devis pour la formule École / Pro pour mon établissement."
+          ),
+        "_blank"
+      );
+    } else if (plan.space === "school") {
       router.push("/signup?space=school");
     } else {
       router.push("/signup?space=family");
@@ -305,7 +313,7 @@ export function PricingPageContent() {
 
                   <div className="text-[11px] text-center font-medium text-[#8C7665] mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">
                     {plan.space === "school" ? (
-                      <span>Accès immédiat · Idéal pour écoles et associations</span>
+                      <span>Accompagnement personnalisé · Devis sur-mesure</span>
                     ) : (
                       <>
                         <span>Paiement sécurisé :</span>

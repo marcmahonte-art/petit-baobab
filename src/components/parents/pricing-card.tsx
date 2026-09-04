@@ -131,7 +131,7 @@ export function PricingCard({
               activeColors.btnOutline
             )}
           >
-            Choisir ce plan
+            {price === "Sur devis" ? "Demander un devis" : "Choisir ce plan"}
           </Button>
         </motion.div>
       </div>

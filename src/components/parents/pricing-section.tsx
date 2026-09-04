@@ -51,17 +51,17 @@ export function PricingSection() {
     },
     {
       name: "École / Pro",
-      price: "25 000 FCFA",
-      period: "par mois",
-      credits: "1 000",
-      creditsLabel: "étoiles / mois",
+      price: "Sur devis",
+      period: "Formule sur-mesure",
+      credits: "Sur-mesure",
+      creditsLabel: "étoiles adaptées",
       features: [
-        "1 000 étoiles renouvelées chaque mois",
+        "Volume d'étoiles adapté à votre établissement",
         "Tous les styles de dessin",
         "Livres et jeux complets",
         "Téléchargement illimité",
         "Gestion multi-utilisateurs",
-        "Support prioritaire",
+        "Support prioritaire & accompagnement dédié",
       ],
       themeColor: "green" as const,
     },
@@ -111,6 +111,16 @@ export function PricingSection() {
             onChoose={() => {
               if (plan.name === "Super Baobab") {
                 setShowSuperBaobabModal(true)
+                return
+              }
+              if (plan.name === "École / Pro") {
+                window.open(
+                  "https://wa.me/22664556565?text=" +
+                    encodeURIComponent(
+                      "Bonjour Petit Baobab, je souhaite obtenir un devis pour la formule École / Pro pour mon établissement."
+                    ),
+                  "_blank"
+                )
                 return
               }
               const packId = PLAN_PACK_MAP[plan.name]

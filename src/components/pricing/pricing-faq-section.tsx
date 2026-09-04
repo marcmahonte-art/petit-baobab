@@ -31,7 +31,7 @@ export function PricingFaqSection() {
     {
       question: "Quelle est la particularité de la formule École / Pro ?",
       answer:
-        "La formule École / Pro est spécialement calibrée pour les écoles, éducatrices, maternelles et ateliers d'apprentissage. Elle comprend un volume de 1 000 étoiles mensuelles, la gestion multi-utilisateurs pour les classes, un tableau de bord et un support prioritaire pour les enseignants.",
+        "La formule École / Pro est spécialement calibrée pour les écoles, éducatrices, maternelles et ateliers d'apprentissage. Proposée sur devis selon les besoins de votre établissement, elle comprend un volume d'étoiles adapté, la gestion multi-utilisateurs pour les classes, un tableau de bord et un support prioritaire pour les enseignants.",
     },
     {
       question: "Que se passe-t-il si la génération d'un dessin rencontre un problème ?",
