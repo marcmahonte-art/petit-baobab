@@ -308,7 +308,19 @@ export function PricingPageContent() {
                     }`}
                   >
                     <span>{plan.ctaText}</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    {plan.id === "ecole-pro" ? (
+                      <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center p-0.5 shadow-2xs">
+                        <Image
+                          src="/whatsapp.svg"
+                          alt="WhatsApp"
+                          width={14}
+                          height={14}
+                          className="w-3.5 h-3.5 object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    )}
                   </button>
 
                   <div className="text-[11px] text-center font-medium text-[#8C7665] mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">

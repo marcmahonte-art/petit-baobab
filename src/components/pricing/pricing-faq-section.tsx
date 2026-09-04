@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, HelpCircle, MessageCircle, Sparkles } from "lucide-react";
+import { ChevronDown, HelpCircle, Sparkles } from "lucide-react";
 
 interface FAQItem {
   question: string;
@@ -116,8 +117,14 @@ export function PricingFaqSection() {
       {/* Bloc contact WhatsApp direct */}
       <div className="max-w-3xl mx-auto mt-8 p-6 sm:p-7 rounded-[26px] bg-gradient-to-r from-[#E7F6ED] via-[#F2FBF6] to-[#E7F6ED] border-2 border-[#A3E3BE] flex flex-col sm:flex-row items-center justify-between gap-5 shadow-[0_10px_25px_rgba(0,133,96,0.08)]">
         <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#008560] text-white flex items-center justify-center shrink-0 shadow-md ring-4 ring-[#008560]/15">
-            <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-[#C5E8D3] flex items-center justify-center shrink-0 shadow-md ring-4 ring-[#008560]/10 p-2 sm:p-2.5">
+            <Image
+              src="/whatsapp.svg"
+              alt="Logo WhatsApp"
+              width={38}
+              height={38}
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#008560]/10 text-[#00694B] text-[11px] font-black uppercase tracking-wider mb-1">
@@ -136,9 +143,17 @@ export function PricingFaqSection() {
           href="https://wa.me/22664556565?text=Bonjour%20Petit%20Baobab%2C%20j%27ai%20une%20question%20sur%20vos%20formules%20de%20tarifs"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#008560] hover:bg-[#006E50] text-white font-extrabold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0 shadow-md shadow-[#008560]/20"
+          className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#15AA15] hover:bg-[#129112] text-white font-extrabold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0 shadow-md shadow-[#15AA15]/25"
         >
-          <MessageCircle className="w-5 h-5 fill-white text-white" />
+          <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0 p-0.5 shadow-2xs">
+            <Image
+              src="/whatsapp.svg"
+              alt="WhatsApp"
+              width={16}
+              height={16}
+              className="w-4 h-4 object-contain"
+            />
+          </div>
           <span>Discuter sur WhatsApp</span>
         </a>
       </div>

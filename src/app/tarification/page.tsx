@@ -94,7 +94,13 @@ export default function TarificationPage() {
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#E7F6ED] hover:bg-[#D3EFE0] text-[#00694B] font-extrabold text-xs transition-colors border border-[#C5E8D3] shadow-2xs"
               title="Assistance WhatsApp"
             >
-              <MessageCircle className="w-4 h-4 fill-[#008560] text-[#008560]" />
+              <Image
+                src="/whatsapp.svg"
+                alt="Logo WhatsApp"
+                width={16}
+                height={16}
+                className="w-4 h-4 object-contain"
+              />
               <span>Assistance WhatsApp</span>
             </a>
           </div>

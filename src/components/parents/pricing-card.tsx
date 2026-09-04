@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Check, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -127,11 +128,26 @@ export function PricingCard({
           <Button
             onClick={onChoose}
             className={cn(
-              "w-full h-[52px] rounded-[16px] font-extrabold text-[15px] cursor-pointer transition-all",
+              "w-full h-[52px] rounded-[16px] font-extrabold text-[15px] cursor-pointer transition-all flex items-center justify-center gap-2",
               activeColors.btnOutline
             )}
           >
-            {price === "Sur devis" ? "Demander un devis" : "Choisir ce plan"}
+            {price === "Sur devis" ? (
+              <>
+                <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center p-0.5 shadow-2xs">
+                  <Image
+                    src="/whatsapp.svg"
+                    alt="WhatsApp"
+                    width={14}
+                    height={14}
+                    className="w-3.5 h-3.5 object-contain"
+                  />
+                </div>
+                <span>Demander un devis</span>
+              </>
+            ) : (
+              "Choisir ce plan"
+            )}
           </Button>
         </motion.div>
       </div>
