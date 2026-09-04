@@ -91,7 +91,7 @@ export function PricingPageContent() {
       price: "Sur devis",
       period: "Formule sur-mesure pour vos classes",
       credits: "Sur-mesure",
-      creditsLabel: "étoiles adaptées à vos besoins",
+      creditsLabel: "étoiles adaptées",
       icon: School,
       ctaText: "Demander un devis",
       space: "school",
