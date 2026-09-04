@@ -36,7 +36,7 @@ const QUICK_QUESTIONS = [
 ];
 
 const GREETING =
-  "Bonjour et bienvenue chez Petit Baobab ! Je suis votre assistant et je suis là pour vous aider à créer, découvrir et choisir des contenus adaptés aux enfants. Que souhaitez-vous découvrir aujourd’hui ?";
+  "Bonjour et bienvenue !  Je suis là pour vous aider à découvrir Petit Baobab. Que souhaitez-vous découvrir aujourd’hui ?";
 
 export default function HelpBot() {
   const pathname = usePathname();
