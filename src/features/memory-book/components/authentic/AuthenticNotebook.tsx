@@ -35,7 +35,7 @@ export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
   const [saveStatus, setSaveStatus] = useState("Tes réponses sont enregistrées automatiquement");
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
-
+const coverTeacherInputRef = useRef<HTMLInputElement>(null);
   // Charger les données initiales du livre
   useEffect(() => {
     if (initialBook) {
@@ -566,7 +566,10 @@ export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
                 </label>
 
                 {/* Polaroid Ma maîtresse / Mon maître */}
-                <label className="cahier-polaroid transform rotate-2">
+                <div
+                  className="cahier-polaroid transform rotate-2 cursor-pointer"
+                  onClick={() => coverTeacherInputRef.current?.click()}
+                >
                   <div className="cahier-frame">
                     {uploadingKey === "cover-teacher" ? (
                       <Loader2 className="w-6 h-6 animate-spin text-[#F7941D]" />
@@ -575,7 +578,7 @@ export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
                         <img src={answers["cover-teacher"]} alt="Ma maîtresse / Mon maître" />
                         <button
                           type="button"
-                          onClick={(e) => handleRemovePhoto("cover-teacher", e)}
+                          onClick={(e) => { e.stopPropagation(); handleRemovePhoto("cover-teacher", e); }}
                           className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -599,9 +602,10 @@ export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    ref={coverTeacherInputRef}
                     onChange={(e) => handleFileUpload("cover-teacher", e)}
                   />
-                </label>
+                </div>
               </div>
             </div>
           )}
