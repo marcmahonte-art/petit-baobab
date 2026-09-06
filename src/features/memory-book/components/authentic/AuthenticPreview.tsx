@@ -49,12 +49,11 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       const { jsPDF } = await import("jspdf");
       const html2canvas = (await import("html2canvas")).default;
 
-      // Helper to ensure all images use base64 data URLs (avoids CORS issues)
       const convertImgSrcToDataUrl = async (container: HTMLElement) => {
         const imgEls = container.querySelectorAll('img');
         const promises = Array.from(imgEls).map(async (img) => {
           const src = img.getAttribute('src') || '';
-          if (src.startsWith('data:')) return; // already a data URL
+          if (src.startsWith('data:')) return;
           try {
             const response = await fetch(src);
             const blob = await response.blob();
@@ -83,25 +82,29 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
       for (let i = 0; i < total; i++) {
         const el = pageElements[i] as HTMLElement;
-        // Ensure images in this page are base64 before capturing
         await convertImgSrcToDataUrl(el);
 
         setProgress(Math.round(((i + 1) / total) * 90));
         setStatusMsg(`Capture de la page ${i + 1}/${total}...`);
 
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#FBF6EC",
-          logging: false,
-        });
+        try {
+          const canvas = await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#FBF6EC",
+            logging: false,
+          });
 
-        const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        const imgWidth = 210; // Largeur A4 mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+          const imgWidth = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, Math.min(297, imgHeight));
+          if (i > 0) pdf.addPage();
+          pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, Math.min(297, imgHeight));
+        } catch (e) {
+          console.error(`Erreur lors de la capture de la page ${i + 1}`, e);
+        }
       }
 
       setProgress(100);
@@ -113,7 +116,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       setTimeout(() => setPdfDownloaded(false), 4000);
     } catch (err) {
       console.error("Erreur PDF:", err);
-      alert("Erreur lors de la génération du PDF. Tu peux aussi utiliser le bouton Imprimer et choisir Enregistrer au format PDF.");
+      alert("Erreur lors de la génération du PDF.");
     } finally {
       setIsGeneratingPdf(false);
       setProgress(0);
