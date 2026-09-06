@@ -6,7 +6,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useProfile } from "@/lib/profile-store";
 import { memoryBookService } from "@/features/memory-book/services/memoryBookService";
 import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types";
-import { MemoryBookEditor } from "@/features/memory-book/components/editor/MemoryBookEditor";
+import { AuthenticNotebook } from "@/features/memory-book/components/authentic/AuthenticNotebook";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -52,22 +52,22 @@ export default function MemoryBookEditorPage({ params }: EditorPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFF9F2] flex flex-col items-center justify-center p-6 text-center">
-        <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
-        <h2 className="text-xl font-black text-gray-900">Ouverture de ton cahier...</h2>
-        <p className="text-sm text-gray-500 mt-1">Préparation de tes souvenirs et photos</p>
+      <div className="min-h-screen bg-[#EFE6D2] flex flex-col items-center justify-center p-6 text-center font-['Quicksand',sans-serif]">
+        <Loader2 className="w-12 h-12 text-[#F7941D] animate-spin mb-4" />
+        <h2 className="caveat-font text-3xl font-bold text-[#7A3B1D]">Ouverture de ton cahier de souvenirs...</h2>
+        <p className="text-sm font-semibold text-[#8a7f66] mt-1">Chargement des 10 pages et des polaroids</p>
       </div>
     );
   }
 
   if (!book) {
     return (
-      <div className="min-h-screen bg-[#FFF9F2] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-black text-gray-900 mb-2">Cahier introuvable</h2>
-        <p className="text-sm text-gray-600 mb-6">Ce cahier n&apos;existe pas ou a été déplacé.</p>
+      <div className="min-h-screen bg-[#EFE6D2] flex flex-col items-center justify-center p-6 text-center font-['Quicksand',sans-serif]">
+        <h2 className="caveat-font text-3xl font-bold text-[#7A3B1D] mb-2">Cahier introuvable</h2>
+        <p className="text-sm text-[#8a7f66] mb-6">Ce cahier n&apos;existe pas ou a été déplacé.</p>
         <Link
           href="/learn/souvenirs"
-          className="px-6 py-3 rounded-2xl bg-purple-600 text-white font-bold text-sm shadow-md"
+          className="px-6 py-3 rounded-2xl bg-[#F7941D] text-white font-bold text-sm shadow-md"
         >
           Retourner à mes cahiers
         </Link>
@@ -76,8 +76,8 @@ export default function MemoryBookEditorPage({ params }: EditorPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF9F2] pb-16">
-      <MemoryBookEditor initialBook={book} profileId={childId} />
+    <div className="min-h-screen bg-[#EFE6D2]">
+      <AuthenticNotebook initialBook={book} profileId={childId} />
     </div>
   );
 }

@@ -11,15 +11,19 @@ import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types
 import { BookCard } from "@/features/memory-book/components/common/BookCard";
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, Plus, Sparkles, Loader2, HeartHandshake } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookOpen, Plus, Sparkles, Loader2, Printer, Camera } from "lucide-react";
 
 export default function MemoryBooksListPage() {
+  const router = useRouter();
   const { studentSession } = useAuthStore();
   const profile = useProfile();
   const childId = studentSession?.profileId || profile?.id || "default_child";
+  const childName = studentSession?.name || profile?.name || "Mon Enfant";
 
   const [books, setBooks] = useState<MemoryBookRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreatingFast, setIsCreatingFast] = useState(false);
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -42,8 +46,25 @@ export default function MemoryBooksListPage() {
     setBooks((prev) => prev.filter((b) => b.id !== id));
   };
 
+  const handleCreateFastBook = async () => {
+    if (isCreatingFast) return;
+    try {
+      setIsCreatingFast(true);
+      const newBook = await memoryBookService.createBook({
+        profileId: childId,
+        templateId: "cahier_10_pages_marketing_v1",
+        title: `Cahier de souvenirs de ${childName}`,
+        schoolYear: "2025 - 2026",
+      });
+      router.push(`/learn/souvenirs/${newBook.id}`);
+    } catch (e) {
+      console.error("Erreur création rapide:", e);
+      setIsCreatingFast(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FFF9F2] relative overflow-hidden pb-16 lg:pb-24">
+    <div className="min-h-screen bg-[#EFE6D2] relative overflow-hidden pb-16 lg:pb-24 font-['Quicksand',sans-serif]">
       <div className="mx-auto max-w-[1536px] lg:grid lg:grid-cols-[280px_1fr] lg:gap-8 lg:px-8 px-4 lg:py-6 pt-4 pb-24 lg:pb-6 relative z-10">
         <div className="hidden lg:block">
           <div className="sticky top-6">
@@ -54,33 +75,46 @@ export default function MemoryBooksListPage() {
         <main className="flex flex-col gap-6 min-h-[calc(100vh-48px)]">
           <Header />
 
-          {/* Bannière d'accueil de la section Souvenirs */}
-          <div className="relative rounded-[28px] md:rounded-[36px] bg-gradient-to-br from-purple-700 via-purple-600 to-indigo-700 text-white p-6 md:p-10 shadow-xl overflow-hidden">
-            {/* Décorations d'arrière-plan */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
+          {/* Bannière d'accueil avec style Cahier Papier */}
+          <div className="relative rounded-[28px] bg-[#FBF6EC] border-[2.5px] border-[#3A362E] text-[#3A362E] p-6 md:p-10 shadow-lg overflow-hidden">
+            {/* Décoration appareil photo & soleil */}
+            <div className="absolute top-4 right-6 opacity-30 pointer-events-none hidden md:block">
+              <Camera className="w-32 h-32 text-[#7A3B1D]" />
+            </div>
 
             <div className="relative z-10 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-amber-300 font-extrabold text-xs mb-3 border border-white/20">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Nouveauté — Mon Cahier de Souvenirs</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#3A362E] text-[#7A3B1D] font-extrabold text-xs mb-3 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#F7941D]" />
+                <span>Modèle Officiel 10 Pages — Petit Baobab</span>
               </div>
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
-                Garde pour toujours tes plus beaux moments ! 🌳
+              <h1 className="caveat-font text-3xl md:text-5xl font-bold tracking-tight text-[#7A3B1D] leading-tight">
+                Mon cahier de souvenirs 🌳
               </h1>
-              <p className="text-sm md:text-base text-purple-100 font-medium mt-2 leading-relaxed">
-                Crée ton grand cahier de souvenirs d’école : ajoute tes photos, tes copains, tes victoires
-                et tes rêves, puis télécharge-le en PDF pour l’imprimer et le garder toute ta vie.
+              <p className="text-sm md:text-base text-[#5B5648] font-semibold mt-2 leading-relaxed">
+                Remplis ton cahier interactif à spirale avec tes 10 pages : ton portrait, ton année, tes
+                camarades, tes livres préférés, tes fiertés, tes vacances et tes photos.
+                Tu peux ensuite le visualiser en PDF et l&apos;imprimer pour l&apos;emporter partout !
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Link
-                  href="/learn/souvenirs/nouveau"
-                  className="px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-purple-950 font-black text-sm md:text-base shadow-lg transition active:scale-95 flex items-center gap-2"
+                <button
+                  type="button"
+                  onClick={handleCreateFastBook}
+                  disabled={isCreatingFast}
+                  className="px-6 py-3.5 rounded-2xl bg-[#F7941D] hover:bg-[#e08213] border-2 border-[#3A362E] text-white font-extrabold text-sm md:text-base shadow-md transition active:scale-95 flex items-center gap-2 disabled:opacity-60 cursor-pointer"
                 >
-                  <Plus className="w-5 h-5" />
-                  <span>Créer mon cahier de souvenirs</span>
-                </Link>
+                  {isCreatingFast ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Ouverture du cahier...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      <span>Créer mon cahier de souvenirs (10 pages)</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -88,47 +122,50 @@ export default function MemoryBooksListPage() {
           {/* Section Liste des cahiers */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-purple-600" />
+              <h2 className="caveat-font text-3xl font-bold text-[#7A3B1D] flex items-center gap-2">
+                <BookOpen className="w-7 h-7 text-[#F7941D]" />
                 <span>Mes Cahiers de Souvenirs</span>
               </h2>
 
               {books.length > 0 && (
-                <Link
-                  href="/learn/souvenirs/nouveau"
-                  className="text-xs md:text-sm font-bold text-purple-700 hover:text-purple-900 bg-purple-100/70 hover:bg-purple-200/70 px-4 py-2 rounded-xl transition flex items-center gap-1.5"
+                <button
+                  type="button"
+                  onClick={handleCreateFastBook}
+                  disabled={isCreatingFast}
+                  className="text-xs md:text-sm font-bold text-[#3A362E] bg-white hover:bg-[#F3EBDA] border border-[#3A362E] px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Nouveau</span>
-                </Link>
+                  <span>Nouveau cahier</span>
+                </button>
               )}
             </div>
 
             {loading ? (
-              <div className="bg-white rounded-[28px] border-2 border-purple-100 p-12 flex flex-col items-center justify-center text-center">
-                <Loader2 className="w-10 h-10 animate-spin text-purple-600 mb-3" />
-                <p className="font-bold text-gray-700 text-sm">Chargement de tes cahiers...</p>
+              <div className="bg-[#FBF6EC] rounded-[24px] border-2 border-[#3A362E] p-12 flex flex-col items-center justify-center text-center shadow-xs">
+                <Loader2 className="w-10 h-10 animate-spin text-[#F7941D] mb-3" />
+                <p className="font-bold text-[#5B5648] text-sm">Chargement de tes cahiers...</p>
               </div>
             ) : books.length === 0 ? (
-              /* État vide chaleureux */
-              <div className="bg-white rounded-[32px] border-2 border-dashed border-purple-200 p-8 md:p-14 text-center flex flex-col items-center justify-center max-w-2xl mx-auto shadow-xs">
-                <div className="w-20 h-20 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-4 shadow-inner">
+              /* État vide invitant */
+              <div className="bg-[#FBF6EC] rounded-[28px] border-2 border-dashed border-[#C9BFA9] p-8 md:p-14 text-center flex flex-col items-center justify-center max-w-2xl mx-auto shadow-sm">
+                <div className="w-20 h-20 rounded-full bg-white border-2 border-[#3A362E] text-[#7A3B1D] flex items-center justify-center mb-4 shadow-sm">
                   <BookOpen className="w-10 h-10" />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-2">
+                <h3 className="caveat-font text-3xl font-bold text-[#7A3B1D] mb-2">
                   Tu n’as pas encore créé de cahier de souvenirs !
                 </h3>
-                <p className="text-sm text-gray-600 max-w-md mb-6 leading-relaxed">
-                  C’est le moment d’immortaliser ton année scolaire, tes photos de classe et tes plus
-                  beaux moments avec tes camarades.
+                <p className="text-sm text-[#5B5648] font-semibold max-w-md mb-6 leading-relaxed">
+                  Immortalise ton année scolaire, tes meilleurs moments, tes copains et tes photos dans ton album interactif.
                 </p>
-                <Link
-                  href="/learn/souvenirs/nouveau"
-                  className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-sm shadow-md hover:shadow-lg transition active:scale-95 flex items-center gap-2"
+                <button
+                  type="button"
+                  onClick={handleCreateFastBook}
+                  disabled={isCreatingFast}
+                  className="px-6 py-3 rounded-2xl bg-[#F7941D] hover:bg-[#e08213] border-2 border-[#3A362E] text-white font-extrabold text-sm shadow-md hover:shadow-lg transition active:scale-95 flex items-center gap-2 cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-amber-300" />
-                  <span>Démarrer mon premier cahier (9 pages)</span>
-                </Link>
+                  <Sparkles className="w-4 h-4 text-white" />
+                  <span>Démarrer mon premier cahier (10 pages)</span>
+                </button>
               </div>
             ) : (
               /* Grille des cahiers existants */

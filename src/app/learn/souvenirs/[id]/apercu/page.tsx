@@ -4,7 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { memoryBookService } from "@/features/memory-book/services/memoryBookService";
 import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types";
-import { MemoryBookPreview } from "@/features/memory-book/components/preview/MemoryBookPreview";
+import { AuthenticPreview } from "@/features/memory-book/components/authentic/AuthenticPreview";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -46,21 +46,21 @@ export default function MemoryBookPreviewPage({ params }: PreviewPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFF9F2] flex flex-col items-center justify-center p-6 text-center">
-        <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
-        <h2 className="text-xl font-black text-gray-900">Préparation de l&apos;aperçu...</h2>
-        <p className="text-sm text-gray-500 mt-1">Génération de la vue de ton cahier</p>
+      <div className="min-h-screen bg-[#EFE6D2] flex flex-col items-center justify-center p-6 text-center font-['Quicksand',sans-serif]">
+        <Loader2 className="w-12 h-12 text-[#F7941D] animate-spin mb-4" />
+        <h2 className="caveat-font text-3xl font-bold text-[#7A3B1D]">Préparation de l&apos;aperçu...</h2>
+        <p className="text-sm font-semibold text-[#8a7f66] mt-1">Mise en page des 10 pages souvenirs</p>
       </div>
     );
   }
 
   if (!book) {
     return (
-      <div className="min-h-screen bg-[#FFF9F2] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-xl font-black text-gray-900 mb-2">Cahier introuvable</h2>
+      <div className="min-h-screen bg-[#EFE6D2] flex flex-col items-center justify-center p-6 text-center font-['Quicksand',sans-serif]">
+        <h2 className="caveat-font text-3xl font-bold text-[#7A3B1D] mb-2">Cahier introuvable</h2>
         <Link
           href="/learn/souvenirs"
-          className="px-6 py-3 rounded-2xl bg-purple-600 text-white font-bold text-sm shadow-md"
+          className="px-6 py-3 rounded-2xl bg-[#F7941D] text-white font-bold text-sm shadow-md"
         >
           Retourner à mes cahiers
         </Link>
@@ -69,8 +69,8 @@ export default function MemoryBookPreviewPage({ params }: PreviewPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF9F2] pb-16">
-      <MemoryBookPreview book={book} />
+    <div className="min-h-screen bg-[#EFE6D2]">
+      <AuthenticPreview book={book} />
     </div>
   );
 }
