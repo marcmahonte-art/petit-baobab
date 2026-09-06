@@ -5,6 +5,8 @@ import { CARD_IN, STAGGER } from "../animations"
 import type { EvolutionMilestone } from "../types"
 import { cn } from "@/lib/utils"
 
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
+
 interface AchievementGalleryProps {
   milestones: EvolutionMilestone[]
   badgesCount?: number
@@ -18,13 +20,13 @@ export function AchievementGallery({ milestones, badgesCount, collectionsCount, 
       {(badgesCount !== undefined || collectionsCount !== undefined) && (
         <div className="mb-4 flex flex-wrap gap-2">
           {badgesCount !== undefined && (
-            <span className="rounded-full bg-[#FFF6E8] px-3 py-1.5 text-xs font-bold text-[#3B2416]">
-              🏅 {badgesCount} badges
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF6E8] px-3 py-1.5 text-xs font-bold text-[#3B2416]">
+              <MarketingIcon icon="/icons/marketing/badges.png" className="h-4 w-4 object-contain" /> {badgesCount} badges
             </span>
           )}
           {collectionsCount !== undefined && (
-            <span className="rounded-full bg-[#F2FCF7] px-3 py-1.5 text-xs font-bold text-[#3B2416]">
-              🐾 {collectionsCount} collections
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F2FCF7] px-3 py-1.5 text-xs font-bold text-[#3B2416]">
+              <MarketingIcon icon="/icons/marketing/collections.png" className="h-4 w-4 object-contain" /> {collectionsCount} collections
             </span>
           )}
         </div>
@@ -42,8 +44,8 @@ export function AchievementGallery({ milestones, badgesCount, collectionsCount, 
                 : "border-[#F1E7DA] bg-white opacity-60",
             )}
           >
-            <span className="text-3xl" aria-hidden="true">
-              {milestone.icon}
+            <span className="flex h-10 w-10 items-center justify-center text-3xl" aria-hidden="true">
+              <MarketingIcon icon={milestone.icon} className="h-8 w-8 object-contain" />
             </span>
             <p className="text-xs font-extrabold leading-tight text-[#3B2416]">{milestone.label}</p>
             {milestone.achieved ? (

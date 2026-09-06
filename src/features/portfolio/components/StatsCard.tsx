@@ -4,6 +4,8 @@ import { motion } from "framer-motion"
 import { CARD_IN } from "../animations"
 import { cn } from "@/lib/utils"
 
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
+
 interface StatsCardProps {
   icon: string
   label: string
@@ -28,7 +30,7 @@ export function StatsCard({ icon, label, value, accent = "#FF8A00", highlight }:
         style={{ backgroundColor: `${accent}1F` }}
         aria-hidden="true"
       >
-        {icon}
+        <MarketingIcon icon={icon} className="h-6 w-6 object-contain" />
       </span>
       <p className="mt-1 text-2xl font-extrabold text-[#3B2416]">{value}</p>
       <p className="text-xs font-bold text-[#7A6A5E]">{label}</p>

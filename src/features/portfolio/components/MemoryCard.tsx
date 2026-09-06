@@ -6,6 +6,7 @@ import { CARD_IN } from "../animations"
 import { portfolioEngine } from "../engine/portfolio-engine"
 import type { PortfolioEvent } from "../types"
 import { cn } from "@/lib/utils"
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
 
 interface MemoryCardProps {
   event: PortfolioEvent
@@ -41,7 +42,9 @@ export function MemoryCard({ event, isFavorite, onOpen, onToggleFavorite, compac
             <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#FFF6E8] to-[#FFE08A] text-2xl">
-              <span aria-hidden="true">{meta.icon}</span>
+              <span aria-hidden="true">
+                <MarketingIcon icon={meta.icon} className={compact ? "h-6 w-6 object-contain" : "h-10 w-10 object-contain"} />
+              </span>
             </div>
           )}
         </div>

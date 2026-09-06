@@ -4,6 +4,8 @@ import { motion } from "framer-motion"
 import { CARD_IN } from "../animations"
 import type { AlbumSummary } from "../albums"
 
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
+
 interface AlbumCardProps {
   album: AlbumSummary
   onOpen: (album: AlbumSummary) => void
@@ -26,8 +28,8 @@ export function AlbumCard({ album, onOpen }: AlbumCardProps) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={album.cover} alt={album.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
         ) : (
-          <span className="text-5xl" aria-hidden="true">
-            {album.icon}
+          <span className="flex items-center justify-center text-5xl" aria-hidden="true">
+            <MarketingIcon icon={album.icon} className="h-16 w-16 object-contain" />
           </span>
         )}
         <span className="absolute bottom-2 right-2 rounded-full bg-white/85 px-2 py-0.5 text-xs font-extrabold text-[#3B2416] backdrop-blur-sm">

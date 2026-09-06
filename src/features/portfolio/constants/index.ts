@@ -11,19 +11,19 @@ export interface PortfolioCategoryMeta {
 }
 
 export const PORTFOLIO_CATEGORIES: PortfolioCategoryMeta[] = [
-  { id: "Dessins", icon: "🎨", color: "#FF8A00" },
-  { id: "Livres", icon: "📚", color: "#1D9E75" },
-  { id: "Coloriages", icon: "🖍️", color: "#FF5E83" },
-  { id: "Dessins magiques", icon: "✨", color: "#7D6AF8" },
-  { id: "Histoires", icon: "📖", color: "#1194FF" },
-  { id: "Quiz", icon: "❓", color: "#FFB300" },
-  { id: "Jeux", icon: "🎮", color: "#E63946" },
-  { id: "Badges", icon: "🏅", color: "#FFD95C" },
-  { id: "Récompenses", icon: "🎁", color: "#FF6B35" },
-  { id: "Défis", icon: "🏆", color: "#8BC34A" },
-  { id: "Certificats", icon: "📜", color: "#20C997" },
-  { id: "Collections", icon: "🐾", color: "#A9702C" },
-  { id: "Photos souvenirs", icon: "📷", color: "#9C89B8" },
+  { id: "Dessins", icon: "/icons/marketing/dessins.png", color: "#FF8A00" },
+  { id: "Livres", icon: "/icons/marketing/livres.png", color: "#1D9E75" },
+  { id: "Coloriages", icon: "/icons/marketing/coloriages.png", color: "#FF5E83" },
+  { id: "Dessins magiques", icon: "/icons/marketing/marqueur-ia.png", color: "#7D6AF8" },
+  { id: "Histoires", icon: "/icons/marketing/histoires.png", color: "#1194FF" },
+  { id: "Quiz", icon: "/icons/marketing/quiz.png", color: "#FFB300" },
+  { id: "Jeux", icon: "/icons/marketing/jeux-educatifs.png", color: "#E63946" },
+  { id: "Badges", icon: "/icons/marketing/badges.png", color: "#FFD95C" },
+  { id: "Récompenses", icon: "/icons/marketing/recompenses.png", color: "#FF6B35" },
+  { id: "Défis", icon: "/icons/marketing/defis.png", color: "#8BC34A" },
+  { id: "Certificats", icon: "/icons/marketing/certificats.png", color: "#20C997" },
+  { id: "Collections", icon: "/icons/marketing/collections.png", color: "#A9702C" },
+  { id: "Photos souvenirs", icon: "/icons/marketing/photos-de-souvenirs.png", color: "#9C89B8" },
 ]
 
 export function getCategoryMeta(category: PortfolioCategory) {
@@ -38,25 +38,25 @@ export interface EventTypeMeta {
 }
 
 export const EVENT_TYPE_META: Record<PortfolioEventType, EventTypeMeta> = {
-  DRAWING_CREATED: { type: "DRAWING_CREATED", category: "Dessins", title: "Nouveau dessin", icon: "🎨" },
-  DRAWING_COMPLETED: { type: "DRAWING_COMPLETED", category: "Dessins", title: "Dessin terminé", icon: "🖼️" },
-  BOOK_CREATED: { type: "BOOK_CREATED", category: "Livres", title: "Nouveau livre", icon: "📚" },
-  BOOK_PRINTED: { type: "BOOK_PRINTED", category: "Livres", title: "Livre imprimé", icon: "🖨️" },
-  MAGIC_DRAWING_CREATED: { type: "MAGIC_DRAWING_CREATED", category: "Dessins magiques", title: "Dessin magique", icon: "✨" },
-  COLORING_COMPLETED: { type: "COLORING_COMPLETED", category: "Coloriages", title: "Coloriage terminé", icon: "🖍️" },
-  GAME_COMPLETED: { type: "GAME_COMPLETED", category: "Jeux", title: "Jeu terminé", icon: "🎮" },
-  QUIZ_COMPLETED: { type: "QUIZ_COMPLETED", category: "Quiz", title: "Quiz réussi", icon: "❓" },
-  STORY_CREATED: { type: "STORY_CREATED", category: "Histoires", title: "Nouvelle histoire", icon: "📖" },
-  BADGE_UNLOCKED: { type: "BADGE_UNLOCKED", category: "Badges", title: "Badge débloqué", icon: "🏅" },
-  CHALLENGE_COMPLETED: { type: "CHALLENGE_COMPLETED", category: "Défis", title: "Défi relevé", icon: "🏆" },
-  LEVEL_UP: { type: "LEVEL_UP", category: "Récompenses", title: "Niveau supérieur", icon: "⬆️" },
-  STARS_EARNED: { type: "STARS_EARNED", category: "Récompenses", title: "Étoiles gagnées", icon: "⭐" },
-  SHOP_PURCHASE: { type: "SHOP_PURCHASE", category: "Récompenses", title: "Achat à la boutique", icon: "🛍️" },
-  WORLD_OBJECT_UNLOCKED: { type: "WORLD_OBJECT_UNLOCKED", category: "Collections", title: "Objet de collection", icon: "🐾" },
-  WORLD_MEMORY_CREATED: { type: "WORLD_MEMORY_CREATED", category: "Collections", title: "Souvenir du monde", icon: "🌍" },
-  PATH_COMPLETED: { type: "PATH_COMPLETED", category: "Certificats", title: "Parcours terminé", icon: "🎓" },
-  CERTIFICATE_ISSUED: { type: "CERTIFICATE_ISSUED", category: "Certificats", title: "Certificat obtenu", icon: "📜" },
-  PORTFOLIO_MEMORY: { type: "PORTFOLIO_MEMORY", category: "Photos souvenirs", title: "Souvenir", icon: "📷" },
+  DRAWING_CREATED: { type: "DRAWING_CREATED", category: "Dessins", title: "Nouveau dessin", icon: "/icons/marketing/dessins.png" },
+  DRAWING_COMPLETED: { type: "DRAWING_COMPLETED", category: "Dessins", title: "Dessin terminé", icon: "/icons/marketing/dessins-2.png" },
+  BOOK_CREATED: { type: "BOOK_CREATED", category: "Livres", title: "Nouveau livre", icon: "/icons/marketing/livres.png" },
+  BOOK_PRINTED: { type: "BOOK_PRINTED", category: "Livres", title: "Livre imprimé", icon: "/icons/marketing/imprimer.png" },
+  MAGIC_DRAWING_CREATED: { type: "MAGIC_DRAWING_CREATED", category: "Dessins magiques", title: "Dessin magique", icon: "/icons/marketing/marqueur-ia.png" },
+  COLORING_COMPLETED: { type: "COLORING_COMPLETED", category: "Coloriages", title: "Coloriage terminé", icon: "/icons/marketing/coloriages.png" },
+  GAME_COMPLETED: { type: "GAME_COMPLETED", category: "Jeux", title: "Jeu terminé", icon: "/icons/marketing/jeux-educatifs.png" },
+  QUIZ_COMPLETED: { type: "QUIZ_COMPLETED", category: "Quiz", title: "Quiz réussi", icon: "/icons/marketing/quiz.png" },
+  STORY_CREATED: { type: "STORY_CREATED", category: "Histoires", title: "Nouvelle histoire", icon: "/icons/marketing/histoires.png" },
+  BADGE_UNLOCKED: { type: "BADGE_UNLOCKED", category: "Badges", title: "Badge débloqué", icon: "/icons/marketing/badges.png" },
+  CHALLENGE_COMPLETED: { type: "CHALLENGE_COMPLETED", category: "Défis", title: "Défi relevé", icon: "/icons/marketing/defis.png" },
+  LEVEL_UP: { type: "LEVEL_UP", category: "Récompenses", title: "Niveau supérieur", icon: "/icons/marketing/recompenses.png" },
+  STARS_EARNED: { type: "STARS_EARNED", category: "Récompenses", title: "Étoiles gagnées", icon: "/icons/marketing/recompenses.png" },
+  SHOP_PURCHASE: { type: "SHOP_PURCHASE", category: "Récompenses", title: "Achat à la boutique", icon: "/icons/marketing/boutiques.png" },
+  WORLD_OBJECT_UNLOCKED: { type: "WORLD_OBJECT_UNLOCKED", category: "Collections", title: "Objet de collection", icon: "/icons/marketing/collections.png" },
+  WORLD_MEMORY_CREATED: { type: "WORLD_MEMORY_CREATED", category: "Collections", title: "Souvenir du monde", icon: "/icons/marketing/arbre-mature.png" },
+  PATH_COMPLETED: { type: "PATH_COMPLETED", category: "Certificats", title: "Parcours terminé", icon: "/icons/marketing/certificats.png" },
+  CERTIFICATE_ISSUED: { type: "CERTIFICATE_ISSUED", category: "Certificats", title: "Certificat obtenu", icon: "/icons/marketing/certificats.png" },
+  PORTFOLIO_MEMORY: { type: "PORTFOLIO_MEMORY", category: "Photos souvenirs", title: "Souvenir", icon: "/icons/marketing/photos-de-souvenirs.png" },
 }
 
 /** Événements du bus jugés non pertinents pour l'album (connexions, invitation…). */
@@ -82,19 +82,19 @@ export const AUTO_ALBUM_DEFINITIONS: AlbumDefinition[] = [
   {
     id: "coloriages",
     title: "Coloriages",
-    icon: "🖍️",
+    icon: "/icons/marketing/coloriages.png",
     matcher: (e) => e.event_type === "COLORING_COMPLETED",
   },
   {
     id: "livres",
     title: "Livres",
-    icon: "📚",
+    icon: "/icons/marketing/livres.png",
     matcher: (e) => e.event_type === "BOOK_CREATED" || e.event_type === "BOOK_PRINTED",
   },
   {
     id: "safari",
     title: "Safari",
-    icon: "🦁",
+    icon: "/icons/marketing/collections.png",
     matcher: (e) => {
       const text = `${e.title} ${e.description ?? ""}`.toLowerCase()
       return (
@@ -110,7 +110,7 @@ export const AUTO_ALBUM_DEFINITIONS: AlbumDefinition[] = [
   {
     id: "alphabet",
     title: "Alphabet",
-    icon: "🔤",
+    icon: "/icons/marketing/lecture.png",
     matcher: (e) => {
       const text = `${e.title} ${e.description ?? ""}`.toLowerCase()
       return text.includes("alphabet") || text.includes("lettre") || text.includes("abcd")
@@ -119,7 +119,7 @@ export const AUTO_ALBUM_DEFINITIONS: AlbumDefinition[] = [
   {
     id: "vacances",
     title: "Vacances",
-    icon: "🏖️",
+    icon: "/icons/marketing/photos-de-souvenirs.png",
     matcher: (e) => {
       const month = new Date(e.created_at).getMonth()
       return month === 6 || month === 7
@@ -128,19 +128,19 @@ export const AUTO_ALBUM_DEFINITIONS: AlbumDefinition[] = [
   {
     id: "noel",
     title: "Noël",
-    icon: "🎄",
+    icon: "/icons/marketing/recompenses.png",
     matcher: (e) => new Date(e.created_at).getMonth() === 11,
   },
   {
     id: "ecole",
     title: "Ecole",
-    icon: "🎒",
+    icon: "/icons/marketing/ecoles.png",
     matcher: (e) => new Date(e.created_at).getMonth() === 8,
   },
   {
     id: "famille",
     title: "Famille",
-    icon: "👨‍👩‍👧",
+    icon: "/icons/marketing/photos-de-souvenirs.png",
     matcher: (e) => e.event_type === "PORTFOLIO_MEMORY",
   },
 ]

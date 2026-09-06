@@ -6,6 +6,8 @@ import { CARD_IN } from "../animations"
 import { portfolioEngine } from "../engine/portfolio-engine"
 import type { SouvenirOfDay as Souvenir } from "../types"
 
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
+
 interface SouvenirOfDayProps {
   souvenir: Souvenir | null
   onOpen: (event: import("../types").PortfolioEvent) => void
@@ -26,10 +28,10 @@ export function SouvenirOfDay({ souvenir, onOpen }: SouvenirOfDayProps) {
       className="relative flex w-full cursor-pointer items-center gap-4 overflow-hidden rounded-2xl border border-[#FF8A00]/25 bg-gradient-to-br from-[#FFF6E8] to-[#FFE08A]/60 p-5 text-left shadow-sm transition hover:shadow-md"
     >
       <div className="pointer-events-none absolute -right-6 -top-6 text-8xl opacity-10" aria-hidden="true">
-        ⏳
+        <MarketingIcon icon="/icons/marketing/photos-de-souvenirs.png" className="h-24 w-24 object-contain" />
       </div>
       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm" aria-hidden="true">
-        {meta.icon}
+        <MarketingIcon icon={meta.icon} className="h-8 w-8 object-contain" />
       </div>
       <div className="relative min-w-0 flex-1">
         <p className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-[#FF8A00]">

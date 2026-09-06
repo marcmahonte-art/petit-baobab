@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react"
 import { CARD_IN, STAGGER } from "../animations"
 import { portfolioEngine } from "../engine/portfolio-engine"
 import type { BeforeAfterPair, PortfolioEvent } from "../types"
+import { MarketingIcon } from "@/components/ui/MarketingIcon"
 
 interface BeforeAfterProps {
   pairs: BeforeAfterPair[]
@@ -14,8 +15,8 @@ interface BeforeAfterProps {
 function Thumb({ event, label }: { event: PortfolioEvent | null; label: string }) {
   if (!event) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-[#EAD9BF] bg-[#FDFAF5]">
-        <p className="px-2 text-center text-[10px] font-bold text-[#B4A495]">Aucune création</p>
+      <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-[#F1E7DA] bg-[#FDFAF5] text-xs font-semibold text-[#B4A495]">
+        Pas encore
       </div>
     )
   }
@@ -26,8 +27,8 @@ function Thumb({ event, label }: { event: PortfolioEvent | null; label: string }
         // eslint-disable-next-line @next/next/no-img-element
         <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
       ) : (
-        <span className="text-3xl" aria-hidden="true">
-          {meta.icon}
+        <span className="flex items-center justify-center text-3xl" aria-hidden="true">
+          <MarketingIcon icon={meta.icon} className="h-8 w-8 object-contain" />
         </span>
       )}
     </div>
@@ -44,7 +45,7 @@ export function BeforeAfter({ pairs, onOpen }: BeforeAfterProps) {
           className="rounded-2xl border border-[#F1E7DA] bg-white p-4 shadow-sm"
         >
           <p className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-[#7A6A5E]">
-            <span aria-hidden="true">{pair.icon}</span>
+            <MarketingIcon icon={pair.icon} className="h-4 w-4 object-contain inline-block" />
             {pair.label}
           </p>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">

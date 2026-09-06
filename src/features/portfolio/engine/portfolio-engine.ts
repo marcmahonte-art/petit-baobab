@@ -173,14 +173,14 @@ export class PortfolioEngine {
       .sort((a, b) => a.created_at.localeCompare(b.created_at))[0] ?? null
 
     const defs: { key: string; label: string; icon: string; event: PortfolioEvent | null }[] = [
-      { key: "first_drawing", label: "Premier dessin", icon: "🎨", event: firstOfType(["DRAWING_CREATED", "DRAWING_COMPLETED"]) },
-      { key: "first_book", label: "Premier livre", icon: "📚", event: firstOfType(["BOOK_CREATED"]) },
-      { key: "first_badge", label: "Premier badge", icon: "🏅", event: firstOfType(["BADGE_UNLOCKED"]) },
-      { key: "first_challenge", label: "Premier défi", icon: "🏆", event: firstOfType(["CHALLENGE_COMPLETED"]) },
-      { key: "first_path", label: "Premier parcours", icon: "🎓", event: firstOfType(["PATH_COMPLETED"]) },
-      { key: "first_certificate", label: "Premier certificat", icon: "📜", event: firstOfType(["CERTIFICATE_ISSUED"]) },
-      { key: "first_tree", label: "Premier arbre mature", icon: "🌳", event: firstArbreMature },
-      { key: "first_animal", label: "Premier animal", icon: "🦁", event: firstAnimal },
+      { key: "first_drawing", label: "Premier dessin", icon: "/icons/marketing/dessins.png", event: firstOfType(["DRAWING_CREATED", "DRAWING_COMPLETED"]) },
+      { key: "first_book", label: "Premier livre", icon: "/icons/marketing/livres.png", event: firstOfType(["BOOK_CREATED"]) },
+      { key: "first_badge", label: "Premier badge", icon: "/icons/marketing/badges.png", event: firstOfType(["BADGE_UNLOCKED"]) },
+      { key: "first_challenge", label: "Premier défi", icon: "/icons/marketing/defis.png", event: firstOfType(["CHALLENGE_COMPLETED"]) },
+      { key: "first_path", label: "Premier parcours", icon: "/icons/marketing/certificats.png", event: firstOfType(["PATH_COMPLETED"]) },
+      { key: "first_certificate", label: "Premier certificat", icon: "/icons/marketing/certificats.png", event: firstOfType(["CERTIFICATE_ISSUED"]) },
+      { key: "first_tree", label: "Premier arbre mature", icon: "/icons/marketing/arbre-mature.png", event: firstArbreMature },
+      { key: "first_animal", label: "Premier animal", icon: "/icons/marketing/collections.png", event: firstAnimal },
     ]
 
     return defs.map((d) => ({
@@ -228,9 +228,9 @@ export class PortfolioEngine {
 
   getBeforeAfter(events: PortfolioEvent[]): BeforeAfterPair[] {
     const pairs: { label: string; icon: string; types: PortfolioEventType[] }[] = [
-      { label: "Premiers dessins", icon: "🎨", types: ["DRAWING_CREATED", "DRAWING_COMPLETED"] },
-      { label: "Coloriages", icon: "🖍️", types: ["COLORING_COMPLETED"] },
-      { label: "Livres", icon: "📚", types: ["BOOK_CREATED"] },
+      { label: "Premiers dessins", icon: "/icons/marketing/dessins.png", types: ["DRAWING_CREATED", "DRAWING_COMPLETED"] },
+      { label: "Coloriages", icon: "/icons/marketing/coloriages.png", types: ["COLORING_COMPLETED"] },
+      { label: "Livres", icon: "/icons/marketing/livres.png", types: ["BOOK_CREATED"] },
     ]
 
     return pairs.map((pair) => {
