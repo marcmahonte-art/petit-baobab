@@ -10,7 +10,7 @@ const ADULT_TOKEN = "sb-access-token";
 const STUDENT_TOKEN = "sb-student-token";
 
 // Routes enfant accessibles aux élèves (token étudiant) ou aux adultes
-const CHILD_ROUTES = ["/dashboard", "/dashboardstudent", "/learn/dashboard", "/coloriage", "/magic-drawing", "/livres-de-coloriage", "/mes-livres", "/parametres"];
+const CHILD_ROUTES = ["/dashboard", "/dashboardstudent", "/learn/dashboard", "/learn/souvenirs", "/coloriage", "/magic-drawing", "/livres-de-coloriage", "/mes-livres", "/parametres"];
 
 // Route parent (adulte uniquement) : un élève y est renvoyé vers son espace.
 const PARENT_ROUTES = ["/dashboard"];
