@@ -1,0 +1,261 @@
+
+<h2 class="sr-only">Fiche terrain Zone Baskuy – 10 crèches et écoles confirmées Ouagadougou</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.page{padding:1rem 0}
+.zone-header{background:var(--bg-accent);border:0.5px solid var(--border-accent);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.zone-dot{width:10px;height:10px;border-radius:50%;background:var(--fill-accent);flex-shrink:0}
+.zone-label{font-size:13px;font-weight:500;color:var(--text-accent)}
+.zone-sub{font-size:12px;color:var(--text-secondary);margin-top:1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.stat{background:var(--surface-1);border-radius:var(--radius);padding:.75rem 1rem}
+.stat-n{font-size:22px;font-weight:500;color:var(--text-primary)}
+.stat-l{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.sub-zone{font-size:10px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 6px;padding-left:2px}
+.cards{display:grid;gap:8px}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
+.card-top{padding:.875rem 1.125rem;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px}
+.nb{background:var(--bg-accent);color:var(--text-accent)}
+.card-name{font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:2px}
+.card-loc{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;margin-top:5px;margin-right:3px}
+.tg{background:var(--bg-success);color:var(--text-success)}
+.tb{background:var(--bg-accent);color:var(--text-accent)}
+.ta{background:var(--bg-warning);color:var(--text-warning)}
+.tp{background:var(--bg-pro);color:var(--text-pro)}
+.tc{background:var(--bg-danger);color:var(--text-danger)}
+.chevron{margin-left:auto;font-size:16px;color:var(--text-muted);transition:transform .2s;flex-shrink:0;margin-top:2px}
+.card-body{display:none;padding:0 1.125rem .875rem;border-top:0.5px solid var(--border)}
+.card-body.open{display:block}
+.tel-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.tel-row:last-child{border-bottom:none}
+.tel-label{font-size:11px;color:var(--text-secondary);width:90px;flex-shrink:0}
+.tel-val{font-size:13px;font-weight:500;color:var(--text-primary);font-family:var(--font-mono)}
+.tel-copy{margin-left:auto;font-size:12px;color:var(--text-accent);cursor:pointer;padding:2px 6px;border-radius:4px;border:0.5px solid var(--border-accent)}
+.tel-copy:hover{background:var(--bg-accent)}
+.note-box{margin-top:8px;background:var(--surface-1);border-radius:var(--radius);padding:8px 10px;font-size:12px;color:var(--text-secondary);line-height:1.5}
+.badge-mena{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg-success);color:var(--text-success);margin-left:6px;vertical-align:middle}
+.tip{background:var(--bg-accent);border-radius:var(--radius);padding:.75rem 1rem;font-size:12px;color:var(--text-accent);line-height:1.6;display:flex;gap:8px;align-items:flex-start;margin-top:1.25rem}
+</style>
+
+<div class="page">
+
+<div class="zone-header">
+  <div class="zone-dot"></div>
+  <div>
+    <div class="zone-label">Zone B — Arrondissement Baskuy</div>
+    <div class="zone-sub">Gounghin · Zone du Bois · Koulouba · Zogona · 1200 Logements · Paspanga · Larlé</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">Cibles identifiées</div></div>
+  <div class="stat"><div class="stat-n">8</div><div class="stat-l">Contacts vérifiés</div></div>
+  <div class="stat"><div class="stat-n">3</div><div class="stat-l">Tournées par sous-zone</div></div>
+</div>
+
+<div class="sub-zone">Gounghin / Zone du Bois</div>
+<div class="cards">
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">1</div>
+    <div style="flex:1">
+      <div class="card-name">Les Angelots du Faso <span style="font-size:10px;color:var(--text-secondary)">(Siège)</span></div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Gounghin · En face Centre Professionnel Yennega</div>
+      <span class="tag tg">Confirmée Kinamap</span><span class="tag tb">Bilingue</span><span class="tag tp">2 sites</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">25 40 89 59</span><button class="tel-copy" onclick="cp('25 40 89 59',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Facebook</span><span class="tel-val" style="font-family:var(--font-sans)">Les Angelots du Faso</span></div>
+    <div class="note-box">Siège Gounghin + Annexe Cité SOCOGIB face 75ème Anniversaire. Bilingue. "Plus qu'une crèche, une deuxième maison." 223 abonnés FB. Directrice probablement sur FB — DM avant visite physique.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">2</div>
+    <div style="flex:1">
+      <div class="card-name">Aliochette Crèche</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Zone du Bois · Près Lycée de l'Amitié</div>
+      <span class="tag tg">Confirmée blog Ayyahh</span><span class="tag ta">55 000 FCFA/mois</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Fixe</span><span class="tel-val">25 36 35 35</span><button class="tel-copy" onclick="cp('25 36 35 35',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Mobile</span><span class="tel-val">70 21 17 31</span><button class="tel-copy" onclick="cp('70 21 17 31',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Site web</span><span class="tel-val" style="font-family:var(--font-sans)">aliochettecreche-bf.com</span></div>
+    <div class="note-box">Zone du Bois = même secteur que Sherikidz. Structures coexistantes = ne pas mentionner l'une à l'autre. Tarif 55 000 FCFA = clientèle cadres/fonctionnaires.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">3</div>
+    <div style="flex:1">
+      <div class="card-name">Groupe Scolaire des Semailles</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Gounghin-Kaizer</div>
+      <span class="tag tg">Confirmée annuaire</span><span class="tag tp">Maternelle + Primaire</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">70 24 43 75</span><button class="tel-copy" onclick="cp('70 24 43 75',this)">Copier</button></div>
+    <div class="note-box">Complexe multi-cycles Gounghin-Kaizer. Argument Plan École-Pro annuel = plus pertinent que plan mensuel. Pitcher sur l'économie d'échelle : 1 abonnement pour toute la maternelle.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">4</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche Maternelle Joyeux Bambins</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Baskuy · Secteur 3</div>
+      <span class="tag tg">Source MENA officielle</span><span class="tag tb">Répertoriée 2024</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Tel</span><span class="tel-val">À confirmer terrain</span></div>
+    <div class="note-box">Source : liste officielle MENA Burkina Faso. Secteur 3 Baskuy = centre-ville résidentiel. À identifier adresse précise et directeur(trice) sur place. Probable proximité avec Larlé / Hamdalaye.</div>
+  </div>
+</div>
+
+</div>
+
+<div class="sub-zone">Koulouba / Zone diplomatique</div>
+<div class="cards">
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">5</div>
+    <div style="flex:1">
+      <div class="card-name">Ashraf Garden Crèche-Maternelle</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Koulouba · Face Ministère des Affaires Étrangères · Près Club BELKO</div>
+      <span class="tag tg">Confirmée Facebook 2024</span><span class="tag tp">Modèle Montessori</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Facebook</span><span class="tel-val" style="font-family:var(--font-sans)">Ashraf Garden</span></div>
+    <div class="tel-row"><span class="tel-label">Tel</span><span class="tel-val">À récupérer sur FB</span></div>
+    <div class="note-box">Bilingue Français-Anglais, inspirée Montessori. 3 mois à 5 ans. "Cadre aménagé et sécurisé." Zone Koulouba = ambassades + ministères = parents diplomates et cadres supérieurs. Budget le plus élevé.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">6</div>
+    <div style="flex:1">
+      <div class="card-name">Nursery Les Champions</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Koulouba · BP 64 37</div>
+      <span class="tag tg">Confirmée GoAfricaOnline</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">63 49 58 40</span><button class="tel-copy" onclick="cp('63 49 58 40',this)">Copier</button></div>
+    <div class="note-box">Nursery = 0-3 ans. Les parents reviennent à la même structure pour la maternelle. Argument Petit Baobab : continuer l'éveil numérique dans la continuité. Même tournée que Ashraf Garden.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">7</div>
+    <div style="flex:1">
+      <div class="card-name">École de la Nouvelle Alliance</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Koulouba · Av. John F. Kennedy</div>
+      <span class="tag tg">Confirmée SchoolListings</span><span class="tag tp">Maternelle + Primaire</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Tel</span><span class="tel-val">À confirmer terrain</span></div>
+    <div class="note-box">Av. JFK Koulouba = rue des ambassades. Adresse confirmée SchoolListings. Approche formelle recommandée : rendez-vous préalable par appel, pas de visite surprise. Se présenter comme partenaire pédagogique.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">8</div>
+    <div style="flex:1">
+      <div class="card-name">Lycée Saint-Exupéry — Maternelle</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Koulouba · Près Hôtel Indépendance</div>
+      <span class="tag tc">International</span><span class="tag tp">1000 élèves</span><span class="tag tg">Site officiel</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Site</span><span class="tel-val" style="font-family:var(--font-sans)">lfse.org</span></div>
+    <div class="note-box">Lycée français créé 1975. École primaire = maternelle incluse. ~1 000 élèves, 125 employés. Parents = diplomates, expatriés, cadres internationaux. Approche institutionnelle recommandée : contacter la direction administrative via lfse.org avant toute visite.</div>
+  </div>
+</div>
+
+</div>
+
+<div class="sub-zone">Zogona / 1200 Logements</div>
+<div class="cards">
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">9</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche-Maternelle Primaire Grâce Divine Internationale</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Rue de la Paix · 1200 Logements · Secteur 22</div>
+      <span class="tag tg">Confirmée SchoolListings + FB</span><span class="tag tp">Crèche → CM2</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">BP</span><span class="tel-val" style="font-family:var(--font-sans)">09BP244OUAGA09</span></div>
+    <div class="tel-row"><span class="tel-label">Facebook</span><span class="tel-val" style="font-family:var(--font-sans)">cmpgd1</span></div>
+    <div class="tel-row"><span class="tel-label">Tel</span><span class="tel-val">À récupérer sur FB</span></div>
+    <div class="note-box">1200 Logements = quartier fonctionnaires. Crèche complète de 3 mois au CM2. 131 abonnés FB. "Internationale" dans le nom = ambitions pédagogiques affirmées = directrice receptive à l'innovation.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num nb">10</div>
+    <div style="flex:1">
+      <div class="card-name">Les Lucioles — Crèche Halte-Garderie</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Ouagadougou Centre · Baskuy</div>
+      <span class="tag tg">Confirmée expat.com</span><span class="tag tb">Directrice identifiée</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">72 74 00 00</span><button class="tel-copy" onclick="cp('72 74 00 00',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Directrice</span><span class="tel-val" style="font-family:var(--font-sans)">Audrey Fournier Figueira</span></div>
+    <div class="note-box">Directrice francophone identifiée = appeler par son prénom. Halte-garderie = parents actifs qui travaillent = exactement les profils qui paient pour des outils numériques. Argument Petit Baobab : leur enfant continue l'éveil même en demi-journée.</div>
+  </div>
+</div>
+
+</div>
+
+<div class="tip">
+  <i class="ti ti-route" style="font-size:16px;flex-shrink:0;margin-top:2px" aria-hidden="true"></i>
+  <span><strong>Tournée 1 — Gounghin/Zone du Bois</strong> : Les Angelots → Aliochette → Semailles → Joyeux Bambins (même quadrant, 1 matinée). <strong>Tournée 2 — Koulouba</strong> : Ashraf Garden → Nursery Champions → Nouvelle Alliance → Saint-Exupéry (RDV préalable obligatoire pour les 2 dernières). <strong>Tournée 3 — Zogona/1200 Logements</strong> : Grâce Divine → Les Lucioles (récupérer contacts FB avant de partir).</span>
+</div>
+
+</div>
+
+<script>
+function tog(top){
+  const body=top.nextElementSibling;
+  const ch=top.querySelector('.chevron');
+  const open=body.classList.toggle('open');
+  ch.style.transform=open?'rotate(180deg)':'';
+}
+function cp(txt,btn){
+  navigator.clipboard.writeText(txt).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='Copié';
+    setTimeout(()=>btn.textContent=orig,1500);
+  }).catch(()=>{});
+}
+</script>

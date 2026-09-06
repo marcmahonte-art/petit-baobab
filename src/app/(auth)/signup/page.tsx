@@ -128,6 +128,10 @@ function SignupFormContent() {
       isSchool ? schoolWhatsapp : undefined
     )
     if (result.success) {
+      if (!isSchool) {
+        router.push("/learn/dashboard")
+        return
+      }
       setSuccessMessage(
         result.message ||
           (lang === "fr"
@@ -200,12 +204,12 @@ function SignupFormContent() {
 
         <PrimaryButton
           onClick={() =>
-            router.push(isSchool ? "/school/dashboard" : "/parents")
+            router.push(isSchool ? "/school/dashboard" : "/learn/dashboard")
           }
         >
           {isSchool
             ? (lang === "fr" ? "Accéder au tableau de bord" : "Go to Dashboard")
-            : (lang === "fr" ? "Accéder à l'espace parent" : "Go to Parent Space")}
+            : (lang === "fr" ? "Accéder au tableau de bord" : "Go to Dashboard")}
         </PrimaryButton>
       </motion.div>
     )

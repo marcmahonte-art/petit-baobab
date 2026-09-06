@@ -35,9 +35,8 @@ function getRedirectPath(opts: {
   if (plan === "ecole_pro" || hasSchoolSub || defaultSpace === "school") {
     return "/school/dashboard";
   }
-  // Famille / parent : espace parents (NE PAS rediriger vers /dashboard
-  // qui est désormais le back-office Super Admin réservé).
-  return "/parents";
+  // Famille / parent : tableau de bord d'apprentissage
+  return "/learn/dashboard";
 }
 
 export async function GET(request: Request) {
@@ -89,7 +88,7 @@ export async function GET(request: Request) {
       // Erreur de lecture : on redirige vers un espace sûr (pas de crash, pas de {}).
       logger.error("oauth-callback", accReadErr, { step: "read existing account", userId: user.id });
       await setAuthCookies(session.access_token, session.refresh_token);
-      return NextResponse.redirect(`${origin}/parents`);
+      return NextResponse.redirect(`${origin}/learn/dashboard`);
     }
 
     if (existingAccount) {

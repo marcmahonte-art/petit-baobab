@@ -1,0 +1,256 @@
+
+<h2 class="sr-only">Fiche terrain Zone A – crèches confirmées Ouaga 2000, Cité Azimmo, Patte d'Oie</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.page{padding:1rem 0}
+.zone-header{background:var(--bg-success);border:0.5px solid var(--border-success);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.zone-dot{width:10px;height:10px;border-radius:50%;background:var(--fill-success);flex-shrink:0}
+.zone-label{font-size:13px;font-weight:500;color:var(--text-success)}
+.zone-sub{font-size:12px;color:var(--text-secondary);margin-top:1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.stat{background:var(--surface-1);border-radius:var(--radius);padding:.75rem 1rem}
+.stat-n{font-size:22px;font-weight:500;color:var(--text-primary)}
+.stat-l{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.cards{display:grid;gap:10px}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
+.card-top{padding:.875rem 1.125rem;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px}
+.num-a{background:var(--bg-danger);color:var(--text-danger)}
+.card-name{font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:2px}
+.card-loc{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;margin-top:5px;margin-right:3px}
+.tag-green{background:var(--bg-success);color:var(--text-success)}
+.tag-blue{background:var(--bg-accent);color:var(--text-accent)}
+.tag-amber{background:var(--bg-warning);color:var(--text-warning)}
+.tag-purple{background:var(--bg-pro);color:var(--text-pro)}
+.chevron{margin-left:auto;font-size:16px;color:var(--text-muted);transition:transform .2s;flex-shrink:0;margin-top:2px}
+.card-body{display:none;padding:0 1.125rem .875rem;border-top:0.5px solid var(--border)}
+.card-body.open{display:block}
+.tel-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.tel-row:last-child{border-bottom:none}
+.tel-label{font-size:11px;color:var(--text-secondary);width:90px;flex-shrink:0}
+.tel-val{font-size:13px;font-weight:500;color:var(--text-primary);font-family:var(--font-mono)}
+.tel-copy{margin-left:auto;font-size:12px;color:var(--text-accent);cursor:pointer;padding:2px 6px;border-radius:4px;border:0.5px solid var(--border-accent)}
+.tel-copy:hover{background:var(--bg-accent)}
+.note-box{margin-top:8px;background:var(--surface-1);border-radius:var(--radius);padding:8px 10px;font-size:12px;color:var(--text-secondary);line-height:1.5}
+.tarif{font-size:11px;color:var(--text-muted);margin-top:6px}
+.sep{height:1px;background:var(--border);margin:1rem 0}
+.section-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:1rem}
+.tip{background:var(--bg-accent);border-radius:var(--radius);padding:.75rem 1rem;font-size:12px;color:var(--text-accent);line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+</style>
+
+<div class="page">
+
+<div class="zone-header">
+  <div class="zone-dot"></div>
+  <div>
+    <div class="zone-label">Zone A — Ouaga 2000 · Cité Azimmo · Patte d'Oie</div>
+    <div class="zone-sub">Arrondissement Boulmiougou · Priorité maximale · Tournée sem.1</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n">10</div><div class="stat-l">Cibles confirmées</div></div>
+  <div class="stat"><div class="stat-n">9</div><div class="stat-l">Numéros vérifiés</div></div>
+  <div class="stat"><div class="stat-n">1</div><div class="stat-l">Tournée ≈ 2 jours</div></div>
+</div>
+
+<div class="cards">
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">1</div>
+    <div style="flex:1">
+      <div class="card-name">Sherikidz Crèche-Maternelle-Primaire</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Cité Azimmo, en face Palace Hôtel · Ouaga 2000</div>
+      <span class="tag tag-amber">80 000 FCFA/mois</span><span class="tag tag-purple">3 mois → CM2</span><span class="tag tag-green">Site web</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">61 37 92 55</span><button class="tel-copy" onclick="cp('61 37 92 55',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Fixe 1</span><span class="tel-val">25 36 36 24</span><button class="tel-copy" onclick="cp('25 36 36 24',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Fixe 2</span><span class="tel-val">25 37 50 23</span><button class="tel-copy" onclick="cp('25 37 50 23',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Site web</span><span class="tel-val" style="font-family:var(--font-sans)">sherikidz.com</span></div>
+    <div class="note-box">2 sites : Azimmo Ouaga 2000 + Zone du Bois (derrière Clinique Frany). La plus premium de la zone. Tarif le plus élevé = budget digital fort. Cible idéale pour Plan École-Pro.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">2</div>
+    <div style="flex:1">
+      <div class="card-name">Rayan Garden</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> 388 Cité Azimmo, Secteur 16 · Ouaga 2000</div>
+      <span class="tag tag-amber">56 000 FCFA/mois</span><span class="tag tag-green">Source confirmée</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">77 94 73 63</span><button class="tel-copy" onclick="cp('77 94 73 63',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Secondaire</span><span class="tel-val">72 09 01 23</span><button class="tel-copy" onclick="cp('72 09 01 23',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Fixe</span><span class="tel-val">63 00 34 55</span><button class="tel-copy" onclick="cp('63 00 34 55',this)">Copier</button></div>
+    <div class="note-box">388 Azimmo Sect.16 = adresse précise. Même bloc que Sherikidz et La Colombe. Une seule tournée couvre 3 crèches dans la zone Azimmo.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">3</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche privée La Colombe</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Cité Azimmo Villa 92, Secteur 16 · Ouaga 2000</div>
+      <span class="tag tag-amber">30 000 FCFA/mois</span><span class="tag tag-green">2 numéros</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">78 55 59 55</span><button class="tel-copy" onclick="cp('78 55 59 55',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Kinamap</span><span class="tel-val">25 37 65 64</span><button class="tel-copy" onclick="cp('25 37 65 64',this)">Copier</button></div>
+    <div class="note-box">Adresse précise : Villa 92, Cité Azimmo. Source vérifiée expat.com + blog ayyahh. Tarif accessible = plus de familles = plus d'enfants = argument volume fort.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">4</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche Canaan</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Cité Azimmo · Ouaga 2000</div>
+      <span class="tag tag-amber">28 500 FCFA/mois</span><span class="tag tag-blue">Demi-journée dispo</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">78 19 70 69</span><button class="tel-copy" onclick="cp('78 19 70 69',this)">Copier</button></div>
+    <div class="note-box">Source : blog ayyahh.com. Demi-journée à 20 000 FCFA = familles nombreuses à budget modéré. Argument Petit Baobab : enrichir l'offre sans coût matériel supplémentaire.</div>
+    <div class="tarif">Demi-journée : 20 000 FCFA · Journée : 28 500 FCFA</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">5</div>
+    <div style="flex:1">
+      <div class="card-name">Les Chérubins (Bilingue)</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Ouaga 2000 · Côté sud Joly Hotel · 50m Rosa Deventi</div>
+      <span class="tag tag-purple">3 mois → CM2</span><span class="tag tag-blue">Bilingue</span><span class="tag tag-green">3 numéros</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Fixe</span><span class="tel-val">25 37 44 08</span><button class="tel-copy" onclick="cp('25 37 44 08',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Mobile 1</span><span class="tel-val">58 63 21 63</span><button class="tel-copy" onclick="cp('58 63 21 63',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Mobile 2</span><span class="tel-val">63 29 40 29</span><button class="tel-copy" onclick="cp('63 29 40 29',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Localisation</span><span class="tel-val" style="font-family:var(--font-sans)">BP 14BP106 Ouaga</span></div>
+    <div class="note-box">Bilingue F/A. Camp vacances + activités artistiques. Très actif sur Facebook. Salle climatisée. Structure moderne = directrice receptive au numérique.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">6</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche-Maternelle Les Élus</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Ouaga 2000 (BP255 Ouaga 11)</div>
+      <span class="tag tag-amber">25 000 FCFA/mois</span><span class="tag tag-green">Directrice identifiée</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Directrice</span><span class="tel-val">70 24 93 39</span><button class="tel-copy" onclick="cp('70 24 93 39',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Secrétariat</span><span class="tel-val">50 46 23 01</span><button class="tel-copy" onclick="cp('50 46 23 01',this)">Copier</button></div>
+    <div class="tel-row"><span class="tel-label">Autre</span><span class="tel-val">70 20 44 45</span><button class="tel-copy" onclick="cp('70 20 44 45',this)">Copier</button></div>
+    <div class="note-box">Directrice : Mme Ouedraogo Zalissa — appeler par son nom dès le premier contact. Tarif le plus accessible = plus d'enfants inscrits = argument volume Petit Baobab.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">7</div>
+    <div style="flex:1">
+      <div class="card-name">International Trilingual School</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> BP11461 · Ouaga 2000</div>
+      <span class="tag tag-blue">3 langues</span><span class="tag tag-purple">Budget premium</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">07 20 44 44</span><button class="tel-copy" onclick="cp('07 20 44 44',this)">Copier</button></div>
+    <div class="note-box">Source GoAfricaOnline. Trilingue = parents expatriés/diplomates = budget le plus élevé de la zone. Pitch en anglais conseillé. Demander à parler à la director (pas la directrice).</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">8</div>
+    <div style="flex:1">
+      <div class="card-name">Crèche Maternelle Nechamah</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Cité Diaspora ext. sud · Ouaga 2000 après Balkuy vers Kouba</div>
+      <span class="tag tag-blue">Bilingue + anglais</span><span class="tag tag-green">Confirmée 2024</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Principal</span><span class="tel-val">73 11 32 32</span><button class="tel-copy" onclick="cp('73 11 32 32',this)">Copier</button></div>
+    <div class="note-box">Cité Diaspora extension sud Ouaga 2000 = zone résidentielle récente. Initiation anglais depuis 2024. Activités : bricolage, coloriage, cuisine, lecture, jardinage. Alignement parfait avec Petit Baobab.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">9</div>
+    <div style="flex:1">
+      <div class="card-name">Le Château des Petits Anges</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Ouaga 2000 (site web actif)</div>
+      <span class="tag tag-green">Site web</span><span class="tag tag-purple">Premium</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Site</span><span class="tel-val" style="font-family:var(--font-sans)">lechateaudespetitsanges.com</span></div>
+    <div class="note-box">Contact via site web. Récupérer le numéro de téléphone sur la page contact avant la visite. Structure premium = directrice habituée aux outils numériques. Approche digitale prioritaire.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-top" onclick="tog(this)">
+    <div class="num num-a">10</div>
+    <div style="flex:1">
+      <div class="card-name">Blossom Crèche et Maternelle</div>
+      <div class="card-loc"><i class="ti ti-map-pin" aria-hidden="true"></i> Ouaga 2000 / Zone du Bois (à confirmer)</div>
+      <span class="tag tag-green">Site web</span><span class="tag tag-blue">Moderne sécurisé</span>
+    </div>
+    <i class="ti ti-chevron-down chevron"></i>
+  </div>
+  <div class="card-body">
+    <div class="tel-row"><span class="tel-label">Site</span><span class="tel-val" style="font-family:var(--font-sans)">blossom-burkina.com</span></div>
+    <div class="note-box">Récupérer contacts sur blossom-burkina.com avant visite. Positionnement 'moderne et sécurisé' = directrice tech-friendly. La crèche qui a un site web = pas besoin de convaincre sur le numérique.</div>
+  </div>
+</div>
+
+</div>
+
+<div class="section-title" style="margin-top:1.25rem">Ordre de visite recommandé</div>
+<div class="tip">
+  <i class="ti ti-route" style="font-size:16px;flex-shrink:0;margin-top:2px" aria-hidden="true"></i>
+  <span><strong>Jour 1 matin</strong> — Sherikidz → Rayan Garden → La Colombe → Canaan (même bloc Azimmo, à pied). <strong>Jour 1 après-midi</strong> — Les Chérubins → Les Élus (Ouaga 2000 sud). <strong>Jour 2 matin</strong> — Trilingual School → Nechamah (Cité Diaspora). <strong>Jour 2 après-midi</strong> — Château des Petits Anges + Blossom (appeler avant pour RDV).</span>
+</div>
+
+</div>
+
+<script>
+function tog(top){
+  const body=top.nextElementSibling;
+  const ch=top.querySelector('.chevron');
+  const open=body.classList.toggle('open');
+  ch.style.transform=open?'rotate(180deg)':'';
+}
+function cp(txt,btn){
+  navigator.clipboard.writeText(txt).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='Copié';
+    setTimeout(()=>btn.textContent=orig,1500);
+  }).catch(()=>{});
+}
+</script>

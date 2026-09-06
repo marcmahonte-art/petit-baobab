@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       .maybeSingle()
     await setRoleCookie(roleAccount?.plan || "free")
 
-    return NextResponse.redirect(`${origin}/parents`)
+    return NextResponse.redirect(`${origin}/learn/dashboard`)
   } catch (err: any) {
     console.error("Complete signup error:", err)
     const { origin } = new URL(request.url)
