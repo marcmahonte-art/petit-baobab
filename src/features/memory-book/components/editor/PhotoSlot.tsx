@@ -106,9 +106,9 @@ export const PhotoSlot: React.FC<PhotoSlotProps> = ({
 
   // Classes de ratio de dimensions
   const ratioClasses = {
-    portrait: "aspect-[4/5] min-h-[260px]",
-    square: "aspect-square min-h-[220px]",
-    landscape: "aspect-[16/10] min-h-[200px]",
+    portrait: "aspect-[4/5] min-h-[520px]",
+    square: "aspect-square min-h-[440px]",
+    landscape: "aspect-[16/10] min-h-[400px]",
   }[aspectRatio];
 
   return (
@@ -126,7 +126,7 @@ export const PhotoSlot: React.FC<PhotoSlotProps> = ({
       {/* Cadre de photo clippé */}
       <div
         ref={containerRef}
-        className={`relative w-full max-w-[340px] md:max-w-[400px] ${ratioClasses} rounded-2xl overflow-hidden border-4 border-dashed ${
+        className={`relative w-full max-w-[680px] md:max-w-[800px] ${ratioClasses} rounded-2xl overflow-hidden border-4 border-dashed ${
           imageUrl ? "border-purple-300 bg-black/5 shadow-md" : "border-amber-300 bg-amber-50/60 hover:bg-amber-100/60"
         } transition-colors flex items-center justify-center select-none`}
       >
