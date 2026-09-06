@@ -49,6 +49,29 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       const { jsPDF } = await import("jspdf");
       const html2canvas = (await import("html2canvas")).default;
 
+      // Helper to ensure all images use base64 data URLs (avoids CORS issues)
+      const convertImgSrcToDataUrl = async (container: HTMLElement) => {
+        const imgEls = container.querySelectorAll('img');
+        const promises = Array.from(imgEls).map(async (img) => {
+          const src = img.getAttribute('src') || '';
+          if (src.startsWith('data:')) return; // already a data URL
+          try {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            const reader = new FileReader();
+            const dataUrl: string = await new Promise((resolve, reject) => {
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            img.setAttribute('src', dataUrl);
+          } catch (e) {
+            console.warn('Impossible de convertir l\'image en data URL', src, e);
+          }
+        });
+        await Promise.all(promises);
+      };
+
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -60,6 +83,9 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
       for (let i = 0; i < total; i++) {
         const el = pageElements[i] as HTMLElement;
+        // Ensure images in this page are base64 before capturing
+        await convertImgSrcToDataUrl(el);
+
         setProgress(Math.round(((i + 1) / total) * 90));
         setStatusMsg(`Capture de la page ${i + 1}/${total}...`);
 
