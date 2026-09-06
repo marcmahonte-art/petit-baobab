@@ -98,6 +98,7 @@ export interface MemoryBookRecord {
   status: MemoryBookStatus;
   cover_color?: string;
   pages_data: MemoryBookPage[];
+  answers_data?: Record<string, string>;
   thumbnail_url?: string;
   created_at: string;
   updated_at: string;

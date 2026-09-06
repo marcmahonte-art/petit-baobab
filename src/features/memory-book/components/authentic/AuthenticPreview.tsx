@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { MemoryBookRecord } from "../../types/memory-book.types";
-import { ArrowLeft, Printer, Download, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Printer, Download, Loader2, CheckCircle2, Heart, XCircle, Star, Laugh, Lightbulb, BookOpen, Pencil, Award } from "lucide-react";
 
 interface AuthenticPreviewProps {
   book: MemoryBookRecord;
 }
+
+type LegacyPagesData = MemoryBookRecord["pages_data"] & {
+  answers?: Record<string, string>;
+};
 
 export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -17,8 +21,8 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
   // Extraire les réponses enregistrées
   const answers: Record<string, string> =
-    (book as any).answers_data ||
-    (Array.isArray(book.pages_data) && (book.pages_data as any).answers) ||
+    book.answers_data ||
+    (Array.isArray(book.pages_data) && (book.pages_data as LegacyPagesData).answers) ||
     {};
 
   // Si des données étaient stockées au format page[] antérieur :
@@ -350,13 +354,19 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
           <div className="grid grid-cols-2 gap-6 mt-4">
             <div className="bg-white border-2 border-[#4C9A2A] rounded-xl p-4 shadow-sm min-h-[140px]">
-              <div className="caveat-font font-bold text-2xl text-[#4C9A2A] mb-1">J&apos;adore ❤️</div>
+              <div className="caveat-font font-bold text-2xl text-[#4C9A2A] mb-1 flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                <span>J&apos;adore</span>
+              </div>
               <p className="caveat-font text-xl text-[#0F8B8C] leading-relaxed">
                 {answers["p-adore"] || "……………………………………………………………………………………"}
               </p>
             </div>
             <div className="bg-white border-2 border-[#F7941D] rounded-xl p-4 shadow-sm min-h-[140px]">
-              <div className="caveat-font font-bold text-2xl text-[#F7941D] mb-1">Je déteste ❌</div>
+              <div className="caveat-font font-bold text-2xl text-[#F7941D] mb-1 flex items-center gap-2">
+                <XCircle className="h-5 w-5" />
+                <span>Je déteste</span>
+              </div>
               <p className="caveat-font text-xl text-[#0F8B8C] leading-relaxed">
                 {answers["p-deteste"] || "……………………………………………………………………………………"}
               </p>
@@ -396,21 +406,30 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
           <div className="mt-8 space-y-6">
             <div>
-              <span className="font-extrabold text-[#5b5648] text-sm block">Mon meilleur souvenir 🌟</span>
+              <span className="font-extrabold text-[#5b5648] text-sm flex items-center gap-1.5">
+                <Star className="h-4 w-4 text-[#FBB03B]" />
+                Mon meilleur souvenir
+              </span>
               <div className="caveat-font text-2xl text-[#0F8B8C] border-b-2 border-dotted border-[#C9BFA9] min-h-[44px] pt-1">
                 {answers["a-souvenir"] || "………………………………………………………………………………………………………………………………"}
               </div>
             </div>
 
             <div>
-              <span className="font-extrabold text-[#5b5648] text-sm block">Le moment le plus rigolo 😂</span>
+              <span className="font-extrabold text-[#5b5648] text-sm flex items-center gap-1.5">
+                <Laugh className="h-4 w-4 text-[#F7941D]" />
+                Le moment le plus rigolo
+              </span>
               <div className="caveat-font text-2xl text-[#0F8B8C] border-b-2 border-dotted border-[#C9BFA9] min-h-[44px] pt-1">
                 {answers["a-rigolo"] || "………………………………………………………………………………………………………………………………"}
               </div>
             </div>
 
             <div>
-              <span className="font-extrabold text-[#5b5648] text-sm block">Ce que j&apos;ai appris cette année 💡</span>
+              <span className="font-extrabold text-[#5b5648] text-sm flex items-center gap-1.5">
+                <Lightbulb className="h-4 w-4 text-[#FFD95C]" />
+                Ce que j&apos;ai appris cette année
+              </span>
               <div className="caveat-font text-2xl text-[#0F8B8C] border-b-2 border-dotted border-[#C9BFA9] min-h-[44px] pt-1">
                 {answers["a-appris"] || "………………………………………………………………………………………………………………………………"}
               </div>
@@ -498,7 +517,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
           <div className="flex justify-center gap-12 mt-10">
             <div className="w-[200px] min-h-[300px] border-[3px] border-[#3A362E] rounded-2xl bg-white p-5 text-center relative shadow-md">
               <span className="w-3.5 h-3.5 rounded-full bg-[#F3EBDA] border-2 border-[#3A362E] absolute top-3 left-1/2 -translate-x-1/2" />
-              <div className="text-4xl mt-4 mb-2">📚</div>
+              <BookOpen className="h-10 w-10 mt-4 mb-2 mx-auto text-[#7D6AF8]" />
               <div className="caveat-font font-bold text-2xl text-[#7A3B1D] border-b-2 border-dotted border-[#C9BFA9] pb-1 mb-3">
                 {answers["tag-livres-title"] ?? "Mes livres préférés"}
               </div>
@@ -509,7 +528,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
             <div className="w-[200px] min-h-[300px] border-[3px] border-[#3A362E] rounded-2xl bg-white p-5 text-center relative shadow-md">
               <span className="w-3.5 h-3.5 rounded-full bg-[#F3EBDA] border-2 border-[#3A362E] absolute top-3 left-1/2 -translate-x-1/2" />
-              <div className="text-4xl mt-4 mb-2">✏️</div>
+              <Pencil className="h-10 w-10 mt-4 mb-2 mx-auto text-[#F7941D]" />
               <div className="caveat-font font-bold text-2xl text-[#7A3B1D] border-b-2 border-dotted border-[#C9BFA9] pb-1 mb-3">
                 {answers["tag-livres2-title"] || "Mes lectures"}
               </div>
@@ -534,7 +553,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
           <div className="flex justify-center gap-12 mt-10">
             <div className="w-[200px] min-h-[300px] border-[3px] border-[#3A362E] rounded-2xl bg-white p-5 text-center relative shadow-md">
               <span className="w-3.5 h-3.5 rounded-full bg-[#F3EBDA] border-2 border-[#3A362E] absolute top-3 left-1/2 -translate-x-1/2" />
-              <div className="text-4xl mt-4 mb-2">🏅</div>
+              <Award className="h-10 w-10 mt-4 mb-2 mx-auto text-[#7D6AF8]" />
               <div className="caveat-font font-bold text-2xl text-[#7A3B1D] border-b-2 border-dotted border-[#C9BFA9] pb-1 mb-3">
                 {answers["tag-fiertes-title"] ?? "Mes fiertés"}
               </div>
@@ -545,7 +564,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
 
             <div className="w-[200px] min-h-[300px] border-[3px] border-[#3A362E] rounded-2xl bg-white p-5 text-center relative shadow-md">
               <span className="w-3.5 h-3.5 rounded-full bg-[#F3EBDA] border-2 border-[#3A362E] absolute top-3 left-1/2 -translate-x-1/2" />
-              <div className="text-4xl mt-4 mb-2">⭐</div>
+              <Star className="h-10 w-10 mt-4 mb-2 mx-auto text-[#FBB03B]" />
               <div className="caveat-font font-bold text-2xl text-[#7A3B1D] border-b-2 border-dotted border-[#C9BFA9] pb-1 mb-3">
                 {answers["tag-fiertes2-title"] || "Mes réussites"}
               </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MemoryBookRecord } from "../../types/memory-book.types";
 import { memoryBookService } from "../../services/memoryBookService";
 import { memoryStorageService } from "../../services/memoryStorageService";
-import { ArrowLeft, Eye, Printer, Save, Loader2, Sparkles, Trash2, Camera } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, Trash2, Camera, Heart, XCircle, Star, Laugh, Lightbulb, BookOpen, Pencil, Award } from "lucide-react";
 
 interface AuthenticNotebookProps {
   initialBook: MemoryBookRecord;
@@ -25,6 +25,10 @@ export const PAGES_CONFIG = [
   { id: "secrets", label: "Secrets" },
 ];
 
+type LegacyPagesData = MemoryBookRecord["pages_data"] & {
+  answers?: Record<string, string>;
+};
+
 export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
   initialBook,
   profileId,
@@ -39,57 +43,48 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
   // Charger les données initiales du livre
   useEffect(() => {
     if (initialBook) {
+      const legacyPages = initialBook.pages_data as LegacyPagesData;
       const existingAnswers: Record<string, string> =
-        (initialBook as any).answers_data ||
-        (Array.isArray(initialBook.pages_data) && (initialBook.pages_data as any).answers) ||
+        initialBook.answers_data ||
+        (Array.isArray(initialBook.pages_data) && legacyPages.answers) ||
         {};
+      const nextAnswers = { ...existingAnswers };
 
       // Si pages_data contenait des données structurées antérieures, on fait le pont
       if (Array.isArray(initialBook.pages_data)) {
         initialBook.pages_data.forEach((p) => {
           p.elements?.forEach((el) => {
             if (el.textData?.value) {
-              existingAnswers[el.id] = el.textData.value;
+              nextAnswers[el.id] = el.textData.value;
             }
             if (el.photoData?.url) {
-              existingAnswers[el.id] = el.photoData.url;
+              nextAnswers[el.id] = el.photoData.url;
             }
           });
         });
       }
 
-      if (initialBook.school_year && !existingAnswers["cover-year"]) {
-        existingAnswers["cover-year"] = initialBook.school_year;
+      if (initialBook.school_year && !nextAnswers["cover-year"]) {
+        nextAnswers["cover-year"] = initialBook.school_year;
       }
 
-      setAnswers(existingAnswers);
+      const timer = window.setTimeout(() => setAnswers(nextAnswers), 0);
+      return () => window.clearTimeout(timer);
     }
   }, [initialBook]);
 
-  // Sauvegarde automatique avec debounce
-  useEffect(() => {
-    if (!hasChanges) return;
-
-    const timer = setTimeout(async () => {
-      await saveBook();
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [hasChanges, answers]);
-
-  const saveBook = async () => {
+  const saveBook = useCallback(async () => {
     try {
       setIsSaving(true);
       setSaveStatus("Enregistrement...");
 
       const updated = await memoryBookService.updateBook(initialBook.id, {
         school_year: answers["cover-year"] || initialBook.school_year,
-        pages_data: { answers } as any,
+        pages_data: { answers } as unknown as MemoryBookRecord["pages_data"],
         status: "in_progress",
       });
 
-      // Synchroniser également dans answers_data si applicable
-      (updated as any).answers_data = answers;
+      updated.answers_data = answers;
 
       setHasChanges(false);
       setSaveStatus("Enregistré ✓");
@@ -102,7 +97,18 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [answers, initialBook.id, initialBook.school_year]);
+
+  // Sauvegarde automatique avec debounce
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const timer = setTimeout(async () => {
+      await saveBook();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [hasChanges, saveBook]);
 
   const handleChange = (key: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [key]: val }));
@@ -738,7 +744,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               {/* Deux notes en papier en dessous : J'adore & Je déteste */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div className="bg-white border-2 border-[#4C9A2A] rounded-xl p-3.5 shadow-sm">
-                  <div className="caveat-font font-bold text-2xl text-[#4C9A2A] mb-1">J&apos;adore ❤️</div>
+                  <div className="caveat-font font-bold text-2xl text-[#4C9A2A] mb-1 flex items-center gap-2">
+                    <Heart className="h-5 w-5" />
+                    <span>J&apos;adore</span>
+                  </div>
                   <textarea
                     className="w-full min-h-[70px] border-none bg-transparent resize-none font-['Quicksand'] font-medium text-sm text-[#3A362E] outline-none"
                     placeholder="Écris ici tout ce que tu adores…"
@@ -748,7 +757,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
                 </div>
 
                 <div className="bg-white border-2 border-[#F7941D] rounded-xl p-3.5 shadow-sm">
-                  <div className="caveat-font font-bold text-2xl text-[#F7941D] mb-1">Je déteste ❌</div>
+                  <div className="caveat-font font-bold text-2xl text-[#F7941D] mb-1 flex items-center gap-2">
+                    <XCircle className="h-5 w-5" />
+                    <span>Je déteste</span>
+                  </div>
                   <textarea
                     className="w-full min-h-[70px] border-none bg-transparent resize-none font-['Quicksand'] font-medium text-sm text-[#3A362E] outline-none"
                     placeholder="Écris ici tout ce que tu détestes…"
@@ -811,7 +823,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               </div>
 
               <label className="font-extrabold text-[#5b5648] text-sm block mt-4">
-                Mon meilleur souvenir 🌟
+                <span className="inline-flex items-center gap-1.5">
+                  <Star className="h-4 w-4 text-[#FBB03B]" />
+                  Mon meilleur souvenir
+                </span>
               </label>
               <textarea
                 className="cahier-fill-block min-h-[52px]"
@@ -821,7 +836,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               />
 
               <label className="font-extrabold text-[#5b5648] text-sm block mt-3">
-                Le moment le plus rigolo 😂
+                <span className="inline-flex items-center gap-1.5">
+                  <Laugh className="h-4 w-4 text-[#F7941D]" />
+                  Le moment le plus rigolo
+                </span>
               </label>
               <textarea
                 className="cahier-fill-block min-h-[52px]"
@@ -831,7 +849,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               />
 
               <label className="font-extrabold text-[#5b5648] text-sm block mt-3">
-                Ce que j&apos;ai appris cette année 💡
+                <span className="inline-flex items-center gap-1.5">
+                  <Lightbulb className="h-4 w-4 text-[#FFD95C]" />
+                  Ce que j&apos;ai appris cette année
+                </span>
               </label>
               <textarea
                 className="cahier-fill-block min-h-[52px]"
@@ -935,7 +956,7 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               <div className="flex flex-wrap gap-8 justify-center mt-6">
                 <div className="cahier-tag-card">
                   <span className="cahier-hole" />
-                  <div className="text-3xl mt-2 mb-1">📚</div>
+                  <BookOpen className="w-8 h-8 mt-2 mb-1 text-[#7D6AF8]" />
                   <input
                     className="cahier-tag-title"
                     value={answers["tag-livres-title"] ?? "Mes livres préférés"}
@@ -951,7 +972,7 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
 
                 <div className="cahier-tag-card">
                   <span className="cahier-hole" />
-                  <div className="text-3xl mt-2 mb-1">✏️</div>
+                  <Pencil className="w-8 h-8 mt-2 mb-1 text-[#F7941D]" />
                   <input
                     className="cahier-tag-title"
                     placeholder="Titre libre…"
@@ -980,7 +1001,7 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
               <div className="flex flex-wrap gap-8 justify-center mt-6">
                 <div className="cahier-tag-card">
                   <span className="cahier-hole" />
-                  <div className="text-3xl mt-2 mb-1">🏅</div>
+                  <Award className="w-8 h-8 mt-2 mb-1 text-[#7D6AF8]" />
                   <input
                     className="cahier-tag-title"
                     value={answers["tag-fiertes-title"] ?? "Mes fiertés"}
@@ -996,7 +1017,7 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
 
                 <div className="cahier-tag-card">
                   <span className="cahier-hole" />
-                  <div className="text-3xl mt-2 mb-1">⭐</div>
+                  <Star className="w-8 h-8 mt-2 mb-1 text-[#FBB03B]" />
                   <input
                     className="cahier-tag-title"
                     placeholder="Titre libre…"

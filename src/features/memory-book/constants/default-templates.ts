@@ -29,7 +29,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
             zoom: 1,
             offsetX: 0,
             offsetY: 0,
-            placeholderText: 'Ajouter ma photo de classe ou mon portrait 📸'
+            placeholderText: 'Ajouter ma photo de classe ou mon portrait'
           }
         },
         {
@@ -185,7 +185,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p3_txt_jadore',
           type: 'text',
-          title: 'Ce que j’adore ❤️',
+          title: 'Ce que j’adore',
           textData: {
             value: '',
             placeholder: 'Jouer à la récréation, écouter des histoires, rigoler...',
@@ -198,7 +198,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p3_txt_deteste',
           type: 'text',
-          title: 'Ce que je déteste ❌',
+          title: 'Ce que je déteste',
           textData: {
             value: '',
             placeholder: 'Me réveiller tôt le lundi, les épinards bouillis...',
@@ -271,7 +271,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p5_txt_meilleur_souvenir',
           type: 'text',
-          title: 'Mon meilleur souvenir de l’année 🌟',
+          title: 'Mon meilleur souvenir de l’année',
           textData: {
             value: '',
             placeholder: 'Raconte ton moment magique (sortie scolaire, fête, jeu entre amis)...',
@@ -284,7 +284,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p5_txt_moment_rigolo',
           type: 'text',
-          title: 'Le moment le plus rigolo de l’année 😂',
+          title: 'Le moment le plus rigolo de l’année',
           textData: {
             value: '',
             placeholder: 'Le jour où toute la classe a éclaté de rire...',
@@ -297,7 +297,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p5_txt_projet_prefere',
           type: 'text',
-          title: 'Mon projet ou atelier préféré 🎨',
+          title: 'Mon projet ou atelier préféré',
           textData: {
             value: '',
             placeholder: 'Le spectacle, l’exposé, le dessin ou la maquette que j’ai adoré faire...',
@@ -323,7 +323,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p6_txt_decouverte',
           type: 'text',
-          title: 'Les choses les plus importantes que j’ai apprises 💡',
+          title: 'Les choses les plus importantes que j’ai apprises',
           textData: {
             value: '',
             placeholder: 'Lire de vrais livres tout seul, faire de grandes multiplications, parler anglais...',
@@ -336,7 +336,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p6_txt_livres',
           type: 'text',
-          title: 'Mes livres ou histoires préférés 📚',
+          title: 'Mes livres ou histoires préférés',
           textData: {
             value: '',
             placeholder: 'Les titres des contes ou livres que j’ai adoré lire...',
@@ -347,7 +347,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p6_txt_fiertes',
           type: 'text',
-          title: 'Mes plus grandes fiertés 🏆',
+          title: 'Mes plus grandes fiertés',
           textData: {
             value: '',
             placeholder: 'Ce dont je suis particulièrement fier(e) d’avoir réussi cette année...',
@@ -489,7 +489,7 @@ export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
         {
           id: 'p9_txt_signature',
           type: 'text',
-          title: 'Signé par l’artiste ! ✍️',
+          title: 'Signé par l’artiste !',
           textData: {
             value: '',
             placeholder: 'Ton prénom ou ta signature magique',
