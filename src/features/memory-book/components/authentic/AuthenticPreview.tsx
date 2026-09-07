@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { MemoryBookRecord } from "../../types/memory-book.types";
 import { ArrowLeft, Printer, Download, Loader2, CheckCircle2, Heart, XCircle, Star, Laugh, Lightbulb, BookOpen, Pencil, Award } from "lucide-react";
@@ -15,9 +15,11 @@ type LegacyPagesData = MemoryBookRecord["pages_data"] & {
 
 export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMsg, setStatusMsg] = useState("");
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
+  const pagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Extraire les réponses enregistrées
   const answers: Record<string, string> =
@@ -39,11 +41,52 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
     });
   }
 
-  const handlePrint = () => {
-    window.print();
-  };
+  // Attendre que toutes les images dans un conteneur soient chargées
+  const waitForAllImages = useCallback(async (container: HTMLElement): Promise<void> => {
+    const images = Array.from(container.querySelectorAll('img'));
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+          return Promise.resolve();
+        }
+        return new Promise<void>((resolve) => {
+          img.addEventListener('load', () => resolve(), { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
+        });
+      })
+    );
+  }, []);
 
-  const handleDownloadPdf = async () => {
+  // Attendre le rendu du navigateur (2 frames)
+  const waitForRender = useCallback(async (): Promise<void> => {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }, []);
+
+  const handlePrint = useCallback(async () => {
+    if (!pagesContainerRef.current) return;
+    
+    setIsPrinting(true);
+    try {
+      // 1. Attendre que toutes les images soient chargées
+      await waitForAllImages(pagesContainerRef.current);
+      
+      // 2. Attendre le rendu
+      await waitForRender();
+      
+      // 3. Lancer l'impression native
+      window.print();
+    } catch (err) {
+      console.error("Erreur impression:", err);
+    } finally {
+      setIsPrinting(false);
+    }
+  }, [waitForAllImages, waitForRender]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (!pagesContainerRef.current) return;
+    
     try {
       setIsGeneratingPdf(true);
       setPdfDownloaded(false);
@@ -53,27 +96,13 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       const { jsPDF } = await import("jspdf");
       const html2canvas = (await import("html2canvas")).default;
 
-      const convertImgSrcToDataUrl = async (container: HTMLElement) => {
-        const imgEls = container.querySelectorAll('img');
-        const promises = Array.from(imgEls).map(async (img) => {
-          const src = img.getAttribute('src') || '';
-          if (src.startsWith('data:')) return;
-          try {
-            const response = await fetch(src);
-            const blob = await response.blob();
-            const reader = new FileReader();
-            const dataUrl: string = await new Promise((resolve, reject) => {
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-            img.setAttribute('src', dataUrl);
-          } catch (e) {
-            console.warn('Impossible de convertir l\'image en data URL', src, e);
-          }
-        });
-        await Promise.all(promises);
-      };
+      // 1. Attendre que TOUTES les images de TOUTES les pages soient chargées
+      await waitForAllImages(pagesContainerRef.current);
+      setProgress(30);
+      setStatusMsg("Images chargées, capture des pages...");
+
+      // 2. Attendre le rendu
+      await waitForRender();
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -81,14 +110,13 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
         format: "a4",
       });
 
-      const pageElements = document.querySelectorAll(".preview-page-sheet");
+      const pageElements = pagesContainerRef.current.querySelectorAll(".preview-page-sheet");
       const total = pageElements.length;
 
       for (let i = 0; i < total; i++) {
         const el = pageElements[i] as HTMLElement;
-        await convertImgSrcToDataUrl(el);
 
-        setProgress(Math.round(((i + 1) / total) * 90));
+        setProgress(30 + Math.round(((i + 1) / total) * 60));
         setStatusMsg(`Capture de la page ${i + 1}/${total}...`);
 
         try {
@@ -98,6 +126,15 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
             allowTaint: true,
             backgroundColor: "#FBF6EC",
             logging: false,
+            // Important: attendre que les images soient rendues
+            onclone: (clonedDoc) => {
+              const clonedImages = clonedDoc.querySelectorAll('img');
+              clonedImages.forEach((img) => {
+                if (!img.complete) {
+                  img.src = img.src; // Force reload in clone
+                }
+              });
+            }
           });
 
           const imgData = canvas.toDataURL("image/jpeg", 0.95);
@@ -126,7 +163,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       setProgress(0);
       setStatusMsg("");
     }
-  };
+  }, [book.title, answers, waitForAllImages, waitForRender]);
 
   return (
     <div className="w-full min-h-screen py-6 px-3 md:px-6 flex flex-col items-center select-none font-['Quicksand',sans-serif] bg-[#EFE6D2]">
@@ -156,23 +193,39 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
         }
 
         @media print {
-          body, html, .preview-page-sheet {
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          body, html {
             background: #fbf6ec !important;
-            box-shadow: none !important;
             margin: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            border: none !important;
-            border-radius: 0 !important;
+            padding: 0 !important;
           }
           .no-print {
             display: none !important;
           }
           .preview-page-sheet {
+            display: block !important;
+            visibility: visible !important;
             page-break-after: always;
             break-after: page;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
             min-height: 100vh;
             padding: 30px;
+            background: #fbf6ec !important;
+          }
+          .preview-page-sheet:last-child {
+            page-break-after: auto;
+            break-after: auto;
+          }
+          img {
+            max-width: 100% !important;
           }
         }
       `}</style>
@@ -250,6 +303,8 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
       {/* =========================================================================
           RENDU DES 10 PAGES DU CAHIER EN FEUILLES PLEINE PAGE POUR VISUALISATION & IMPRESSION
       ========================================================================= */}
+
+      <div ref={pagesContainerRef} className="w-full max-w-[800px]">
 
       {/* 1. COUVERTURE */}
       <div className="preview-page-sheet flex flex-col justify-between">
@@ -662,6 +717,7 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
         <div className="text-center text-xs font-bold text-[#8a7f66] mt-8">
           Petit Baobab — Page 10 / 10
         </div>
+      </div>
       </div>
     </div>
   );

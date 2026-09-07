@@ -39,7 +39,7 @@ export const AuthenticNotebook: React.FC<AuthenticNotebookProps> = ({
   const [saveStatus, setSaveStatus] = useState("Tes réponses sont enregistrées automatiquement");
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
-const coverTeacherInputRef = useRef<HTMLInputElement>(null);
+  const coverTeacherInputRef = useRef<HTMLInputElement>(null);
   // Charger les données initiales du livre
   useEffect(() => {
     if (initialBook) {
@@ -80,11 +80,10 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
 
       const updated = await memoryBookService.updateBook(initialBook.id, {
         school_year: answers["cover-year"] || initialBook.school_year,
-        pages_data: { answers } as unknown as MemoryBookRecord["pages_data"],
+        pages_data: initialBook.pages_data,
+        answers_data: answers,
         status: "in_progress",
       });
-
-      updated.answers_data = answers;
 
       setHasChanges(false);
       setSaveStatus("Enregistré ✓");
@@ -97,7 +96,7 @@ const coverTeacherInputRef = useRef<HTMLInputElement>(null);
     } finally {
       setIsSaving(false);
     }
-  }, [answers, initialBook.id, initialBook.school_year]);
+  }, [answers, initialBook.id, initialBook.school_year, initialBook.pages_data]);
 
   // Sauvegarde automatique avec debounce
   useEffect(() => {
