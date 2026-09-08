@@ -60,7 +60,9 @@ export const AuthenticPreview: React.FC<AuthenticPreviewProps> = ({ book }) => {
   // Attendre le rendu du navigateur (2 frames)
   const waitForRender = useCallback(async (): Promise<void> => {
     await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
     });
   }, []);
 

@@ -12,6 +12,7 @@ export interface PhotoElementData {
   zoom: number;       // 1 = normal, 1 to 3
   offsetX: number;    // % or px offset
   offsetY: number;    // % or px offset
+  rotation?: number;  // 0, 90, 180, 270
   caption?: string;
   placeholderText?: string;
 }

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "@/styles/print.css";
 import { I18nProvider } from "@/lib/i18n-provider";
 import { Toaster } from "sonner";
 import HelpBot from "@/components/help/HelpBot";

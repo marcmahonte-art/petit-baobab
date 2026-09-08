@@ -4,7 +4,19 @@ import React from "react";
 import { MemoryBookPage, PhotoElementData } from "../../types/memory-book.types";
 import { PhotoSlot } from "./PhotoSlot";
 import { TextSlot } from "./TextSlot";
-import { Sparkles, Heart, School, BookOpen, Smile, User, Users, Sun, Bookmark } from "lucide-react";
+import { CoverTemplate } from "./CoverTemplate";
+import { PortraitTemplate } from "./PortraitTemplate";
+import {
+  Sparkles,
+  Heart,
+  School,
+  BookOpen,
+  Smile,
+  User,
+  Users,
+  Sun,
+  Bookmark,
+} from "lucide-react";
 
 interface BookPageRendererProps {
   page: MemoryBookPage;
@@ -16,7 +28,7 @@ interface BookPageRendererProps {
   isReadOnly?: boolean;
 }
 
-const themeStyles = {
+const themeStyles: Record<string, string> = {
   "warm-cream": "bg-[#FFF9F2] border-amber-200/80 text-amber-950",
   "sunny-yellow": "bg-[#FFFDF0] border-yellow-200/80 text-amber-950",
   "mint-pastel": "bg-[#F2FCF8] border-emerald-200/80 text-emerald-950",
@@ -47,21 +59,48 @@ export const BookPageRenderer: React.FC<BookPageRendererProps> = ({
   const currentTheme = page.backgroundTheme || "warm-cream";
   const themeClass = themeStyles[currentTheme] || themeStyles["warm-cream"];
 
+  // Utiliser CoverTemplate pour la page de couverture
+  if (page.id === "p1_portrait") {
+    return (
+      <CoverTemplate
+        page={page}
+        totalPages={totalPages}
+        profileId={profileId}
+        bookId={bookId}
+        onUpdateText={onUpdateText}
+        onUpdatePhoto={onUpdatePhoto}
+        isReadOnly={isReadOnly}
+      />
+    );
+  }
+
+  // Utiliser PortraitTemplate pour la page portrait / "Tout sur Moi" / "Rêves"
+  if (page.id === "p2_tout_sur_moi" || page.id === "p3_reves_et_gouts") {
+    return (
+      <PortraitTemplate
+        page={page}
+        totalPages={totalPages}
+        profileId={profileId}
+        bookId={bookId}
+        onUpdateText={onUpdateText}
+        onUpdatePhoto={onUpdatePhoto}
+        isReadOnly={isReadOnly}
+      />
+    );
+  }
+
+  // Rendu générique pour les autres pages
   return (
     <div
       id={`memory-page-${page.pageNumber}`}
       className={`relative w-full max-w-[650px] mx-auto rounded-[24px] md:rounded-[32px] border-4 p-5 md:p-8 shadow-xl transition-all ${themeClass} flex flex-col justify-between`}
-      style={{
-        minHeight: "820px",
-      }}
+      style={{ minHeight: "820px" }}
     >
-      {/* Motifs décoratifs de coins */}
       <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-purple-300 rounded-tl-md pointer-events-none" />
       <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-purple-300 rounded-tr-md pointer-events-none" />
       <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-purple-300 rounded-bl-md pointer-events-none" />
       <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-purple-300 rounded-br-md pointer-events-none" />
 
-      {/* En-tête de la page */}
       <div className="border-b-2 border-dashed border-gray-300/70 pb-4 mb-5">
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-2">
@@ -72,12 +111,10 @@ export const BookPageRenderer: React.FC<BookPageRendererProps> = ({
               {page.categoryTag || "Souvenirs"}
             </span>
           </div>
-
           <span className="text-xs font-bold text-gray-500 bg-white/80 px-2.5 py-1 rounded-full shadow-2xs">
             Page {page.pageNumber} / {totalPages}
           </span>
         </div>
-
         <h2 className="text-xl md:text-2xl font-black tracking-tight text-gray-900 mt-2 font-display">
           {page.title}
         </h2>
@@ -86,7 +123,6 @@ export const BookPageRenderer: React.FC<BookPageRendererProps> = ({
         )}
       </div>
 
-      {/* Contenu dynamique des éléments */}
       <div className="flex-1 flex flex-col gap-4 justify-start">
         {page.elements.map((element) => {
           if (element.type === "photo") {
@@ -107,7 +143,6 @@ export const BookPageRenderer: React.FC<BookPageRendererProps> = ({
               </div>
             );
           }
-
           if (element.type === "text") {
             return (
               <TextSlot
@@ -120,12 +155,10 @@ export const BookPageRenderer: React.FC<BookPageRendererProps> = ({
               />
             );
           }
-
           return null;
         })}
       </div>
 
-      {/* Pied de page du cahier */}
       <div className="mt-8 pt-4 border-t border-gray-200/80 flex items-center justify-between text-xs text-gray-500">
         <div className="flex items-center gap-1.5 font-semibold text-purple-800">
           <BookOpen className="w-4 h-4 text-purple-600" />

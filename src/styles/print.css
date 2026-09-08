@@ -1,0 +1,169 @@
+/* =========================================================================
+   print.css — Version impression du cahier de souvenirs
+   Masque toute l'UI interactive et n'affiche QUE les pages du cahier.
+   ========================================================================= */
+
+/* Conteneur réservé à l'impression : masqué à l'écran, visible au print */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* 1. Masquer toute l'interface applicative (sidebar, navbar, boutons,
+        zoom, palette, animations…) en une seule règle robuste. */
+  body {
+    visibility: hidden;
+  }
+
+  /* 2. Rendre visible UNIQUEMENT le cahier à imprimer. */
+  .print-only {
+    visibility: visible;
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #FFF9F2;
+  }
+
+  /* 3. Format de page et marges */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFF9F2 !important;
+  }
+
+  /* 4. Aucune animation / transition résiduelle */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+  }
+
+  /* 5. Chaque page = une feuille A4, saut de page après */
+  .print-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 20mm;
+    box-sizing: border-box;
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+    background: #FFF9F2;
+    border: none;
+    position: relative;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .print-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed #C9BFA9;
+    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+    font-size: 10px;
+    color: #7A6A5E;
+  }
+
+  .print-page-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3B2416;
+    margin-bottom: 2mm;
+  }
+
+  .print-page-subtitle {
+    font-size: 12px;
+    color: #8a7f66;
+    margin-bottom: 3mm;
+  }
+
+  .print-element-photo {
+    width: 100%;
+    min-height: 40mm;
+    border: 1px solid #C9BFA9;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2mm;
+    overflow: hidden;
+    background: #F5F0E8;
+  }
+
+  .print-element-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .print-element-text {
+    font-size: 13px;
+    color: #3B2416;
+    margin-bottom: 2mm;
+    padding: 1mm;
+    line-height: 1.5;
+  }
+
+  .print-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 20mm;
+    right: 20mm;
+    border-top: 1px solid #C9BFA9;
+    padding-top: 2mm;
+    font-size: 8px;
+    color: #7D6AF8;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .print-cover {
+    text-align: center;
+    padding-top: 40mm;
+  }
+
+  .print-cover-circle {
+    width: 120mm;
+    height: 120mm;
+    border: 5px solid #7D6AF8;
+    border-radius: 50%;
+    margin: 0 auto 10mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #FFF9F2;
+  }
+
+  .print-cover-title {
+    font-family: "Caveat", cursive;
+    font-size: 36px;
+    color: #7A3B1D;
+  }
+}
+
+/* Styles écran pour le mode aperçu avant impression */
+.print-preview {
+  display: none;
+}
+
+@media screen {
+  .print-preview {
+    display: block;
+  }
+}

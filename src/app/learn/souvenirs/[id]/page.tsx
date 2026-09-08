@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
+import { useRouter } from "next/navigation";
 import { memoryBookService } from "@/features/memory-book/services/memoryBookService";
 import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types";
 import { MemoryBookEditor } from "@/features/memory-book/components/editor/MemoryBookEditor";
 import { useProfile } from "@/lib/profile-store";
 import { Loader2 } from "lucide-react";
 
-export default function EditorPage() {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function MemoryBookEditorPage({ params }: PageProps) {
+  const { id } = use(params);
+  const router = useRouter();
   const profile = useProfile();
   const childId = profile?.id || "default_child";
   const [book, setBook] = useState<MemoryBookRecord | null>(null);
@@ -15,23 +22,23 @@ export default function EditorPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    async function init() {
+    async function loadBook() {
       try {
-        const newBook = await memoryBookService.createBook({
-          profileId: childId,
-          title: `Cahier de ${profile?.name || "l'enfant"}`,
-          schoolYear: "2025 - 2026",
-        });
-        setBook(newBook);
+        const data = await memoryBookService.getById(id);
+        if (!data) {
+          router.push("/learn/souvenirs/nouveau");
+          return;
+        }
+        setBook(data);
       } catch (e) {
-        console.error("Erreur création cahier:", e);
+        console.error("Erreur chargement cahier:", e);
         setError(true);
       } finally {
         setLoading(false);
       }
     }
-    void init();
-  }, [childId, profile?.name, profile?.id]);
+    void loadBook();
+  }, [id, router]);
 
   if (loading) {
     return (
@@ -44,7 +51,7 @@ export default function EditorPage() {
   if (error || !book) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <p className="text-gray-500 font-bold">Erreur lors du chargement du cahier.</p>
+        <p className="text-gray-500 font-bold">Cahier introuvable.</p>
       </div>
     );
   }
