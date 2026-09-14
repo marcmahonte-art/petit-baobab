@@ -15,7 +15,7 @@ export default async function PrintPage({ params }: PrintPageProps) {
   }
 
   return (
-    <div className="print-only">
+    <div className="w-full bg-[#FFFDF8] min-h-screen">
       <BookPrint book={book} />
     </div>
   );

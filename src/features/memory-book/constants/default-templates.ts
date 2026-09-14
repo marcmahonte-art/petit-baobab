@@ -1,509 +1,381 @@
 import { MemoryBookTemplate } from '../types/memory-book.types';
 
-export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1: MemoryBookTemplate = {
-  id: 'school_memory_book_v1',
-  title: 'Mon Cahier de Souvenirs Scolaires',
-  subtitle: 'Mon année inoubliable avec Petit Baobab',
-  description: 'Un merveilleux album de 9 pages pour immortaliser ta classe, tes copains, tes meilleurs souvenirs et tes victoires !',
-  coverBadge: 'Modèle Scolaire 9 Pages',
+export const OFFICIAL_MEMORY_BOOK_TEMPLATE_10_PAGES: MemoryBookTemplate = {
+  id: 'cahier_10_pages_marketing_v1',
+  title: 'Mon cahier de souvenirs',
+  subtitle: 'Mes petits moments, mes grandes histoires ✨',
+  description: 'Le modèle officiel 10 pages Petit Baobab inspiré de la savane pour immortaliser tous les moments précieux de ton enfance.',
+  coverBadge: 'Modèle Officiel 10 Pages',
   icon: 'BookOpen',
-  previewThumbnail: '/illustrations/mascotte/mascotte_lire.png',
-  totalDefaultPages: 9,
+  previewThumbnail: '/cahier-souvenirs/cover.png',
+  totalDefaultPages: 10,
   pages: [
-    // Page 1: Couverture & Portrait
+    // Page 1: Ma couverture
     {
-      id: 'p1_portrait',
+      id: 'cover',
       pageNumber: 1,
-      title: 'Mon Portrait & Mon École',
-      subtitle: 'Bienvenue dans mon grand cahier de souvenirs !',
-      categoryTag: 'Couverture & Portrait',
-      headerIcon: 'Sparkles',
+      templateId: 'cover-v1',
+      title: 'Ma couverture',
+      subtitle: 'Mon cahier de souvenirs',
+      categoryTag: 'Couverture',
+      headerIcon: 'BookOpen',
       backgroundTheme: 'warm-cream',
+      status: 'complete',
+      data: {
+        title: 'Mon cahier de souvenirs',
+        subtitle: 'Mes petits moments, mes grandes histoires ✨',
+        childName: 'Aminata',
+        schoolYear: '2025 - 2026',
+        coverImage: '/cahier-souvenirs/cover.png',
+      },
       elements: [
         {
-          id: 'p1_photo_portrait',
-          type: 'photo',
-          title: 'Mon Portrait de l’Année',
-          subtitle: 'Glisse ta plus belle photo ici',
-          photoData: {
-            zoom: 1,
-            offsetX: 0,
-            offsetY: 0,
-            placeholderText: 'Ajouter ma photo de classe ou mon portrait'
-          }
-        },
-        {
-          id: 'p1_txt_prenom',
+          id: 'cover_title',
           type: 'text',
-          title: 'Mon prénom & nom',
-          textData: {
-            value: '',
-            placeholder: 'Comment t’appelles-tu ?',
-            maxLength: 40,
-            fontSize: 'lg',
-            fontStyle: 'handwriting'
-          }
+          title: 'Titre du cahier',
+          textData: { value: 'Mon cahier de souvenirs' },
         },
         {
-          id: 'p1_txt_classe',
+          id: 'cover_child_name',
           type: 'text',
-          title: 'Ma classe',
-          textData: {
-            value: '',
-            placeholder: 'Ex : CP, CE1, CE2, CM1, CM2...',
-            maxLength: 30,
-            fontSize: 'md'
-          }
+          title: 'Prénom de l’enfant',
+          textData: { value: 'Aminata' },
         },
         {
-          id: 'p1_txt_ecole',
-          type: 'text',
-          title: 'Le nom de mon école',
-          textData: {
-            value: '',
-            placeholder: 'Nom de ton école ou ville',
-            maxLength: 50,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p1_txt_annee',
+          id: 'cover_year',
           type: 'text',
           title: 'Année scolaire',
-          textData: {
-            value: '2025 - 2026',
-            placeholder: '2025 - 2026',
-            maxLength: 20,
-            fontSize: 'md',
-            align: 'center'
-          }
-        }
-      ]
+          textData: { value: '2025 - 2026' },
+        },
+      ],
     },
 
-    // Page 2: Tout sur Moi
+    // Page 2: Mon portrait (Prototype fidélité 100%)
     {
-      id: 'p2_tout_sur_moi',
+      id: 'portrait',
       pageNumber: 2,
-      title: 'Tout sur Moi',
-      subtitle: 'Mes petites informations secrètes',
-      categoryTag: 'Identité',
-      headerIcon: 'User',
-      backgroundTheme: 'sunny-yellow',
+      templateId: 'portrait-v1',
+      title: 'Mon portrait',
+      subtitle: 'Tout sur moi cette année',
+      categoryTag: 'Portrait',
+      headerIcon: 'Palette',
+      backgroundTheme: 'warm-cream',
+      status: 'complete',
+      data: {
+        name: 'Aminata',
+        birthday: '12 / 05 / 2018',
+        age: '6 ans',
+        height: '120 cm',
+        favoriteColor: '#7658e8',
+        favoriteFood: 'Le riz au poulet',
+        favoriteAnimal: 'Le lion',
+        futureDream: 'Je veux être médecin pour aider les autres.',
+        dreamCatch: 'Rêve\nGrand !',
+        love: 'Jouer avec mes amis,\nles gâteaux et les dessins.',
+        hate: 'Les légumes\net me lever tôt.',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+        offsetX: 0,
+        offsetY: 0,
+      },
       elements: [
         {
-          id: 'p2_txt_age',
-          type: 'text',
-          title: 'Mon âge cette année',
-          textData: {
-            value: '',
-            placeholder: 'J’ai ... ans !',
-            maxLength: 15,
-            fontSize: 'lg'
-          }
+          id: 'portrait_photo',
+          type: 'photo',
+          title: 'Photo de portrait',
+          photoData: {
+            url: '/cahier-souvenirs/child.png',
+            zoom: 1,
+            rotation: 0,
+            offsetX: 0,
+            offsetY: 0,
+          },
         },
         {
-          id: 'p2_txt_anniversaire',
+          id: 'portrait_name',
+          type: 'text',
+          title: 'Mon prénom',
+          textData: { value: 'Aminata' },
+        },
+        {
+          id: 'portrait_birthday',
           type: 'text',
           title: 'Mon anniversaire',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Le 14 avril',
-            maxLength: 30,
-            fontSize: 'md'
-          }
+          textData: { value: '12 / 05 / 2018' },
         },
         {
-          id: 'p2_txt_taille',
+          id: 'portrait_age',
+          type: 'text',
+          title: 'Mon âge',
+          textData: { value: '6 ans' },
+        },
+        {
+          id: 'portrait_height',
           type: 'text',
           title: 'Ma taille',
-          textData: {
-            value: '',
-            placeholder: 'Ex : 1 mètre et 22 cm',
-            maxLength: 25,
-            fontSize: 'md'
-          }
+          textData: { value: '120 cm' },
         },
         {
-          id: 'p2_txt_couleur',
-          type: 'text',
+          id: 'portrait_color',
+          type: 'choice',
           title: 'Ma couleur préférée',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Le vert émeraude, le bleu...',
-            maxLength: 30,
-            fontSize: 'md'
-          }
+          choiceData: {
+            selectedId: '#7658e8',
+            options: [
+              { id: '#36a96b', label: 'Vert' },
+              { id: '#2aa5dc', label: 'Bleu ciel' },
+              { id: '#ffc83d', label: 'Jaune' },
+              { id: '#f28b30', label: 'Orange' },
+              { id: '#f58b9b', label: 'Rose' },
+              { id: '#7658e8', label: 'Violet' },
+            ],
+          },
         },
         {
-          id: 'p2_txt_plat',
+          id: 'portrait_food',
           type: 'text',
           title: 'Mon plat préféré',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Le mafé, les crêpes, l’alloco...',
-            maxLength: 40,
-            fontSize: 'md'
-          }
+          textData: { value: 'Le riz au poulet' },
         },
         {
-          id: 'p2_txt_animal',
+          id: 'portrait_animal',
           type: 'text',
           title: 'Mon animal préféré',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Le lion, le zèbre, le chat...',
-            maxLength: 30,
-            fontSize: 'md'
-          }
-        }
-      ]
+          textData: { value: 'Le lion' },
+        },
+        {
+          id: 'portrait_dream',
+          type: 'text',
+          title: 'Plus tard, je serai',
+          textData: { value: 'Je veux être médecin pour aider les autres.' },
+        },
+        {
+          id: 'portrait_love',
+          type: 'text',
+          title: 'J’adore',
+          textData: { value: 'Jouer avec mes amis,\nles gâteaux et les dessins.' },
+        },
+        {
+          id: 'portrait_hate',
+          type: 'text',
+          title: 'Je déteste',
+          textData: { value: 'Les légumes\net me lever tôt.' },
+        },
+      ],
     },
 
-    // Page 3: Rêves & Goûts
+    // Page 3: Mon année
     {
-      id: 'p3_reves_et_gouts',
+      id: 'year',
       pageNumber: 3,
-      title: 'Mes Rêves & Mes Goûts',
-      subtitle: 'Quand je serai grand(e)... et ce que j’aime !',
-      categoryTag: 'Avenir & Passions',
-      headerIcon: 'Heart',
-      backgroundTheme: 'lavender-light',
-      elements: [
-        {
-          id: 'p3_txt_futur_metier',
-          type: 'text',
-          title: 'Plus tard, quand je serai grand(e), je serai...',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Astronaute, médecin, artiste, architecte...',
-            maxLength: 80,
-            fontSize: 'lg',
-            fontStyle: 'handwriting'
-          }
-        },
-        {
-          id: 'p3_txt_jadore',
-          type: 'text',
-          title: 'Ce que j’adore',
-          textData: {
-            value: '',
-            placeholder: 'Jouer à la récréation, écouter des histoires, rigoler...',
-            maxLength: 180,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p3_txt_deteste',
-          type: 'text',
-          title: 'Ce que je déteste',
-          textData: {
-            value: '',
-            placeholder: 'Me réveiller tôt le lundi, les épinards bouillis...',
-            maxLength: 180,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        }
-      ]
-    },
-
-    // Page 4: Ma classe & Mes Enseignants
-    {
-      id: 'p4_classe_enseignants',
-      pageNumber: 4,
-      title: 'Ma Classe & Mes Enseignants',
-      subtitle: 'Ceux qui m’ont appris plein de belles choses',
-      categoryTag: 'Vie de Classe',
+      templateId: 'year-v1',
+      title: 'Mon année',
+      subtitle: 'Mon école et ma classe',
+      categoryTag: 'École',
       headerIcon: 'School',
-      backgroundTheme: 'mint-pastel',
-      elements: [
-        {
-          id: 'p4_txt_enseignant',
-          type: 'text',
-          title: 'Ma maîtresse / Mon maître',
-          textData: {
-            value: '',
-            placeholder: 'Nom de mon enseignant(e)',
-            maxLength: 50,
-            fontSize: 'lg'
-          }
-        },
-        {
-          id: 'p4_photo_classe',
-          type: 'photo',
-          title: 'Photo de notre classe ou de l’école',
-          subtitle: 'Une belle photo souvenir de tout le groupe',
-          photoData: {
-            zoom: 1,
-            offsetX: 0,
-            offsetY: 0,
-            placeholderText: 'Ajouter la photo de groupe ou de classe 📸'
-          }
-        },
-        {
-          id: 'p4_txt_matiere',
-          type: 'text',
-          title: 'Ma matière préférée',
-          textData: {
-            value: '',
-            placeholder: 'Ex : Les maths, les arts, la lecture, le sport...',
-            maxLength: 50,
-            fontSize: 'md'
-          }
-        }
-      ]
-    },
-
-    // Page 5: Meilleurs Souvenirs
-    {
-      id: 'p5_meilleurs_souvenirs',
-      pageNumber: 5,
-      title: 'Mes Meilleurs Souvenirs',
-      subtitle: 'Les moments gravés dans mon cœur',
-      categoryTag: 'Souvenirs',
-      headerIcon: 'Smile',
-      backgroundTheme: 'coral-soft',
-      elements: [
-        {
-          id: 'p5_txt_meilleur_souvenir',
-          type: 'text',
-          title: 'Mon meilleur souvenir de l’année',
-          textData: {
-            value: '',
-            placeholder: 'Raconte ton moment magique (sortie scolaire, fête, jeu entre amis)...',
-            maxLength: 250,
-            multiline: true,
-            minRows: 4,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p5_txt_moment_rigolo',
-          type: 'text',
-          title: 'Le moment le plus rigolo de l’année',
-          textData: {
-            value: '',
-            placeholder: 'Le jour où toute la classe a éclaté de rire...',
-            maxLength: 220,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p5_txt_projet_prefere',
-          type: 'text',
-          title: 'Mon projet ou atelier préféré',
-          textData: {
-            value: '',
-            placeholder: 'Le spectacle, l’exposé, le dessin ou la maquette que j’ai adoré faire...',
-            maxLength: 180,
-            multiline: true,
-            minRows: 2,
-            fontSize: 'md'
-          }
-        }
-      ]
-    },
-
-    // Page 6: Ce que j'ai Appris
-    {
-      id: 'p6_ce_que_jai_appris',
-      pageNumber: 6,
-      title: 'Ce que j’ai Appris & Découvert',
-      subtitle: 'Comme le Baobab, j’ai grandi !',
-      categoryTag: 'Apprentissage & Victoires',
-      headerIcon: 'BookMarked',
       backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        schoolName: 'École Les Petits Baobabs',
+        grade: 'Grande Section / CP',
+        teacherName: 'Mme Awa',
+        favoriteSubject: 'Le dessin et les histoires',
+        recessGame: 'La marelle et le ballon',
+        bestMemory: 'Le jour du spectacle de fin d’année !',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
       elements: [
         {
-          id: 'p6_txt_decouverte',
+          id: 'year_school',
           type: 'text',
-          title: 'Les choses les plus importantes que j’ai apprises',
-          textData: {
-            value: '',
-            placeholder: 'Lire de vrais livres tout seul, faire de grandes multiplications, parler anglais...',
-            maxLength: 250,
-            multiline: true,
-            minRows: 4,
-            fontSize: 'md'
-          }
+          title: 'Mon école',
+          textData: { value: 'École Les Petits Baobabs' },
         },
         {
-          id: 'p6_txt_livres',
+          id: 'year_grade',
           type: 'text',
-          title: 'Mes livres ou histoires préférés',
-          textData: {
-            value: '',
-            placeholder: 'Les titres des contes ou livres que j’ai adoré lire...',
-            maxLength: 160,
-            fontSize: 'md'
-          }
+          title: 'Ma classe',
+          textData: { value: 'Grande Section / CP' },
         },
         {
-          id: 'p6_txt_fiertes',
+          id: 'year_teacher',
           type: 'text',
-          title: 'Mes plus grandes fiertés',
-          textData: {
-            value: '',
-            placeholder: 'Ce dont je suis particulièrement fier(e) d’avoir réussi cette année...',
-            maxLength: 200,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        }
-      ]
+          title: 'Mon maître / ma maîtresse',
+          textData: { value: 'Mme Awa' },
+        },
+      ],
     },
 
-    // Page 7: Mes Camarades & Petits Mots
+    // Page 4: Mes camarades
     {
-      id: 'p7_camarades_mots',
-      pageNumber: 7,
-      title: 'Mes Camarades & Petits Mots',
-      subtitle: 'Les personnes précieuses de mon année',
+      id: 'friends',
+      pageNumber: 4,
+      templateId: 'friends-v1',
+      title: 'Mes camarades',
+      subtitle: 'Mes meilleurs copains et copines',
       categoryTag: 'Amitié',
       headerIcon: 'Users',
-      backgroundTheme: 'sunny-yellow',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        bestFriends: 'Fatou, Moussa, Lucas et Sarah',
+        gamesTogether: 'Inventer des histoires et courir dans la cour',
+        funnyMoments: 'Quand on a tous rigolé à la cantine !',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
       elements: [
         {
-          id: 'p7_txt_camarades',
+          id: 'friends_names',
           type: 'text',
-          title: 'Mes camarades et meilleurs amis 🤝',
-          textData: {
-            value: '',
-            placeholder: 'Écris les prénoms de tes copains et copines...',
-            maxLength: 200,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
+          title: 'Mes meilleurs amis',
+          textData: { value: 'Fatou, Moussa, Lucas et Sarah' },
         },
-        {
-          id: 'p7_txt_petits_mots',
-          type: 'text',
-          title: 'Dédicaces et petits mots de mes amis 💬',
-          textData: {
-            value: '',
-            placeholder: 'Espace réservé pour coller ou recopier les petits messages gentils de tes amis !',
-            maxLength: 300,
-            multiline: true,
-            minRows: 5,
-            fontSize: 'md',
-            fontStyle: 'handwriting'
-          }
-        }
-      ]
+      ],
     },
 
-    // Page 8: Vacances & Aventures
+    // Page 5: Mes souvenirs
     {
-      id: 'p8_vacances_aventures',
+      id: 'memories',
+      pageNumber: 5,
+      templateId: 'memories-v1',
+      title: 'Mes souvenirs',
+      subtitle: 'Les moments inoubliables',
+      categoryTag: 'Moments',
+      headerIcon: 'Star',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        memory1Title: 'La sortie au zoo',
+        memory1Text: 'J’ai vu des girafes et des éléphants immenses !',
+        memory2Title: 'Mon anniversaire',
+        memory2Text: 'Un magnifique gâteau au chocolat et tous mes amis réunis.',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
+    },
+
+    // Page 6: Mes livres
+    {
+      id: 'books',
+      pageNumber: 6,
+      templateId: 'books-v1',
+      title: 'Mes livres',
+      subtitle: 'Mes lectures et histoires favorites',
+      categoryTag: 'Lectures',
+      headerIcon: 'Book',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        favoriteBook: 'Le Secret du Grand Baobab',
+        favoriteHero: 'Kaya la petite lionne',
+        storyMoral: 'L’amitié est le plus beau trésor.',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
+    },
+
+    // Page 7: Mes fiertés
+    {
+      id: 'pride',
+      pageNumber: 7,
+      templateId: 'pride-v1',
+      title: 'Mes fiertés',
+      subtitle: 'Ce que j’ai réussi cette année',
+      categoryTag: 'Victoires',
+      headerIcon: 'Award',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        proud1: 'J’ai appris à faire du vélo sans les petites roues !',
+        proud2: 'Je sais écrire mon prénom tout seul.',
+        proud3: 'J’aide mes amis quand ils ont besoin.',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
+    },
+
+    // Page 8: Mes vacances
+    {
+      id: 'vacation',
       pageNumber: 8,
-      title: 'Mes Vacances & Évasions',
-      subtitle: 'Moments de repos et grandes aventures',
-      categoryTag: 'Voyages & Nature',
+      templateId: 'vacation-v1',
+      title: 'Mes vacances',
+      subtitle: 'Aventures et découvertes',
+      categoryTag: 'Voyages',
       headerIcon: 'Sun',
-      backgroundTheme: 'mint-pastel',
-      elements: [
-        {
-          id: 'p8_photo_vacances',
-          type: 'photo',
-          title: 'Photo de mes vacances ou d’une sortie mémorable',
-          subtitle: 'À la mer, au village, dans la forêt ou en famille',
-          photoData: {
-            zoom: 1,
-            offsetX: 0,
-            offsetY: 0,
-            placeholderText: 'Ajouter une photo de vacances ou de fête 🌴'
-          }
-        },
-        {
-          id: 'p8_txt_vacances',
-          type: 'text',
-          title: 'Mes souvenirs de vacances préférés',
-          textData: {
-            value: '',
-            placeholder: 'Ce que j’ai fait pendant les vacances ou mes sorties...',
-            maxLength: 220,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p8_txt_prochaine_annee',
-          type: 'text',
-          title: 'Ce que j’ai hâte de faire l’année prochaine 🚀',
-          textData: {
-            value: '',
-            placeholder: 'Apprendre une nouvelle langue, faire du vélo, retrouver mes amis...',
-            maxLength: 180,
-            fontSize: 'md'
-          }
-        }
-      ]
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        destination: 'Chez mes grands-parents au village',
+        activities: 'Baignade, cueillir des mangues et regarder les étoiles',
+        specialMemory: 'Les histoires racontées le soir au coin du feu.',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
     },
 
-    // Page 9: Petits Secrets & Mot de Fin
+    // Page 9: Les petits mots
     {
-      id: 'p9_secrets_mot_de_fin',
+      id: 'messages',
       pageNumber: 9,
-      title: 'Mon Jardin Secret & Mot Doux',
-      subtitle: 'Dernière page de mon grand cahier',
-      categoryTag: 'Secrets & Clôture',
-      headerIcon: 'Sparkles',
-      backgroundTheme: 'lavender-light',
-      elements: [
-        {
-          id: 'p9_txt_secrets',
-          type: 'text',
-          title: 'Mon petit secret ou vœu pour l’avenir 🤫',
-          textData: {
-            value: '',
-            placeholder: 'Un petit vœu ou un secret que je garde précieusement...',
-            maxLength: 200,
-            multiline: true,
-            minRows: 3,
-            fontSize: 'md'
-          }
-        },
-        {
-          id: 'p9_txt_mot_parents',
-          type: 'text',
-          title: 'Le mot doux de mes parents ou de ma famille 💌',
-          textData: {
-            value: '',
-            placeholder: 'Un mot d’encouragement et d’amour rédigé par la famille...',
-            maxLength: 300,
-            multiline: true,
-            minRows: 4,
-            fontSize: 'md',
-            fontStyle: 'handwriting'
-          }
-        },
-        {
-          id: 'p9_txt_signature',
-          type: 'text',
-          title: 'Signé par l’artiste !',
-          textData: {
-            value: '',
-            placeholder: 'Ton prénom ou ta signature magique',
-            maxLength: 30,
-            fontSize: 'lg',
-            align: 'center',
-            fontStyle: 'handwriting'
-          }
-        }
-      ]
-    }
-  ]
+      templateId: 'messages-v1',
+      title: 'Les petits mots',
+      subtitle: 'Les mots doux de ceux que j’aime',
+      categoryTag: 'Messages',
+      headerIcon: 'MessageCircle',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        parentsMessage: 'Nous sommes si fiers de toi mon trésor ! Continue de briller.',
+        teacherMessage: 'Une élève curieuse, joyeuse et pleine d’imagination. Bravo Aminata !',
+        friendsMessage: 'Tu es la meilleure copine du monde !',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
+    },
+
+    // Page 10: Mes petits secrets
+    {
+      id: 'secrets',
+      pageNumber: 10,
+      templateId: 'secrets-v1',
+      title: 'Mes petits secrets',
+      subtitle: 'Chut... rien que pour moi !',
+      categoryTag: 'Secrets',
+      headerIcon: 'Lock',
+      backgroundTheme: 'warm-cream',
+      status: 'draft',
+      data: {
+        secretPower: 'Je peux parler aux oiseaux dans le jardin',
+        hiddenTreasure: 'Une jolie pierre brillante cachée dans ma chambre',
+        bigWish: 'Faire un grand voyage autour du monde avec ma famille',
+        photoUrl: '/cahier-souvenirs/child.png',
+        zoom: 1,
+        rotation: 0,
+      },
+      elements: [],
+    },
+  ],
 };
 
-export const AVAILABLE_MEMORY_BOOK_TEMPLATES: MemoryBookTemplate[] = [
-  SCHOOL_MEMORY_BOOK_TEMPLATE_V1
+// Rétrocompatibilité : SCHOOL_MEMORY_BOOK_TEMPLATE_V1 pointe vers le nouveau modèle officiel 10 pages
+export const SCHOOL_MEMORY_BOOK_TEMPLATE_V1 = OFFICIAL_MEMORY_BOOK_TEMPLATE_10_PAGES;
+
+export const AVAILABLE_MEMORY_BOOK_TEMPLATES = [
+  OFFICIAL_MEMORY_BOOK_TEMPLATE_10_PAGES,
 ];

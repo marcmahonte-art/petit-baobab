@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { MemoryBookRecord } from "../../types/memory-book.types";
 import { useMemoryBookStore } from "../../store/memory-book-store";
-import { EditorLayout } from "./EditorLayout";
-import { AppShell } from "./AppShell";
-import Link from "next/link";
-import { ArrowLeft, BookOpen, Sparkles, Maximize2, Eye, Download } from "lucide-react";
+import { TopBar } from "./TopBar";
+import { Sidebar } from "./Sidebar";
+import { CanvasZone } from "./CanvasZone";
+import { Inspector } from "./Inspector";
+import { PreviewModal } from "./PreviewModal";
+import { useRouter } from "next/navigation";
 
 interface MemoryBookEditorProps {
   initialBook: MemoryBookRecord;
@@ -15,226 +17,167 @@ interface MemoryBookEditorProps {
 
 export const MemoryBookEditor: React.FC<MemoryBookEditorProps> = ({
   initialBook,
-  profileId,
 }) => {
+  const router = useRouter();
   const {
     currentBook,
-    activePageIndex,
-    isSaving,
-    hasUnsavedChanges,
     setBook,
-    setActivePageIndex,
-    nextPage,
-    prevPage,
-    updateTextElement,
-    updatePhotoElement,
-    saveCurrentBook,
+    previewOpen,
+    setPreviewOpen,
+    activeTab,
+    setActiveTab,
+    updatePagePhoto,
+    activePageIndex,
   } = useMemoryBookStore();
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownloadPdf = async () => {
-    try {
-      setIsDownloading(true);
-      const res = await fetch(`/api/memory-books/${activeBook.id}/pdf`, {
-        method: "GET",
-      });
-      if (!res.ok) throw new Error("Erreur génération PDF");
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${activeBook.title.replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Erreur téléchargement PDF:", err);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [mobileDrawer, setMobileDrawer] = useState<"none" | "pages" | "edit">("none");
+  const hiddenFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setBook(initialBook);
   }, [initialBook, setBook]);
 
-  useEffect(() => {
-    if (!hasUnsavedChanges) return;
-    const timer = setTimeout(() => {
-      saveCurrentBook();
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [hasUnsavedChanges, saveCurrentBook]);
-
   const activeBook = currentBook || initialBook;
-  const pages = activeBook.pages_data || [];
-  const activePage = pages[activePageIndex] || pages[0];
+  const childAvatar =
+    activeBook.child_data?.photoUrl ||
+    activeBook.pages_data?.[1]?.data?.photoUrl ||
+    "/cahier-souvenirs/child.png";
 
-  const handleUpdateText = useCallback(
-    (elementId: string, val: string) => {
-      if (!activePage) return;
-      updateTextElement(activePage.id, elementId, val);
-    },
-    [activePage, updateTextElement]
-  );
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      const res = await fetch(`/api/memory-books/${activeBook.id}/pdf`);
+      if (!res.ok) {
+        throw new Error("Échec génération distante PDF");
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(activeBook.title || "Mon_Cahier_de_Souvenirs").replace(/[^a-zA-Z0-9_-]/g, "_")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.warn("Playwright distant indisponible, ouverture de la vue impression directe:", err);
+      // Fallback direct vers la page d'impression A4
+      window.open(`/learn/souvenirs/${activeBook.id}/imprimer`, "_blank");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
-  const handleUpdatePhoto = useCallback(
-    (elementId: string, data: any) => {
-      if (!activePage) return;
-      updatePhotoElement(activePage.id, elementId, data);
-    },
-    [activePage, updatePhotoElement]
-  );
-
-  if (!activePage) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500 font-bold">Chargement de ton cahier de souvenirs...</p>
-      </div>
-    );
-  }
+  const handleGlobalPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("L'image est trop volumineuse. Taille maximale recommandée : 10 Mo.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string" && activeBook.pages_data?.[activePageIndex]) {
+        updatePagePhoto(activeBook.pages_data[activePageIndex].id, reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <AppShell>
-      {/* En-tête de l'éditeur */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <Link
-          href="/learn/souvenirs"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 shadow-2xs transition active:scale-95"
+    <div className="h-screen w-screen bg-[#FAF3E4] text-[#61351F] font-nunito flex flex-col overflow-hidden select-none">
+      {/* Input de fichier global pour la caméra */}
+      <input
+        type="file"
+        ref={hiddenFileInputRef}
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleGlobalPhotoUpload}
+        className="hidden"
+      />
+
+      {/* TopBar officielle conforme au prototype */}
+      <TopBar
+        onBack={() => router.push("/learn/souvenirs")}
+        onPreview={() => setPreviewOpen(true)}
+        onDownloadPdf={handleDownloadPdf}
+        isDownloadingPdf={isDownloadingPdf}
+        childAvatarUrl={childAvatar}
+      />
+
+      {/* Workspace 3 colonnes : Sidebar | CanvasZone | Inspector */}
+      <main className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[230px_minmax(400px,1fr)_340px] xl:grid-cols-[280px_minmax(520px,1fr)_450px] gap-3 p-3 sm:p-4 pb-20 md:pb-4 overflow-hidden">
+        {/* Sidebar gauche */}
+        <div className="hidden md:block h-full min-h-0 overflow-hidden">
+          <Sidebar />
+        </div>
+
+        {/* Canvas central A4 */}
+        <div className="h-full min-h-0 overflow-hidden">
+          <CanvasZone onRequestPhotoUpload={() => hiddenFileInputRef.current?.click()} />
+        </div>
+
+        {/* Inspector droit */}
+        <div className="hidden md:block h-full min-h-0 overflow-hidden">
+          <Inspector onPhotoUploadClick={() => hiddenFileInputRef.current?.click()} />
+        </div>
+      </main>
+
+      {/* Barre de navigation mobile (responsive < 768px) */}
+      <div className="md:hidden fixed bottom-3 left-3 right-3 bg-[#FFFDF9] border border-[#eadfd2] shadow-[0_10px_30px_rgba(50,35,20,0.15)] rounded-[17px] p-2 z-40 flex justify-around items-center">
+        <button
+          type="button"
+          onClick={() => setMobileDrawer(mobileDrawer === "pages" ? "none" : "pages")}
+          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition ${
+            mobileDrawer === "pages" ? "bg-[#EEE9FF] text-[#7658E8]" : "text-[#5f554d]"
+          }`}
         >
-          <ArrowLeft className="w-4 h-4 text-purple-600" />
-          <span>Mes Cahiers</span>
-        </Link>
-
-        <div className="text-center">
-          <h1 className="text-lg md:text-xl font-black text-gray-900 flex items-center justify-center gap-1.5">
-            <BookOpen className="w-5 h-5 text-purple-600" />
-            <span>{activeBook.title}</span>
-          </h1>
-          <p className="text-xs text-gray-500 font-medium">Année {activeBook.school_year}</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Bouton Plein écran */}
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(true)}
-            className="px-3 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 shadow-2xs transition active:scale-95"
-            title="Prévisualisation plein écran"
-          >
-            <Maximize2 className="w-4 h-4" />
-          </button>
-
-          {/* Bouton Télécharger PDF */}
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            disabled={isDownloading}
-            className="px-3 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 shadow-2xs transition active:scale-95 disabled:opacity-50"
-            title="Télécharger en PDF"
-          >
-            <Download className="w-4 h-4 text-green-600" />
-          </button>
-
-          {/* Bouton Aperçu PDF */}
-          <Link
-            href={`/learn/souvenirs/${activeBook.id}/apercu`}
-            className="px-3 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 shadow-2xs transition active:scale-95"
-            title="Aperçu PDF"
-          >
-            <Eye className="w-4 h-4" />
-          </Link>
-
-          {/* Bouton Prévisualiser */}
-          <Link
-            href={`/learn/souvenirs/${activeBook.id}/apercu`}
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm shadow-xs hover:from-purple-700 hover:to-indigo-700 transition active:scale-95 flex items-center gap-1.5"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span className="hidden sm:inline">Prévisualiser</span>
-          </Link>
-        </div>
+          📖 Pages
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileDrawer(mobileDrawer === "edit" ? "none" : "edit")}
+          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition ${
+            mobileDrawer === "edit" ? "bg-[#EEE9FF] text-[#7658E8]" : "text-[#5f554d]"
+          }`}
+        >
+          ✏️ Éditer
+        </button>
+        <button
+          type="button"
+          onClick={() => setPreviewOpen(true)}
+          className="px-4 py-2 rounded-[12px] font-extrabold text-xs text-[#5f554d] hover:bg-gray-100"
+        >
+          👁 Aperçu
+        </button>
       </div>
 
-      {/* Mode plein écran */}
-      {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-[#F3EDE4] overflow-y-auto">
-          <div className="sticky top-0 bg-[#F3EDE4] p-4 flex items-center justify-end gap-3 z-10">
+      {/* Tiroir mobile (Drawer) */}
+      {mobileDrawer !== "none" && (
+        <div className="md:hidden fixed inset-x-0 bottom-[68px] top-24 bg-[#FFFDF8] z-30 rounded-t-[24px] border-t border-[#E8DED0] p-4 shadow-2xl overflow-y-auto animate-in slide-in-from-bottom duration-200">
+          <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#E8DED0]">
+            <span className="font-baloo font-bold text-sm text-[#61351F]">
+              {mobileDrawer === "pages" ? "Navigation des pages" : "Inspecteur & Outils"}
+            </span>
             <button
               type="button"
-              onClick={() => setIsFullscreen(false)}
-              className="px-4 py-2 rounded-2xl bg-white border border-gray-200 font-bold text-sm hover:bg-gray-50 transition"
+              onClick={() => setMobileDrawer("none")}
+              className="text-xs font-bold text-[#91877D] px-2 py-1 bg-[#F1EEE9] rounded-lg"
             >
-              ✕ Fermer
+              Fermer ✕
             </button>
           </div>
-          <div className="flex justify-center pb-8">
-            <div className="w-full max-w-[800px] px-4">
-              {pages.map((page, idx) => (
-                <div key={page.id} className="mb-8">
-                  {/* Mini rendu de chaque page en plein écran */}
-                  <div className="relative w-full rounded-[32px] border-4 bg-[#FFF9F2] shadow-xl p-6 md:p-10">
-                    <div className="text-center mb-4">
-                      <span className="text-xs font-bold text-gray-500 bg-white/80 px-2.5 py-1 rounded-full">
-                        Page {page.pageNumber} / {pages.length}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-black tracking-tight text-gray-900 mb-2">{page.title}</h2>
-                    {page.subtitle && (
-                      <p className="text-sm text-gray-600 mb-4">{page.subtitle}</p>
-                    )}
-                    <div className="flex flex-col gap-3">
-                      {page.elements.map((el) => {
-                        if (el.type === "photo" && el.photoData?.url) {
-                          return (
-                            <img
-                              key={el.id}
-                              src={el.photoData.url}
-                              alt={el.title || "Photo"}
-                              className="w-full max-w-[500px] mx-auto rounded-xl object-cover"
-                              style={{
-                                transform: `scale(${el.photoData.zoom || 1}) rotate(${el.photoData.rotation || 0}deg)`,
-                              }}
-                            />
-                          );
-                        }
-                        if (el.type === "text" && el.textData?.value) {
-                          return (
-                            <p key={el.id} className="text-lg font-bold text-gray-800">
-                              {el.textData.value}
-                            </p>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {mobileDrawer === "pages" ? <Sidebar /> : <Inspector />}
         </div>
       )}
 
-      {/* Layout 3 colonnes : Sidebar + Canvas + Inspector */}
-      <div className="w-full flex justify-center">
-        <EditorLayout
-          activePage={activePage}
-          pages={pages}
-          totalPages={pages.length}
-          profileId={profileId}
-          bookId={activeBook.id}
-          isSaving={isSaving}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onSave={saveCurrentBook}
-          onNext={nextPage}
-          onPrev={prevPage}
-          onPageSelect={setActivePageIndex}
-        />
-      </div>
-    </AppShell>
+      {/* Modal de prévisualisation */}
+      <PreviewModal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        onDownloadPdf={handleDownloadPdf}
+        isDownloadingPdf={isDownloadingPdf}
+      />
+    </div>
   );
 };

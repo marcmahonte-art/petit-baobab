@@ -6,13 +6,21 @@ export type MemoryBookElementType =
   | 'sticker'
   | 'decorative';
 
+export interface PhotoTransform {
+  scale: number;
+  rotation: number;
+  x: number;
+  y: number;
+}
+
 export interface PhotoElementData {
   url?: string;
   storagePath?: string;
-  zoom: number;       // 1 = normal, 1 to 3
+  zoom: number;       // 1 = normal, 0.8 à 1.8
   offsetX: number;    // % or px offset
   offsetY: number;    // % or px offset
-  rotation?: number;  // 0, 90, 180, 270
+  rotation?: number;  // 0, 90, 180, 270 ou rotation fine
+  transform?: PhotoTransform;
   caption?: string;
   placeholderText?: string;
 }
@@ -51,7 +59,6 @@ export interface MemoryBookElement {
   title?: string;
   subtitle?: string;
   badge?: string;
-  // Positionnement relatif en pourcentage (%) pour un redimensionnement vectoriel/responsive parfait
   x?: number;
   y?: number;
   width?: number;
@@ -66,12 +73,15 @@ export interface MemoryBookElement {
 export interface MemoryBookPage {
   id: string;
   pageNumber: number;
+  templateId?: string;
   title: string;
   subtitle?: string;
   categoryTag?: string;
   headerIcon?: string;
   headerIllustration?: string;
   backgroundTheme?: 'warm-cream' | 'mint-pastel' | 'lavender-light' | 'sunny-yellow' | 'coral-soft';
+  status?: 'empty' | 'draft' | 'complete';
+  data?: Record<string, any>;
   elements: MemoryBookElement[];
 }
 
@@ -89,6 +99,36 @@ export interface MemoryBookTemplate {
 
 export type MemoryBookStatus = 'draft' | 'in_progress' | 'completed';
 
+export interface ChildData {
+  id?: string;
+  firstName: string;
+  lastName?: string;
+  birthDate?: string;
+  age?: string | number;
+  height?: string | number;
+  favoriteColor?: string;
+  favoriteFood?: string;
+  favoriteAnimal?: string;
+  futureDream?: string;
+  likes?: string;
+  dislikes?: string;
+  photoUrl?: string;
+  photoTransform?: PhotoTransform;
+}
+
+export interface MemoryBookTheme {
+  id: string;
+  name: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    paper: string;
+    text: string;
+  };
+}
+
 export interface MemoryBookRecord {
   id: string;
   profile_id: string;
@@ -96,8 +136,11 @@ export interface MemoryBookRecord {
   title: string;
   school_year: string;
   theme?: string;
+  themeId?: string;
   status: MemoryBookStatus;
   cover_color?: string;
+  current_page?: number;
+  child_data?: ChildData;
   pages_data: MemoryBookPage[];
   answers_data?: Record<string, string>;
   thumbnail_url?: string;

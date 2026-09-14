@@ -1,5 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Caveat:wght@500;700&family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&family=Caveat:wght@500;700&family=Quicksand:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+:root {
+  --notebook-brown: #61351F;
+  --notebook-green: #16866B;
+  --notebook-yellow: #F9B72C;
+  --notebook-orange: #F28B30;
+  --notebook-purple: #7658E8;
+  --notebook-bg: #FAF3E4;
+  --notebook-paper: #FFFDF8;
+  --notebook-muted: #91877D;
+  --notebook-border: #E8DED0;
+  --notebook-pastel: #EEE9FF;
+}
+
+.font-baloo {
+  font-family: 'Baloo 2', cursive, sans-serif;
+}
+.font-nunito {
+  font-family: 'Nunito Sans', Arial, sans-serif;
+}
 
 @custom-variant dark (&:is(.dark *));
 

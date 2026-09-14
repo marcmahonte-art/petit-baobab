@@ -36,29 +36,30 @@
   body {
     margin: 0 !important;
     padding: 0 !important;
-    background: #FFF9F2 !important;
+    background: #FFFDF8 !important;
+    visibility: visible !important;
   }
 
-  /* 4. Aucune animation / transition résiduelle */
+  /* 4. Aucune animation résiduelle */
   *,
   *::before,
   *::after {
     animation: none !important;
     transition: none !important;
-    box-shadow: none !important;
   }
 
   /* 5. Chaque page = une feuille A4, saut de page après */
   .print-page {
     width: 210mm;
+    height: 297mm;
     min-height: 297mm;
-    margin: 0;
-    padding: 20mm;
+    margin: 0 !important;
+    padding: 0 !important;
     box-sizing: border-box;
     page-break-after: always;
     break-after: page;
     overflow: hidden;
-    background: #FFF9F2;
+    background: #FFFDF8;
     border: none;
     position: relative;
   }

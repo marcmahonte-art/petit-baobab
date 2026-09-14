@@ -28,7 +28,7 @@ const memorySteps = [
 
 export default function MemoryBooksListPage() {
   const router = useRouter();
-  const { studentSession } = useAuthStore();
+  const { user, studentSession } = useAuthStore();
   const profile = useProfile();
   const childId = studentSession?.profileId || profile?.id || "default_child";
   const childName = studentSession?.name || profile?.name || "Mon Enfant";
@@ -64,8 +64,26 @@ export default function MemoryBooksListPage() {
 
   const handleCreateFastBook = async () => {
     if (isCreatingFast) return;
+
+    // Si non connecté et pas de profil actif, rediriger vers login existant
+    if (!user && !studentSession && childId === "default_child") {
+      router.push("/login?next=/learn/souvenirs");
+      return;
+    }
+
     try {
       setIsCreatingFast(true);
+
+      // Création ou récupération du cahier de souvenirs existant
+      const existingDraft = books.find(
+        (b) => b.status === "draft" || b.status === "in_progress"
+      );
+
+      if (existingDraft) {
+        router.push(`/learn/souvenirs/${existingDraft.id}`);
+        return;
+      }
+
       const newBook = await memoryBookService.createBook({
         profileId: childId,
         templateId: "cahier_10_pages_marketing_v1",
@@ -74,7 +92,7 @@ export default function MemoryBooksListPage() {
       });
       router.push(`/learn/souvenirs/${newBook.id}`);
     } catch (e) {
-      console.error("Erreur création rapide:", e);
+      console.error("Erreur ouverture/création du cahier:", e);
       setIsCreatingFast(false);
     }
   };
