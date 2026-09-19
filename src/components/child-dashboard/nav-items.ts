@@ -19,7 +19,7 @@ export const commonNavItems: NavItem[] = [
   { icon: Bookmark, label: "Mes livres", href: "/learn/mes-livres" },
   { icon: Camera, label: "Cahier de souvenirs", href: "/learn/souvenirs" },
   { icon: Gamepad2, label: "Jeux éducatifs", href: "#" },
-  { icon: Bookmark, label: "Histoires", href: "#" },
+  { icon: Bookmark, label: "Histoires", href: "/learn/histoires" },
   { icon: Tent, label: "Activités", href: "#" },
 ]
 

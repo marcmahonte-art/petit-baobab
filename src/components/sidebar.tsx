@@ -53,11 +53,13 @@ export function Sidebar() {
             priority
           />
         </Link>
-
         {/* Navigation */}
         <nav className="flex flex-col gap-1.5 mt-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href === "/" && pathname === null)
+            const isActive =
+              pathname === item.href ||
+              (item.href === "/" && pathname === null) ||
+              (item.label === "Histoires" && (pathname === "/histoires" || pathname?.startsWith("/learn/histoires")))
             return (
               <Link
                 key={item.label}
