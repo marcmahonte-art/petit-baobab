@@ -10,7 +10,6 @@ import {
   Bookmark,
   Tent,
   Settings,
-  Award,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -37,7 +36,6 @@ export function MobileBottomNav({ homeHref = "/learn/dashboard" }: MobileBottomN
   const moreItems = [
     { icon: Bookmark, label: "Mes livres", href: "/learn/mes-livres" },
     { icon: Tent, label: "Activités", href: "#" },
-    { icon: Award, label: "Mon portfolio", href: "/learn/portfolio" },
     { icon: Settings, label: "Paramètres", href: "/learn/parametres" },
   ]
 
