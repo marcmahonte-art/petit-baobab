@@ -1,6 +1,6 @@
 "use client"
 
-import { Heart, Leaf, BookOpen, Star, Music, Users } from "lucide-react"
+import { Heart, Leaf, BookOpen, Star, Music, Users, Check } from "lucide-react"
 import { StoryTheme, StoryThemeId } from "@/lib/stories/types"
 import { cn } from "@/lib/utils"
 
@@ -64,8 +64,8 @@ export function ThemeSelector({
             </span>
 
             {isSelected && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#3B2416] text-white rounded-full text-[10px] font-bold flex items-center justify-center border-2 border-white">
-                ✓
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#3B2416] text-white rounded-full flex items-center justify-center border-2 border-white">
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
               </span>
             )}
           </button>

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { Sparkles, Star } from "lucide-react"
+import { Sparkles, Star, Heart } from "lucide-react"
 
 interface StoriesHeroProps {
   onCreateClick?: () => void
@@ -15,9 +15,15 @@ export function StoriesHero({ onCreateClick }: StoriesHeroProps) {
       <div className="absolute bottom-4 right-1/3 w-36 h-36 bg-[#FFB300]/15 rounded-full blur-2xl pointer-events-none" />
       
       {/* Decorative Floating Sparkles */}
-      <span className="absolute top-8 right-12 text-[#FFAE33] text-xl opacity-70 animate-bounce hidden sm:inline">✦</span>
-      <span className="absolute top-1/2 left-8 text-[#FF6F91] text-sm opacity-60 hidden md:inline">♥</span>
-      <span className="absolute bottom-8 left-1/4 text-[#7D6AF8] text-base opacity-70 hidden md:inline">★</span>
+      <div className="absolute top-8 right-12 hidden sm:inline-block">
+        <Sparkles className="w-5 h-5 text-[#FFAE33] opacity-70 animate-bounce" />
+      </div>
+      <div className="absolute top-1/2 left-8 hidden md:inline-block">
+        <Heart className="w-4 h-4 text-[#FF6F91] fill-[#FF6F91] opacity-60" />
+      </div>
+      <div className="absolute bottom-8 left-1/4 hidden md:inline-block">
+        <Star className="w-4 h-4 text-[#7D6AF8] fill-[#7D6AF8] opacity-70" />
+      </div>
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         {/* Left Text & CTA Content */}

@@ -13,9 +13,24 @@ export interface StoryTheme {
 
 export interface StoryPage {
   pageNumber: number
+  title?: string
   text: string
   illustrationUrl: string
   audioUrl?: string
+  scene?: string
+  emotion?: string
+}
+
+export interface StoryCharacter {
+  name: string
+  type?: string
+  age?: number
+  gender?: string
+  skinTone?: string
+  hair?: string
+  clothing?: string
+  personality?: string[]
+  visualDescription?: string
 }
 
 export interface Story {
@@ -29,9 +44,19 @@ export interface Story {
   category: string // e.g. "Aventure", "Culture", "Nature", "Éducation", "Rêve", "Amitié"
   categoryColor: string
   country?: string
+  region?: string
   environment?: string
   pages: StoryPage[]
+  moral?: string
+  status?: StoryStatus
+  character?: StoryCharacter
+  characterName?: string
+  authorName?: string
+  explanation?: string
+  educationalGoal?: string
+  visualStyle?: string
   isFavorite?: boolean
   readCount?: number
   isChildFavorite?: boolean
+  createdAt?: string
 }

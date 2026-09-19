@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { StoriesHeader } from "./StoriesHeader"
 import { StoriesHero } from "./StoriesHero"
 import { StoryCard } from "./StoryCard"
@@ -8,17 +9,29 @@ import { ThemeSelector } from "./ThemeSelector"
 import { StoriesBottomBanner } from "./StoriesBottomBanner"
 import { StoryReaderModal } from "./StoryReaderModal"
 import { MY_STORIES, RECOMMENDED_STORIES, STORY_THEMES } from "@/lib/stories/mock-stories"
+import { getCustomStoriesLocally } from "@/lib/stories/story-service"
 import { Story, StoryThemeId } from "@/lib/stories/types"
-import { ArrowRight, BookOpen, Sparkles } from "lucide-react"
+import { ArrowRight, BookOpen, Sparkles, Heart } from "lucide-react"
 
 export function StoriesPageContent() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTheme, setSelectedTheme] = useState<StoryThemeId | null>(null)
   const [readingStory, setReadingStory] = useState<Story | null>(null)
+  const [customStories, setCustomStories] = useState<Story[]>([])
+
+  useEffect(() => {
+    setCustomStories(getCustomStoriesLocally())
+  }, [])
+
+  // All user stories (custom + default)
+  const allMyStories = useMemo(() => {
+    return [...customStories, ...MY_STORIES]
+  }, [customStories])
 
   // Filtered stories according to search query and selected theme
   const filteredMyStories = useMemo(() => {
-    return MY_STORIES.filter((story) => {
+    return allMyStories.filter((story) => {
       const matchesSearch =
         !searchQuery ||
         story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,7 +43,7 @@ export function StoriesPageContent() {
 
       return matchesSearch && matchesTheme
     })
-  }, [searchQuery, selectedTheme])
+  }, [allMyStories, searchQuery, selectedTheme])
 
   const filteredRecommendations = useMemo(() => {
     return RECOMMENDED_STORIES.filter((story) => {
@@ -58,8 +71,7 @@ export function StoriesPageContent() {
       {/* Hero Banner */}
       <StoriesHero
         onCreateClick={() => {
-          // Open first story or future generator
-          setReadingStory(MY_STORIES[0])
+          router.push("/histoires/nouvelle")
         }}
       />
 
@@ -155,9 +167,7 @@ export function StoriesPageContent() {
             <h2 className="text-xl sm:text-2xl font-black text-[#3B2416] tracking-tight">
               Les coups de cœur des enfants
             </h2>
-            <span className="text-[#FF4D6D] text-lg select-none">
-              ♡
-            </span>
+            <Heart className="w-5 h-5 text-[#FF4D6D] fill-[#FF4D6D]/20" />
           </div>
 
           <button

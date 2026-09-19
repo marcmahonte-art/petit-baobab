@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Sparkles, BookOpen } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Sparkles, BookOpen, Maximize2 } from "lucide-react"
 import { Story } from "@/lib/stories/types"
 
 interface StoryReaderModalProps {
@@ -121,6 +121,15 @@ export function StoryReaderModal({ story, onClose }: StoryReaderModalProps) {
                 </>
               )}
             </button>
+
+            {/* Mode Grand Écran / Page dédiée */}
+            <a
+              href={`/histoires/${story.id}`}
+              className="p-2 rounded-full bg-white border border-[#EFE7DB] text-[#6E5A4D] hover:bg-[#F0E7DA] transition-colors"
+              title="Ouvrir en plein écran"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </a>
 
             {/* Close button */}
             <button

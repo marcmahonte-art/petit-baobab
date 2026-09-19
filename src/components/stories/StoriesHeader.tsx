@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Bell, ChevronDown, Sparkles } from "lucide-react"
+import { Search, Bell, ChevronDown, Sparkles, X } from "lucide-react"
 import Image from "next/image"
 
 interface StoriesHeaderProps {
@@ -35,7 +35,7 @@ export function StoriesHeader({
             onClick={() => onSearchChange("")}
             className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-[#A49488] hover:text-[#3B2416]"
           >
-            ✕
+            <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
