@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef, useLayoutEffect } from "react"
 import Image from "next/image"
 import {
   ChevronLeft,
@@ -10,11 +10,6 @@ import {
   Download,
   Maximize2,
   Minimize2,
-  Share2,
-  RotateCcw,
-  RotateCw,
-  X,
-  BookOpen,
 } from "lucide-react"
 import type { Story } from "@/lib/stories/types"
 import { generateStoryPdf } from "@/lib/stories/pdf-generator"
@@ -27,6 +22,12 @@ interface OpenBookViewProps {
   className?: string
 }
 
+/**
+ * Ratio A4 paysage : la double page = deux pages A4 portrait côte à côte
+ * (2 × 210 mm de large pour 297 mm de haut → 420 × 297 mm).
+ */
+const A4_SPREAD_RATIO = 297 / 210
+
 export function OpenBookView({
   story,
   onClose,
@@ -37,8 +38,12 @@ export function OpenBookView({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [bookSize, setBookSize] = useState<{ w: number; h: number } | null>(null)
 
   const bookContainerRef = useRef<HTMLDivElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const textBoxRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLParagraphElement>(null)
 
   const pages = story.pages || []
   const currentPage = pages[currentPageIndex] || {
@@ -47,13 +52,131 @@ export function OpenBookView({
     illustrationUrl: story.coverUrl,
   }
 
-  // Audio speech synthesis
-  useEffect(() => {
+  /* ------------------------------------------------------------------ */
+  /* Arrêt de la lecture audio : déclenché par le changement de page,     */
+  /* dans le gestionnaire d'événement (et non dans un effet, pour éviter  */
+  /* les rendus en cascade).                                              */
+  /* ------------------------------------------------------------------ */
+  const stopSpeech = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel()
-      setIsPlayingAudio(false)
     }
-  }, [currentPageIndex])
+    if (isPlayingAudio) setIsPlayingAudio(false)
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Format A4 : la double page est dimensionnée pour occuper tout       */
+  /* l'espace disponible en conservant EXACTEMENT le ratio A4 paysage.   */
+  /* (width:100% + aspect-ratio + max-height ne suffit pas : le          */
+  /*  navigateur ne réajuste pas la largeur quand la hauteur est bridée) */
+  /* ------------------------------------------------------------------ */
+  useLayoutEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
+
+    const compute = () => {
+      // clientWidth/clientHeight INCLUENT le padding de la scène, alors que le
+      // livre vit dans sa content box : on retire donc le padding, sinon le
+      // livre est rogné de 2×padding (ex. 48px avec p-6).
+      const cs = getComputedStyle(stage)
+      const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0)
+      const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0)
+
+      const availW = stage.clientWidth - padX
+      if (availW <= 0) return
+      // Si la scène n'a pas de hauteur définie (page lecteur), on retombe sur
+      // une hauteur dérivée de la fenêtre pour éviter un livre écrasé.
+      const stageH = stage.clientHeight - padY
+      const availH =
+        stageH > 40 ? stageH : Math.min(window.innerHeight * 0.78, 900)
+
+      let h = Math.min(availH, availW / A4_SPREAD_RATIO)
+      let w = h * A4_SPREAD_RATIO
+      if (w > availW) {
+        w = availW
+        h = w / A4_SPREAD_RATIO
+      }
+
+      const next = { w: Math.floor(w), h: Math.floor(h) }
+      setBookSize((prev) =>
+        prev && prev.w === next.w && prev.h === next.h ? prev : next
+      )
+    }
+
+    compute()
+    const observer = new ResizeObserver(compute)
+    observer.observe(stage)
+    return () => observer.disconnect()
+  }, [isFullscreen])
+
+  /* ------------------------------------------------------------------ */
+  /* Le texte de la page de droite reste TOUJOURS dans les bordures :    */
+  /* sa taille s'ajuste (recherche dichotomique) à la place disponible.  */
+  /* ------------------------------------------------------------------ */
+  useLayoutEffect(() => {
+    const box = textBoxRef.current
+    const paragraph = textRef.current
+    if (!box || !paragraph) return
+
+    const fit = () => {
+      // Deux passes : la première stabilise la mise en page (l'apparition
+      // d'une barre de défilement modifie la largeur utile du texte), la
+      // seconde converge sur la géométrie définitive.
+      for (let pass = 0; pass < 2; pass += 1) {
+        const availableH = box.clientHeight
+        const availableW = box.clientWidth
+        if (availableH <= 0 || availableW <= 0) return
+
+        // La borne haute suit la largeur de colonne ; la recherche
+        // dichotomique la réduit ensuite pour que le texte remplisse la page
+        // sans jamais la dépasser (cas des textes longs sur un petit livre).
+        const maxSize = Math.max(11, Math.min(32, availableW * 0.1))
+        const minSize = 8
+
+        paragraph.style.fontSize = `${maxSize}px`
+        if (paragraph.getBoundingClientRect().height <= box.clientHeight) {
+          continue
+        }
+
+        let low = minSize
+        let high = maxSize
+        for (let i = 0; i < 16; i += 1) {
+          const mid = (low + high) / 2
+          paragraph.style.fontSize = `${mid}px`
+          // Relecture à chaque itération : la hauteur disponible peut bouger
+          // (gouttière de défilement), on compare toujours au réel.
+          if (paragraph.getBoundingClientRect().height <= box.clientHeight) {
+            low = mid
+          } else {
+            high = mid
+          }
+        }
+
+        // Arrondi vers le BAS : la hauteur du texte saute d'une ligne entière
+        // dès qu'un mot ne tient plus, donc arrondir au centième supérieur
+        // ferait repasser le texte sur une ligne de trop.
+        let size = Math.floor(low * 100) / 100
+        paragraph.style.fontSize = `${size}px`
+
+        // Filet de sécurité : si la mise en page quantifiée déborde encore,
+        // on redescend par petits crans jusqu'à tenir dans les bordures.
+        let guard = 0
+        while (
+          paragraph.getBoundingClientRect().height > box.clientHeight &&
+          guard < 12
+        ) {
+          size = Math.floor(size * 0.98 * 100) / 100
+          paragraph.style.fontSize = `${size}px`
+          guard += 1
+        }
+      }
+    }
+
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(box)
+    return () => observer.disconnect()
+  }, [currentPageIndex, currentPage.text, bookSize, isFullscreen])
 
   const toggleSpeech = () => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return
@@ -74,12 +197,14 @@ export function OpenBookView({
   }
 
   const handleNext = () => {
+    stopSpeech()
     if (currentPageIndex < pages.length - 1) {
       setCurrentPageIndex((prev) => prev + 1)
     }
   }
 
   const handlePrev = () => {
+    stopSpeech()
     if (currentPageIndex > 0) {
       setCurrentPageIndex((prev) => prev - 1)
     }
@@ -106,6 +231,22 @@ export function OpenBookView({
       setIsDownloadingPdf(false)
     }
   }
+
+  /* Chrome interne proportionnel à la taille du livre : sur un petit livre
+     (tablette), des marges fixes de 24px mangeaient une grande partie de la
+     page et le texte n'avait plus la place de tenir dans les bordures. */
+  const pagePad = bookSize
+    ? Math.max(8, Math.min(26, Math.round(bookSize.w * 0.024)))
+    : null
+  const authorSize = bookSize
+    ? Math.max(7, Math.min(11, +(bookSize.w * 0.0115).toFixed(1)))
+    : null
+  const chromeScale = bookSize
+    ? Math.max(0.62, Math.min(1, bookSize.h / 620))
+    : 1
+  // La page de gauche (illustration) garde une marge plus fine que la page de
+  // texte : l'image occupe ainsi presque toute la page, comme sur la référence.
+  const imagePad = pagePad !== null ? Math.max(6, Math.round(pagePad * 0.7)) : null
 
   return (
     <div
@@ -251,8 +392,11 @@ export function OpenBookView({
       {/* ------------------------------------------------------------ */}
       {/* 2. Main Centered Book Stage (.book-stage)                    */}
       {/* ------------------------------------------------------------ */}
-      <div className="book-stage relative z-10 flex-1 min-w-0 min-h-0 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden">
-        
+      <div
+        ref={stageRef}
+        className="book-stage relative z-10 flex-1 min-w-0 min-h-0 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden"
+      >
+
         {/* Floating Left Page Turn Button */}
         <button
           type="button"
@@ -275,9 +419,17 @@ export function OpenBookView({
           <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
-        {/* Open Book Spread (Strictly preserving aspect ratio, centered in soft cream space) */}
+        {/* Open Book Spread — format A4 paysage (2 pages A4 portrait), centré
+            dans l'espace disponible et dimensionné pour l'occuper au maximum. */}
         <div
-          className="relative w-full max-w-[680px] xl:max-w-[740px] aspect-[16/10.5] max-h-[58vh] rounded-[18px] sm:rounded-[24px] bg-[#FFFDF9] border border-[#E8DFC8] shadow-[0_14px_38px_rgba(60,35,18,0.12)] flex flex-row overflow-hidden transition-all"
+          style={
+            bookSize
+              ? { width: `${bookSize.w}px`, height: `${bookSize.h}px` }
+              : { aspectRatio: `${A4_SPREAD_RATIO}` }
+          }
+          className={`relative rounded-[14px] sm:rounded-[24px] bg-[#FFFDF9] border border-[#E8DFC8] shadow-[0_14px_38px_rgba(60,35,18,0.12)] flex flex-row overflow-hidden transition-shadow ${
+            bookSize ? "max-w-full max-h-full" : "w-full max-w-[680px]"
+          }`}
         >
           {/* Subtle realistic book page edge at bottom */}
           <div className="absolute inset-x-0 bottom-0 h-1.5 bg-[#EAE2D2] border-t border-[#DBD0BE] z-10" />
@@ -285,14 +437,17 @@ export function OpenBookView({
           {/* ======================================================== */}
           {/* LEFT PAGE : Illustration with soft frame                */}
           {/* ======================================================== */}
-          <div className="relative flex-1 p-3 sm:p-4 md:p-5 flex items-center justify-center bg-[#FAF6EE]">
+          <div
+            style={imagePad !== null ? { padding: imagePad } : undefined}
+            className="relative flex-1 min-w-0 p-3 sm:p-4 md:p-5 flex items-center justify-center bg-[#FAF6EE]"
+          >
             <div className="relative w-full h-full rounded-[14px] sm:rounded-[16px] overflow-hidden border border-[#E9DFCE] bg-[#F2EDE2] shadow-2xs">
               <Image
                 src={currentPage.illustrationUrl || story.coverUrl}
                 alt={currentPage.title || story.title}
                 fill
                 priority
-                sizes="(max-width: 768px) 100vw, 420px"
+                sizes="(max-width: 768px) 50vw, 420px"
                 className="object-cover"
               />
             </div>
@@ -310,32 +465,63 @@ export function OpenBookView({
           {/* ======================================================== */}
           {/* RIGHT PAGE : Story Text, Author, Floral Accent & Folio    */}
           {/* ======================================================== */}
-          <div className="relative flex-1 p-4 sm:p-6 md:p-7 flex flex-col justify-between bg-[#FFFEFC]">
+          <div
+            style={pagePad !== null ? { padding: pagePad } : undefined}
+            className="relative flex-1 min-w-0 p-4 sm:p-6 md:p-7 flex flex-col bg-[#FFFEFC]"
+          >
             {/* Spine shadow on right page */}
             <div className="absolute inset-y-0 left-0 w-8 sm:w-10 bg-gradient-to-r from-black/8 via-black/2 to-transparent pointer-events-none" />
 
             {/* Top: Author in small caps */}
-            <div className="flex items-center justify-end w-full">
-              <span className="text-[9.5px] sm:text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9A8778]">
+            <div className="relative flex items-center justify-end w-full shrink-0">
+              <span
+                style={authorSize !== null ? { fontSize: `${authorSize}px` } : undefined}
+                className="whitespace-nowrap text-[9.5px] sm:text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9A8778]"
+              >
                 {authorName}
               </span>
             </div>
 
-            {/* Middle: Story Text in elegant readable serif typography */}
-            <div className="my-auto py-1 sm:py-2 max-w-sm overflow-hidden">
-              <p className="text-[13px] sm:text-[15px] md:text-[17px] font-normal text-[#2A180E] leading-[1.65] sm:leading-[1.7] tracking-normal font-serif antialiased line-clamp-8">
+            {/* Middle: Story Text — occupe la hauteur restante, la taille de
+                police s'adapte pour que le texte ne sorte jamais de la page. */}
+            <div
+              ref={textBoxRef}
+              style={
+                pagePad !== null
+                  ? { marginTop: Math.max(6, Math.round(pagePad * 0.6)) }
+                  : undefined
+              }
+              className="relative flex-1 min-h-0 mt-2.5 sm:mt-4 overflow-y-auto [scrollbar-gutter:stable]"
+            >
+              <p
+                ref={textRef}
+                className="font-serif font-normal text-[#2A180E] leading-[1.6] tracking-normal antialiased"
+              >
                 {currentPage.text}
               </p>
             </div>
 
             {/* Bottom: Petit Baobab Floral Ornament */}
-            <div className="flex flex-col items-center justify-center gap-1 w-full mt-auto">
+            <div
+              style={{ paddingTop: Math.round(8 * chromeScale) }}
+              className="relative flex flex-col items-center justify-center gap-1 w-full shrink-0 pt-2"
+            >
               <div className="flex items-center justify-center gap-1 text-[#C49B3E]">
-                <svg className="w-5 h-3.5 fill-current opacity-85" viewBox="0 0 24 16">
+                <svg
+                  style={{
+                    width: `${(20 * chromeScale).toFixed(1)}px`,
+                    height: `${(14 * chromeScale).toFixed(1)}px`,
+                  }}
+                  className="w-5 h-3.5 fill-current opacity-85"
+                  viewBox="0 0 24 16"
+                >
                   <path d="M12,8 C9,3 4,4 2,7 C5,10 10,10 12,8 Z M12,8 C15,3 20,4 22,7 C19,10 14,10 12,8 Z" />
                 </svg>
               </div>
-              <div className="w-16 h-[1px] bg-[#E8DFC8]" />
+              <div
+                style={{ width: `${Math.round(64 * chromeScale)}px` }}
+                className="w-16 h-[1px] bg-[#E8DFC8]"
+              />
             </div>
           </div>
         </div>
