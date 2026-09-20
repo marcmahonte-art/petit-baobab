@@ -44,19 +44,18 @@ export function StoriesHero({ onCreateClick }: StoriesHeroProps) {
       </div>
 
       {/* Right Illustration: Moussa reading open book under baobab.
-          Mobile / tablette : dans le flux, sous le texte (taille inchangée).
-          Desktop (lg+) : positionnée en absolu, ancrée en bas à droite du Hero et
-          dimensionnée sur la HAUTEUR du Hero (h-full) — la largeur suit le ratio
-          de l'image via object-contain, plafonnée pour ne jamais empiéter sur le
-          texte. Le Hero la clippe proprement (overflow-hidden). */}
-      <div className="relative mt-6 lg:mt-0 mx-auto w-full max-w-[360px] sm:max-w-[420px] aspect-[514/361] lg:absolute lg:right-0 lg:bottom-0 lg:mx-0 lg:h-full lg:w-full lg:max-w-[52%] lg:aspect-auto">
+           Mobile / tablette : dans le flux, sous le texte (taille inchangée).
+           Desktop (lg+) : positionnée en absolu, ancrée en bas à droite du Hero,
+           occupant ~92% de la hauteur et ~58% de la largeur avec object-cover
+           pour remplir l'espace. Le Hero la clippe proprement (overflow-hidden). */}
+      <div className="relative mt-6 lg:mt-0 mx-auto w-full max-w-[360px] sm:max-w-[420px] lg:absolute lg:right-0 lg:bottom-0 lg:mx-0 lg:h-[92%] lg:w-[58%] lg:aspect-auto">
         <Image
           src="/illustrations/histoires/hero-moussa.png"
           alt="Moussa découvrant des histoires magiques"
           fill
           priority
           sizes="(max-width: 1023px) 420px, 620px"
-          className="object-contain object-bottom lg:object-right-bottom"
+          className="object-cover object-right-bottom lg:object-right"
         />
       </div>
     </section>
