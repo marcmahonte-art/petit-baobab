@@ -13,6 +13,7 @@ import {
 import { OpenBookView } from "./OpenBookView"
 import { MY_STORIES } from "@/lib/stories/mock-stories"
 import { saveCustomStoryLocally } from "@/lib/stories/story-service"
+import { useProfile } from "@/lib/hooks/useProfile"
 import type { Story } from "@/lib/stories/types"
 
 interface StoryStudioProps {
@@ -48,6 +49,13 @@ export function StoryStudio({
   const [activeStyle, setActiveStyle] = useState<"album-jeunesse" | "petit-baobab-3d" | "aquarelle">("album-jeunesse")
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
+  // Vrai profil de l'enfant. Sans lui, la requête ne portait que le prompt :
+  // l'API retombait donc sur ses valeurs par défaut (prénom « Milo », 7 ans)
+  // et toutes les histoires parlaient du même enfant.
+  const profile = useProfile()
+  // Message affiché quand le texte ne vient pas d'une IA (transparence).
+  const [generationNotice, setGenerationNotice] = useState<string | null>(null)
+
   const messageIdRef = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -75,6 +83,10 @@ export function StoryStudio({
         prompt: text,
         visualStyle: activeStyle,
         authorName,
+        // Prénom et âge réels de l'enfant connecté. L'âge est borné : le schéma
+        // de l'API n'accepte que 3 à 12 ans.
+        name: profile.name ? profile.name.slice(0, 30) : undefined,
+        age: profile.age && profile.age >= 3 && profile.age <= 12 ? profile.age : undefined,
       }
 
       const res = await fetch("/api/stories", {
@@ -88,6 +100,12 @@ export function StoryStudio({
       if (data.success && data.story) {
         setActiveStory(data.story)
         saveCustomStoryLocally(data.story)
+        // On n'affiche la mention que si le texte ne vient pas d'un modèle.
+        setGenerationNotice(
+          data.generation?.source === "ai"
+            ? null
+            : data.generation?.reason || "Texte issu de la bibliothèque Petit Baobab."
+        )
         setMessages((prev) => [
           ...prev,
           makeMessage(
@@ -203,6 +221,17 @@ export function StoryStudio({
               <span className="w-1.5 h-1.5 rounded-full bg-[#B7A9F5] animate-bounce [animation-delay:-0.15s]" />
               <span className="w-1.5 h-1.5 rounded-full bg-[#B7A9F5] animate-bounce" />
             </div>
+          </div>
+        )}
+
+        {/* Transparence : d'où vient réellement le texte affiché */}
+        {generationNotice && !isGenerating && (
+          <div className="flex items-start gap-1.5 px-2.5 py-2 rounded-[12px] bg-[#FFF7E6] border border-[#F3E1B4] text-[10.5px] leading-snug text-[#7A5A12]">
+            <span className="shrink-0 font-bold">i</span>
+            <span>
+              Histoire issue de la bibliothèque Petit Baobab, pas encore d&apos;une IA.
+              <span className="block opacity-80">{generationNotice}</span>
+            </span>
           </div>
         )}
 

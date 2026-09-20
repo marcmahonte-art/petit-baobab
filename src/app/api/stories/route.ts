@@ -10,6 +10,15 @@ import { buildStoryFromPlanner } from "@/lib/stories/story-service"
 import { getSupabaseServer } from "@/lib/supabaseServer"
 import { MY_STORIES, RECOMMENDED_STORIES } from "@/lib/stories/mock-stories"
 
+/** Ligne de la table `story_pages` telle que renvoyée par Supabase. */
+interface StoryPageRow {
+  page_number: number
+  title: string
+  text: string
+  image_url: string | null
+  audio_url: string | null
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -39,7 +48,7 @@ export async function GET(request: Request) {
           categoryColor: "#FFB300",
           country: s.country,
           environment: s.environment,
-          pages: (s.story_pages || []).map((p: any) => ({
+          pages: (s.story_pages || []).map((p: StoryPageRow) => ({
             pageNumber: p.page_number,
             title: p.title,
             text: p.text,
@@ -55,9 +64,10 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ success: true, stories })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erreur GET /api/stories:", error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Erreur inconnue"
+    return NextResponse.json({ success: false, error: message }, { status: 500 })
   }
 }
 
@@ -66,11 +76,11 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validatedInput = StoryCreationInputSchema.parse(body)
 
-    // 1. Génération de l'histoire (Gemini ou repli déterministe)
-    const plannerOutput = await generateStory(validatedInput)
+    // 1. Génération de l'histoire (Gemini, puis OpenAI, sinon repli déterministe)
+    const generation = await generateStory(validatedInput)
 
     // 2. Construction de l'objet conte
-    const story = buildStoryFromPlanner(validatedInput, plannerOutput)
+    const story = buildStoryFromPlanner(validatedInput, generation.output)
 
     // 3. Sauvegarde optionnelle dans Supabase si l'utilisateur est authentifié
     try {
@@ -124,13 +134,21 @@ export async function POST(request: Request) {
       success: true,
       storyId: story.id,
       story,
+      // Permet à l'interface de dire honnêtement d'où vient le texte.
+      generation: {
+        source: generation.source,
+        model: generation.model,
+        reason: generation.reason,
+      },
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erreur POST /api/stories:", error)
+    // Une erreur de validation Zod expose `errors`, les autres `message`.
+    const failure = error as { errors?: unknown; message?: string }
     return NextResponse.json(
       {
         success: false,
-        error: error.errors || error.message || "Erreur lors de la création de l'histoire",
+        error: failure.errors || failure.message || "Erreur lors de la création de l'histoire",
       },
       { status: 400 }
     )

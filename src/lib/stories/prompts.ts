@@ -43,7 +43,23 @@ Contextes culturels authentiques suggérés pour ${countryContext.name} :
 `
     : ""
 
-  return `Crée une histoire personnalisée de 10 pages pour un enfant :
+  // Le message libre tapé par le parent est le vrai brief : sans lui, le modèle
+  // ne recevait que des champs prédéfinis et produisait une histoire générique.
+  const freeBrief = input.prompt?.trim()
+    ? `
+DEMANDE EXPLICITE DU PARENT — PRIORITÉ ABSOLUE :
+"${input.prompt.trim()}"
+
+Construis l'histoire À PARTIR de cette demande : reprends les personnages, le
+lieu, l'objet, le problème et l'intrigue qu'elle décrit. Les champs ci-dessous
+servent uniquement à l'habiller (prénom, âge, pays, ton, valeur éducative).
+Si un champ contredit la demande, c'est la demande qui gagne.
+`
+    : ""
+
+  return `Crée une histoire personnalisée de 10 pages pour un enfant.
+${freeBrief}
+Cadre de personnalisation :
 - Prénom : ${input.name}
 - Type de héros : ${input.heroType}
 - Âge cible : ${input.age} ans

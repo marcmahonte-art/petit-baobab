@@ -13,7 +13,43 @@ import {
   buildStoryPrompt,
   buildIllustrationPrompt,
 } from "./prompts"
-import { AFRICAN_COUNTRIES } from "./african-context"
+import { AFRICAN_COUNTRIES, type AfricanCountryContext } from "./african-context"
+
+/**
+ * Modèles utilisés. Surchargeables par variables d'environnement, avec des
+ * valeurs par défaut qui existent réellement : `gemini-1.5-flash` a été arrêté
+ * par Google le 24 septembre 2025, l'appeler renvoyait une erreur et l'on
+ * retombait silencieusement sur le gabarit local.
+ */
+const GEMINI_STORY_MODEL = process.env.GEMINI_STORY_MODEL || "gemini-2.5-flash"
+const OPENAI_STORY_MODEL = process.env.OPENAI_STORY_MODEL || "gpt-4o-mini"
+
+/** Normalise un libellé : minuscules, sans accents, sans espaces superflus. */
+function normalizeLabel(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+}
+
+/**
+ * Retrouve le contexte culturel d'un pays en tolérant les accents, la casse et
+ * les tirets (« Senegal », « senegal », « Cote d Ivoire »…). Renvoie undefined
+ * si le pays est inconnu, pour que l'appelant décide du repli explicitement.
+ */
+export function resolveCountryContext(country: string): AfricanCountryContext | undefined {
+  const needle = normalizeLabel(country || "")
+  if (!needle) return undefined
+  return (
+    AFRICAN_COUNTRIES.find((c) => normalizeLabel(c.name) === needle) ||
+    AFRICAN_COUNTRIES.find((c) => normalizeLabel(c.id) === needle) ||
+    AFRICAN_COUNTRIES.find((c) => {
+      const name = normalizeLabel(c.name)
+      return name.startsWith(needle) || needle.startsWith(name)
+    })
+  )
+}
 
 const STORY_ILLUSTRATIONS_POOL = [
   "/illustrations/histoires/story-moussa-baobab.webp",
@@ -35,12 +71,14 @@ async function callGeminiStoryPlanner(prompt: string): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
   if (!apiKey) return null
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_STORY_MODEL}:generateContent`
 
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      // La clé passe par l'en-tête plutôt que par l'URL : elle ne se retrouve
+      // pas dans les journaux ni dans les messages d'erreur.
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
         contents: [
           {
@@ -56,7 +94,10 @@ async function callGeminiStoryPlanner(prompt: string): Promise<string | null> {
     })
 
     if (!res.ok) {
-      console.warn("Gemini API error:", res.status, await res.text())
+      console.warn(
+        `Gemini (${GEMINI_STORY_MODEL}) a répondu ${res.status} :`,
+        (await res.text()).slice(0, 300)
+      )
       return null
     }
 
@@ -84,7 +125,7 @@ async function callOpenAIStoryPlanner(prompt: string): Promise<string | null> {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_STORY_MODEL || "gpt-4o-mini",
+        model: OPENAI_STORY_MODEL,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM_STORY_PLANNER },
@@ -108,7 +149,7 @@ async function callOpenAIStoryPlanner(prompt: string): Promise<string | null> {
  * Garantit 100% de disponibilité sans rupture pour les enfants
  */
 export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPlannerOutput {
-  const country = AFRICAN_COUNTRIES.find((c) => c.name.toLowerCase() === input.country.toLowerCase()) || AFRICAN_COUNTRIES[0]
+  const country = resolveCountryContext(input.country) || AFRICAN_COUNTRIES[0]
   const heroName = input.name?.trim() || "Milo"
   const envName = input.environment || "savane"
   const valName = input.educationalGoal || "le courage et la tendresse"
@@ -123,20 +164,30 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
     promptLower.includes("peur") ||
     promptLower.includes("ours")
   ) {
-    const characterDesc = `Un adorable petit garçon de ${input.age || 7} ans nommé Milo, aux yeux pétillants de curiosité, portant un t-shirt bleu et un short confortable.`
+    const isGirl = input.heroType === "fille"
+    // Le profil enfant ne stocke pas le genre : par défaut on reste neutre,
+    // sinon le repli annonçait « un petit garçon » pour toutes les filles.
+    const childNoun =
+      input.heroType === "fille"
+        ? "une petite fille"
+        : input.heroType === "garcon"
+          ? "un petit garçon"
+          : "un enfant"
+
+    const characterDesc = `Un adorable enfant de ${input.age || 7} ans nommé ${heroName}, aux yeux pétillants de curiosité, portant une tenue confortable et colorée.`
 
     return {
-      title: "L'aventure au clair de lune de Milo",
-      description: `J'ai écrit une histoire pour un enfant de ${input.age || 7} ans. Elle raconte l'histoire de Milo, un petit garçon qui surmonte son appréhension lors d'une soirée pyjama chez sa grand-mère en découvrant la magie de ses histoires du soir et d'un vieil ours en peluche protecteur nommé Barnaby.`,
+      title: `L'aventure au clair de lune de ${heroName}`,
+      description: `J'ai écrit une histoire pour un enfant de ${input.age || 7} ans. Elle raconte l'histoire de ${heroName}, ${childNoun} qui surmonte son appréhension lors d'une soirée pyjama chez sa grand-mère en découvrant la magie de ses histoires du soir et d'un vieil ours en peluche protecteur nommé Barnaby.`,
       moral: "L'amour d'une grand-mère et la tendresse d'un doudou veillent sur nos rêves et dissipent toutes les peurs.",
       character: {
-        name: "Milo",
-        type: "garcon",
+        name: heroName,
+        type: input.heroType,
         age: input.age || 7,
-        gender: "boy",
+        gender: isGirl ? "girl" : "boy",
         skin_tone: "warm brown skin",
         hair: "soft curly dark brown hair",
-        clothing: "t-shirt bleu et short décontracté",
+        clothing: "tenue confortable et colorée",
         personality: ["curieux", "sensible", "courageux"],
         visual_description: characterDesc,
       },
@@ -144,24 +195,24 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
         {
           page_number: 1,
           title: "L'arrivée chez Grand-mère",
-          text: `Le soleil se couchait doucement derrière les toits du village lorsque Milo arriva chez Grand-mère Hattie. C'était sa toute première nuit sans ses parents, et son petit cœur battait un peu plus fort que d'habitude.`,
-          scene: `Milo tenant son petit sac à dos devant la porte accueillante de Grand-mère Hattie au crépuscule`,
+          text: `Le soleil se couchait doucement derrière les toits du village lorsque ${heroName} arriva chez Grand-mère Hattie. C'était sa toute première nuit sans ses parents, et son petit cœur battait un peu plus fort que d'habitude.`,
+          scene: `${heroName} tenant son petit sac à dos devant la porte accueillante de Grand-mère Hattie au crépuscule`,
           emotion: "apprehension",
-          image_prompt: buildIllustrationPrompt(characterDesc, "Milo arriving at cozy grandmother house at warm twilight", "village chaleureux", country.name, input.visualStyle),
+          image_prompt: buildIllustrationPrompt(characterDesc, `${heroName} arriving at cozy grandmother house at warm twilight`, "village chaleureux", country.name, input.visualStyle),
         },
         {
           page_number: 2,
           title: "Le parfum de la cuisine",
-          text: `Dans la maison, une douce odeur de beignets chauds et d'infusion à la menthe flottait dans l'air. Grand-mère Hattie accueillit Milo avec une grande étreinte réconfortante qui sentait la vanille.`,
-          scene: `Grand-mère Hattie souriant chaleureusement en préparant une collation pour Milo`,
+          text: `Dans la maison, une douce odeur de beignets chauds et d'infusion à la menthe flottait dans l'air. Grand-mère Hattie accueillit ${heroName} avec une grande étreinte réconfortante qui sentait la vanille.`,
+          scene: `Grand-mère Hattie souriant chaleureusement en préparant une collation pour ${heroName}`,
           emotion: "warmth",
           image_prompt: buildIllustrationPrompt(characterDesc, "Grandmother lovingly hugging young boy in warm kitchen", "maison familiale", country.name, input.visualStyle),
         },
         {
           page_number: 3,
           title: "L'heure du pyjama",
-          text: `Après le repas et un jeu amusant de dominos, vint l'heure d'aller au lit. Milo enfila son pyjama bleu, mais la chambre d'amis lui semblait immense et pleine de bruits inconnus.`,
-          scene: `Milo assis sur le bord du grand lit regardant la fenêtre où la lune commence à briller`,
+          text: `Après le repas et un jeu amusant de dominos, vint l'heure d'aller au lit. ${heroName} enfila son pyjama bleu, mais la chambre d'amis lui semblait immense et pleine de bruits inconnus.`,
+          scene: `${heroName} assis sur le bord du grand lit regardant la fenêtre où la lune commence à briller`,
           emotion: "hesitation",
           image_prompt: buildIllustrationPrompt(characterDesc, "Young boy sitting on large cozy bed looking at night window", "chambre chaleureuse", country.name, input.visualStyle),
         },
@@ -169,7 +220,7 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
           page_number: 4,
           title: "L'ami d'enfance de Papa",
           text: `Grand-mère Hattie s'assit à côté de lui et lui tendit un vieil ours en peluche tout doux auquel il manquait un bouton pour l'œil. « Voici Barnaby », dit-elle doucement.`,
-          scene: `Grand-mère tendant un ours en peluche vintage avec un bouton à Milo émerveillé`,
+          scene: `Grand-mère tendant un ours en peluche vintage avec un bouton à ${heroName} émerveillé`,
           emotion: "curiosity",
           image_prompt: buildIllustrationPrompt(characterDesc, "Kind elderly grandmother handing a gentle teddy bear named Barnaby to boy", "chambre familiale", country.name, input.visualStyle),
         },
@@ -177,15 +228,15 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
           page_number: 5,
           title: "Le secret de Barnaby",
           text: `« C'était le meilleur ami de ton père quand il était petit et qu'il avait peur. Barnaby est un expert pour les premières nuits chez les grands-parents. Il sait exactement comment chasser les ombres. »`,
-          scene: `Milo tenant le petit ours en peluche et écoutant sa grand-mère avec attention`,
+          scene: `${heroName} tenant le petit ours en peluche et écoutant sa grand-mère avec attention`,
           emotion: "reassurance",
           image_prompt: buildIllustrationPrompt(characterDesc, "Boy holding cozy teddy bear listening intently to grandmother", "chambre de nuit", country.name, input.visualStyle),
         },
         {
           page_number: 6,
           title: "La lune argentée",
-          text: `Par la fenêtre, la pleine lune éclairait la chambre d'une lumière d'argent. Milo serra Barnaby contre lui. Les ombres sur le mur ne faisaient plus peur du tout : elles dansaient comme des papillons.`,
-          scene: `La lumière de la pleine lune éclairant doucement la chambre et Milo tenant l'ours`,
+          text: `Par la fenêtre, la pleine lune éclairait la chambre d'une lumière d'argent. ${heroName} serra Barnaby contre lui. Les ombres sur le mur ne faisaient plus peur du tout : elles dansaient comme des papillons.`,
+          scene: `La lumière de la pleine lune éclairant doucement la chambre et ${heroName} tenant l'ours`,
           emotion: "wonder",
           image_prompt: buildIllustrationPrompt(characterDesc, "Moonlight gently filling children bedroom, peaceful atmosphere", "chambre paisible", country.name, input.visualStyle),
         },
@@ -200,15 +251,15 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
         {
           page_number: 8,
           title: "Un câlin tout doux",
-          text: `Milo posa sa tête sur l'oreiller moelleux. Barnaby niché sous son bras, il sentit son corps se détendre complètement. La maison de Grand-mère était en réalité l'endroit le plus sûr du monde.`,
-          scene: `Milo blotti sous la couverture avec Barnaby, un léger sourire sur les lèvres`,
+          text: `${heroName} posa sa tête sur l'oreiller moelleux. Barnaby niché sous son bras, il sentit son corps se détendre complètement. La maison de Grand-mère était en réalité l'endroit le plus sûr du monde.`,
+          scene: `${heroName} blotti sous la couverture avec Barnaby, un léger sourire sur les lèvres`,
           emotion: "serenity",
           image_prompt: buildIllustrationPrompt(characterDesc, "Boy snuggled comfortably under warm quilt with teddy bear", "lit douillet", country.name, input.visualStyle),
         },
         {
           page_number: 9,
           title: "Le pays des beaux rêves",
-          text: `Tandis que Grand-mère embrassait son front en murmurant « Bonne nuit mon petit prince », Milo ferma les yeux en souriant. Le sommeil vint le cueillir comme une caresse d'étoile.`,
+          text: `Tandis que Grand-mère embrassait son front en murmurant « Bonne nuit mon petit prince », ${heroName} ferma les yeux en souriant. Le sommeil vint le cueillir comme une caresse d'étoile.`,
           scene: `Grand-mère embrassant le front de l'enfant endormi paisiblement`,
           emotion: "love",
           image_prompt: buildIllustrationPrompt(characterDesc, "Loving grandmother gently kissing boy forehead while he sleeps peacefully", "nuit étoilée", country.name, input.visualStyle),
@@ -216,8 +267,8 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
         {
           page_number: 10,
           title: "Le grand réveil triomphant",
-          text: `Le lendemain matin, le chant des oiseaux et l'odeur des crêpes réveillèrent Milo. Il sauta du lit tout joyeux : il avait réussi sa première nuit et avait déjà hâte de recommencer !`,
-          scene: `Milo en pyjama souriant radieusement le matin au soleil avec son ours Barnaby`,
+          text: `Le lendemain matin, le chant des oiseaux et l'odeur des crêpes réveillèrent ${heroName}. Il sauta du lit tout joyeux : il avait réussi sa première nuit et avait déjà hâte de recommencer !`,
+          scene: `${heroName} en pyjama souriant radieusement le matin au soleil avec son ours Barnaby`,
           emotion: "triumph",
           image_prompt: buildIllustrationPrompt(characterDesc, "Joyful boy jumping out of bed in sunny morning holding teddy bear", "matin radieux", country.name, input.visualStyle),
         },
@@ -341,38 +392,63 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
 }
 
 /**
+ * Résultat de la génération. `source` indique si le texte vient réellement d'un
+ * modèle ou du gabarit local : l'appelant doit pouvoir le dire à l'utilisateur
+ * plutôt que de laisser croire à une génération par IA.
+ */
+export interface StoryGenerationResult {
+  output: StoryPlannerOutput
+  source: "ai" | "fallback"
+  model?: string
+  reason?: string
+}
+
+/**
  * Fonction maîtresse : génère une histoire complète de 10 pages
  */
-export async function generateStory(input: StoryCreationInput): Promise<StoryPlannerOutput> {
-  const countryContext = AFRICAN_COUNTRIES.find(
-    (c) => c.name.toLowerCase() === input.country.toLowerCase()
-  )
+export async function generateStory(input: StoryCreationInput): Promise<StoryGenerationResult> {
+  const countryContext = resolveCountryContext(input.country)
 
   const prompt = buildStoryPrompt(input, countryContext)
 
+  const geminiConfigured = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY)
+  const openaiConfigured = Boolean(process.env.OPENAI_API_KEY)
+
   // 1. Essai Gemini
   let rawJson = await callGeminiStoryPlanner(prompt)
+  let model = rawJson ? GEMINI_STORY_MODEL : undefined
 
   // 2. Essai OpenAI
   if (!rawJson) {
     rawJson = await callOpenAIStoryPlanner(prompt)
+    if (rawJson) model = OPENAI_STORY_MODEL
   }
 
-  // 3. Validation ou repli déterministe
+  // 3. Validation
   if (rawJson) {
     try {
       // Nettoyer les balises markdown ```json si présentes
       const cleaned = rawJson.replace(/```json\s*/g, "").replace(/```\s*$/g, "").trim()
       const parsed = JSON.parse(cleaned)
       const validated = StoryPlannerOutputSchema.parse(parsed)
-      return validated
+      return { output: validated, source: "ai", model }
     } catch (parseError) {
       console.warn("Échec validation JSON du modèle IA, utilisation du repli déterministe:", parseError)
+      return {
+        output: generateAfricanStoryFallback(input),
+        source: "fallback",
+        reason: "Réponse du modèle invalide",
+      }
     }
   }
 
-  // Repli automatique haut de gamme
-  return generateAfricanStoryFallback(input)
+  // Repli déterministe, en indiquant clairement pourquoi.
+  const reason =
+    !geminiConfigured && !openaiConfigured
+      ? "Aucune clé IA configurée (GEMINI_API_KEY ou OPENAI_API_KEY)"
+      : "Les modèles configurés n'ont pas répondu"
+
+  return { output: generateAfricanStoryFallback(input), source: "fallback", reason }
 }
 
 /**

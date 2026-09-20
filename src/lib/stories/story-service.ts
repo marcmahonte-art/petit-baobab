@@ -6,7 +6,7 @@
 import { MY_STORIES, RECOMMENDED_STORIES } from "./mock-stories"
 import type { Story, StoryPage } from "./types"
 import type { StoryCreationInput, StoryPlannerOutput } from "./schemas"
-import { generateStory, getPageIllustrationUrl } from "./generator"
+import { getPageIllustrationUrl } from "./generator"
 
 const LOCAL_STORAGE_KEY = "petit_baobab_custom_stories"
 
