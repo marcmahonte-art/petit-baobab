@@ -10,6 +10,7 @@ import { Mail } from "lucide-react"
 import { logger } from "@/lib/logger"
 import { getSiteUrl } from "@/lib/site"
 import { getHomeRedirect } from "@/lib/admin/client-guard"
+import { safeInternalPath } from "@/lib/auth/safe-redirect"
 
 import { AuthLayout } from "@/components/auth/AuthLayout"
 import { InputField } from "@/components/auth/InputField"
@@ -43,7 +44,7 @@ function LoginFormContent() {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      const next = searchParams.get("next")
+      const next = safeInternalPath(searchParams.get("next"))
       if (next) {
         router.push(next)
       } else if (account?.plan === "ecole_pro" || space === "school") {
@@ -109,7 +110,7 @@ function LoginFormContent() {
     // Call store login
     const result = await login(email, password)
     if (result.success) {
-      const next = searchParams.get("next")
+      const next = safeInternalPath(searchParams.get("next"))
       const plan = useAuthStore.getState().account?.plan
       if (next) {
         router.push(next)
