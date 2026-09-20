@@ -1,14 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import {
   Sparkles,
   ArrowUp,
-  Mic,
   Plus,
-  Compass,
-  BookOpen,
   Wand2,
   RefreshCw,
   SlidersHorizontal,
@@ -32,31 +29,45 @@ const INSPIRATION_CHIPS = [
   "L'aventure magique sous le baobab étoilé",
 ]
 
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+}
+
 export function StoryStudio({
   initialStory,
   authorName = "MARC MAHONTE",
   onSwitchToWizard,
 }: StoryStudioProps) {
   const [activeStory, setActiveStory] = useState<Story>(initialStory || MY_STORIES[0])
-  const [promptText, setPromptText] = useState(
-    "Mon enfant de 7 ans ne veut pas dormir chez sa grand-mère. Je vais lui créer un livre d'histoires pour l'aider à surmonter cette difficulté."
-  )
-  const [lastUserPrompt, setLastUserPrompt] = useState(
-    "Mon enfant de 7 ans ne veut pas dormir chez sa grand-mère. Je vais lui créer un livre d'histoires pour l'aider à surmonter cette difficulté."
-  )
-  const [assistantExplanation, setAssistantExplanation] = useState(
-    "J'ai écrit une histoire pour un enfant de 7 ans. Elle raconte l'histoire de Milo, un petit garçon qui surmonte son appréhension lors d'une soirée pyjama chez sa grand-mère en découvrant la magie de ses histoires du soir et d'un ours en peluche nommé Barnabé."
-  )
+  // Conversation vierge au démarrage : aucun message simulé.
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [promptText, setPromptText] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [activeStyle, setActiveStyle] = useState<"album-jeunesse" | "petit-baobab-3d" | "aquarelle">("album-jeunesse")
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
+
+  const messageIdRef = useRef(0)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const makeMessage = (role: ChatMessage["role"], content: string): ChatMessage => {
+    messageIdRef.current += 1
+    return { id: `${role}-${messageIdRef.current}`, role, content }
+  }
+
+  // Un chat normal reste calé en bas quand la conversation grandit.
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [messages, isGenerating])
 
   const handleGenerateFromPrompt = async (textToUse?: string) => {
     const text = (textToUse || promptText).trim()
     if (!text || isGenerating) return
 
+    setMessages((prev) => [...prev, makeMessage("user", text)])
+    setPromptText("")
     setIsGenerating(true)
-    setLastUserPrompt(text)
     if (isMobileDrawerOpen) setIsMobileDrawerOpen(false)
 
     try {
@@ -77,13 +88,29 @@ export function StoryStudio({
       if (data.success && data.story) {
         setActiveStory(data.story)
         saveCustomStoryLocally(data.story)
-        setAssistantExplanation(
-          data.story.description ||
-            `J'ai écrit une histoire inspirée de ton idée : "${data.story.title}".`
-        )
+        setMessages((prev) => [
+          ...prev,
+          makeMessage(
+            "assistant",
+            data.story.description ||
+              `J'ai écrit une histoire inspirée de ton idée : « ${data.story.title} ».`
+          ),
+        ])
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          makeMessage(
+            "assistant",
+            "Je n'ai pas réussi à créer l'histoire. Peux-tu reformuler ou réessayer ?"
+          ),
+        ])
       }
     } catch (err) {
       console.warn("Erreur génération Studio:", err)
+      setMessages((prev) => [
+        ...prev,
+        makeMessage("assistant", "La connexion a échoué. Réessaie dans un instant."),
+      ])
     } finally {
       setIsGenerating(false)
     }
@@ -92,73 +119,94 @@ export function StoryStudio({
   // Assistant Panel Content Component
   const renderAssistantContent = () => (
     <div className="flex flex-col h-full justify-between p-3 sm:p-3.5 bg-white rounded-[20px] border border-[#F0E7DA] shadow-2xs">
-      {/* Scrollable conversation and inspiration pills */}
+      {/* Scrollable conversation */}
       <div className="flex flex-col gap-3 overflow-y-auto pr-1">
-        {/* User Prompt Message with Child Avatar */}
-        {lastUserPrompt && (
-          <div className="flex items-start gap-2">
-            <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 border border-[#F0E7DA] mt-0.5">
-              <Image
-                src="/illustrations/premium-boy.webp"
-                alt="Avatar"
-                fill
-                className="object-cover"
-              />
+        {/* État vide : on accueille et on propose des idées, aucun message simulé */}
+        {messages.length === 0 && !isGenerating && (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col items-center text-center gap-1.5 py-6">
+              <div className="w-9 h-9 rounded-full bg-[#EDE9FE] text-[#7D6AF8] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 fill-current" />
+              </div>
+              <p className="text-[12px] font-extrabold text-[#3B2416]">
+                Commence une nouvelle histoire
+              </p>
+              <p className="text-[11px] text-[#7A695C] leading-snug max-w-[220px]">
+                Décris la situation de ton enfant ou l&apos;aventure que tu imagines.
+              </p>
             </div>
-            <div className="p-2.5 sm:p-3 rounded-[16px] rounded-tl-xs bg-[#FDF4EC] text-[#2A180E] text-[12px] font-medium leading-relaxed border border-[#F6E9DE] shadow-2xs flex-1">
-              {lastUserPrompt}
+
+            {/* Suggestions Capsules */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-[#7A695C] uppercase tracking-wider">
+                <span className="text-amber-500">💡</span>
+                <span>IDÉES D&apos;HISTOIRES EN 1 CLIC</span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                {INSPIRATION_CHIPS.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => handleGenerateFromPrompt(chip)}
+                    className="group flex items-center gap-2 px-2.5 py-1.5 rounded-[12px] bg-[#FCFAF6] hover:bg-[#FFF5E6] text-[#4A3525] border border-[#EFE7DB] hover:border-[#FFD95C] transition-all text-left cursor-pointer"
+                  >
+                    <div className="w-4 h-4 rounded-md bg-[#FFE9B8] text-[#8A5600] flex items-center justify-center shrink-0 text-[10px]">
+                      💡
+                    </div>
+                    <span className="text-[11px] font-semibold truncate flex-1">
+                      {chip}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Categories / Badges */}
-        <div className="flex items-center gap-1.5 pl-8">
-          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#7D6AF8]">
-            Livre d&apos;histoires
-          </span>
-          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full border border-[#E3D9C9] text-[#7A695C] bg-white">
-            Expérience
-          </span>
-        </div>
+        {/* Historique de la conversation */}
+        {messages.map((message) =>
+          message.role === "user" ? (
+            <div key={message.id} className="flex items-start gap-2">
+              <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 border border-[#F0E7DA] mt-0.5">
+                <Image
+                  src="/illustrations/premium-boy.webp"
+                  alt="Avatar"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-2.5 sm:p-3 rounded-[16px] rounded-tl-xs bg-[#FDF4EC] text-[#2A180E] text-[12px] font-medium leading-relaxed border border-[#F6E9DE] shadow-2xs flex-1 whitespace-pre-wrap break-words">
+                {message.content}
+              </div>
+            </div>
+          ) : (
+            <div key={message.id} className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-[#EDE9FE] text-[#7D6AF8] flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+              </div>
+              <div className="p-2.5 sm:p-3 rounded-[14px] bg-[#FCFAF6] border border-[#F0E7DA] text-[11.5px] sm:text-[12px] text-[#3B2416] leading-[1.5] flex-1 whitespace-pre-wrap break-words">
+                <p className="font-normal">{message.content}</p>
+              </div>
+            </div>
+          )
+        )}
 
-        {/* Assistant Response with Sparkles badge */}
-        <div className="flex items-start gap-2">
-          <div className="w-6 h-6 rounded-full bg-[#EDE9FE] text-[#7D6AF8] flex items-center justify-center shrink-0 mt-0.5">
-            <Sparkles className="w-3.5 h-3.5 fill-current" />
+        {/* Indicateur de rédaction pendant la génération */}
+        {isGenerating && (
+          <div className="flex items-start gap-2">
+            <div className="w-6 h-6 rounded-full bg-[#EDE9FE] text-[#7D6AF8] flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+            </div>
+            <div className="px-3 py-2.5 rounded-[14px] bg-[#FCFAF6] border border-[#F0E7DA] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B7A9F5] animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B7A9F5] animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B7A9F5] animate-bounce" />
+            </div>
           </div>
-          <div className="p-2.5 sm:p-3 rounded-[14px] bg-[#FCFAF6] border border-[#F0E7DA] text-[11.5px] sm:text-[12px] text-[#3B2416] leading-[1.5] flex-1">
-            <p className="font-normal">{assistantExplanation}</p>
-          </div>
-        </div>
+        )}
 
-        {/* Suggestions Capsules */}
-        <div className="flex flex-col gap-1.5 pt-1">
-          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-[#7A695C] uppercase tracking-wider">
-            <span className="text-amber-500">💡</span>
-            <span>IDÉES D&apos;HISTOIRES EN 1 CLIC</span>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            {INSPIRATION_CHIPS.map((chip) => (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => {
-                  setPromptText(chip)
-                  handleGenerateFromPrompt(chip)
-                }}
-                className="group flex items-center gap-2 px-2.5 py-1.5 rounded-[12px] bg-[#FCFAF6] hover:bg-[#FFF5E6] text-[#4A3525] border border-[#EFE7DB] hover:border-[#FFD95C] transition-all text-left cursor-pointer"
-              >
-                <div className="w-4 h-4 rounded-md bg-[#FFE9B8] text-[#8A5600] flex items-center justify-center shrink-0 text-[10px]">
-                  💡
-                </div>
-                <span className="text-[11px] font-semibold truncate flex-1">
-                  {chip}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Bottom Compact Prompt Box */}
@@ -174,7 +222,11 @@ export function StoryStudio({
               }
             }}
             rows={2}
-            placeholder="Décris une autre histoire ou modifie celle-ci..."
+            placeholder={
+              messages.length === 0
+                ? "Décris l'histoire que tu veux créer..."
+                : "Écris ton message..."
+            }
             className="w-full bg-transparent resize-none focus:outline-none text-[12px] font-semibold text-[#2A180E] placeholder-[#A09082] leading-snug"
           />
 
