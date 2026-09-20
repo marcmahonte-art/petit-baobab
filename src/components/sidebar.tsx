@@ -19,7 +19,12 @@ const navItemsBase = [
   // settingsNavItem est ajouté dynamiquement plus bas (href dépend du rôle)
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  compact?: boolean
+  className?: string
+}
+
+export function Sidebar({ compact = false, className }: SidebarProps = {}) {
   const pathname = usePathname()
   const router = useRouter()
   // Source de vérité = cookie sb-student-token résolu côté serveur (learn/layout).
@@ -38,6 +43,126 @@ export function Sidebar() {
         .filter((i) => i.label !== "Espace parents" && i.label !== "Facturation")
         .concat(settingsItem)
     : navItemsBase.concat(settingsItem)
+
+  if (compact) {
+    return (
+      <aside
+        className={cn(
+          "w-full relative flex flex-col h-full justify-between shrink-0 select-none pb-1",
+          className
+        )}
+      >
+        <div>
+          {/* Logo Section → compact: 105px on desktop, icon only on tablet */}
+          <Link
+            href="/learn/dashboard"
+            className="h-[52px] xl:h-[56px] flex items-center justify-center xl:justify-start px-1"
+          >
+            <Image
+              src="/illustrations/logo-petit-baobab.webp"
+              alt="Petit Baobab"
+              width={110}
+              height={38}
+              className="w-auto h-[32px] xl:h-[36px] object-contain hidden xl:block"
+              priority
+            />
+            {/* Tablet icon-only logo */}
+            <Image
+              src="/illustrations/Baobab.webp"
+              alt="Petit Baobab"
+              width={34}
+              height={34}
+              className="w-8 h-8 object-contain xl:hidden"
+              priority
+            />
+          </Link>
+
+          {/* Navigation */}
+          <nav className="flex flex-col gap-1 mt-1.5">
+            {navItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href === "/" && pathname === null) ||
+                (item.label === "Histoires" &&
+                  (pathname === "/histoires" || pathname?.startsWith("/learn/histoires")))
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  title={item.label}
+                  className={cn(
+                    "nav-item flex items-center h-[36px] xl:h-[38px] px-2.5 xl:px-3 rounded-[12px] cursor-pointer transition-colors justify-center xl:justify-start gap-2.5",
+                    isActive
+                      ? "active bg-[#E8F4EA] text-[#1D9E75] font-extrabold"
+                      : "text-[#5A4535] hover:bg-[#F5EDE1]/60"
+                  )}
+                >
+                  <item.icon
+                    className={cn(
+                      "w-[16px] h-[16px] shrink-0",
+                      isActive ? "text-[#1D9E75]" : "text-[#7A6A5E]"
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "text-[13px] font-bold truncate hidden xl:inline",
+                      isActive ? "text-[#1D9E75]" : "text-[#5A4535]"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Compact Premium Card (≈ 185 × 125px on desktop, mini button on tablet) */}
+        <div className="mt-2 shrink-0">
+          {/* Desktop Compact Card */}
+          <div className="hidden xl:block relative w-[185px] h-[125px] rounded-[18px] bg-gradient-to-b from-[#E7F67B] to-[#C9EE45] p-3 overflow-hidden shadow-2xs">
+            <div className="relative z-10 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center gap-1 text-[#3B2416] mb-0.5">
+                  <Star className="w-3.5 h-3.5 fill-current text-[#3B2416]" />
+                  <h3 className="font-extrabold text-[12px] leading-tight">Passez Premium</h3>
+                </div>
+                <p className="text-[#3B2416]/80 text-[10px] font-medium max-w-[105px] leading-[1.2]">
+                  Accédez à toutes les fonctionnalités illimitées.
+                </p>
+              </div>
+              <Link href="/parents">
+                <Button
+                  variant="premium"
+                  className="w-[92px] h-[26px] rounded-full text-[10px] font-bold bg-white text-[#3B2416] hover:bg-white/90 border-none shadow-xs px-2 cursor-pointer"
+                >
+                  Découvrir &gt;
+                </Button>
+              </Link>
+            </div>
+            <div className="absolute right-[-8px] bottom-[-4px] w-[88px] h-[92px] z-0 pointer-events-none">
+              <Image
+                src="/illustrations/premium-boy.webp"
+                alt="Premium"
+                fill
+                className="object-contain object-bottom"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* Tablet Mini Premium Star */}
+          <Link
+            href="/parents"
+            title="Passez Premium"
+            className="xl:hidden flex items-center justify-center w-10 h-10 mx-auto rounded-xl bg-gradient-to-b from-[#E7F67B] to-[#C9EE45] text-[#3B2416] shadow-xs hover:scale-105 transition-transform"
+          >
+            <Star className="w-5 h-5 fill-current" />
+          </Link>
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="w-full relative flex flex-col h-full min-h-[calc(100vh-48px)] justify-between shrink-0 select-none pb-2">

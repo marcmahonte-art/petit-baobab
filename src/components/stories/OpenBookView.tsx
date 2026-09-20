@@ -24,13 +24,14 @@ interface OpenBookViewProps {
   onClose?: () => void
   authorName?: string
   compact?: boolean
+  className?: string
 }
 
 export function OpenBookView({
   story,
   onClose,
   authorName = "MARC MAHONTE",
-  compact = false,
+  className,
 }: OpenBookViewProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
@@ -109,174 +110,232 @@ export function OpenBookView({
   return (
     <div
       ref={bookContainerRef}
-      className={`flex flex-col w-full h-full select-none ${
-        isFullscreen ? "fixed inset-0 z-50 bg-[#F2EDE4] p-6 justify-between" : ""
-      }`}
+      className={`relative flex flex-col w-full h-full min-h-0 select-none bg-[#FFF9F2] rounded-[24px] border border-[#F0E7DA] overflow-hidden ${
+        isFullscreen ? "fixed inset-0 z-50 rounded-none border-none p-4 justify-between" : ""
+      } ${className || ""}`}
     >
       {/* ------------------------------------------------------------ */}
-      {/* Top Controls Bar (Exact Gemini Storybook layout)              */}
+      {/* Decorative Botanical Elements (Petit Baobab leaves in corners) */}
       {/* ------------------------------------------------------------ */}
-      <div className="flex items-center justify-between gap-3 px-2 sm:px-4 py-3 border-b border-[#E8DFC8]/60 bg-transparent text-[#3B2416]">
-        {/* Left: Title + undo/redo */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <h2 className="font-bold text-sm sm:text-base text-[#2A180E] truncate max-w-[180px] sm:max-w-[280px]">
+      <div className="absolute top-10 -left-6 w-24 h-24 pointer-events-none opacity-40 select-none z-0">
+        <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-[#8DAA72]">
+          <path
+            d="M20,60 C10,40 30,20 60,30 C70,45 50,65 20,60 Z"
+            fill="currentColor"
+          />
+          <path
+            d="M35,80 C25,65 40,50 65,55 C70,70 55,85 35,80 Z"
+            fill="currentColor"
+            opacity="0.8"
+          />
+        </svg>
+      </div>
+      <div className="absolute top-12 -right-8 w-28 h-28 pointer-events-none opacity-35 select-none z-0">
+        <svg viewBox="0 0 120 120" fill="none" className="w-full h-full text-[#8DAA72]">
+          <path
+            d="M40,20 C70,10 90,35 80,65 C60,75 40,55 40,20 Z"
+            fill="currentColor"
+          />
+          <path
+            d="M20,45 C45,35 65,55 55,80 C40,90 25,75 20,45 Z"
+            fill="currentColor"
+            opacity="0.75"
+          />
+        </svg>
+      </div>
+      <div className="absolute bottom-4 -left-6 w-24 h-24 pointer-events-none opacity-40 select-none z-0">
+        <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-[#8DAA72]">
+          <path
+            d="M30,85 C15,65 30,40 60,45 C68,60 52,85 30,85 Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div className="absolute bottom-2 -right-6 w-32 h-32 pointer-events-none opacity-45 select-none z-0">
+        <svg viewBox="0 0 130 130" fill="none" className="w-full h-full text-[#8DAA72]">
+          <path
+            d="M50,90 C30,70 50,45 80,50 C95,70 75,100 50,90 Z"
+            fill="currentColor"
+          />
+          <path
+            d="M85,110 C65,95 80,75 105,80 C115,95 100,115 85,110 Z"
+            fill="currentColor"
+            opacity="0.8"
+          />
+        </svg>
+      </div>
+
+      {/* ------------------------------------------------------------ */}
+      {/* 1. Discreet Compact Toolbar (Height ≈ 42–46px)               */}
+      {/* ------------------------------------------------------------ */}
+      <div className="relative z-10 h-[44px] shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-[#F0E7DA]/70 bg-transparent text-[#3B2416]">
+        {/* Left: Back button & Story Title (13–14px) */}
+        <div className="flex items-center gap-2 min-w-0">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#F2EDE4] text-[#5A4535] transition-colors cursor-pointer"
+              title="Retour"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+          <h2 className="font-bold text-[13px] sm:text-[14px] text-[#2A180E] truncate max-w-[150px] sm:max-w-[260px] md:max-w-[340px]">
             {story.title}
           </h2>
-          <div className="hidden sm:flex items-center gap-1 text-[#A8988B]">
-            <button
-              type="button"
-              className="p-1 hover:text-[#3B2416] transition-colors cursor-pointer"
-              title="Précédent"
-              onClick={handlePrev}
-              disabled={currentPageIndex === 0}
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              className="p-1 hover:text-[#3B2416] transition-colors cursor-pointer"
-              title="Suivant"
-              onClick={handleNext}
-              disabled={currentPageIndex >= pages.length - 1}
-            >
-              <RotateCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
         </div>
 
-        {/* Center: Pagination < 1/10 > */}
-        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#5A4535]">
+        {/* Center: Pagination (< 1/3 >) */}
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#5A4535]">
           <button
             type="button"
             onClick={handlePrev}
             disabled={currentPageIndex === 0}
-            className="p-1.5 rounded-full hover:bg-black/5 disabled:opacity-30 cursor-pointer transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#F2EDE4] disabled:opacity-30 cursor-pointer transition-colors"
             aria-label="Page précédente"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
-          <span className="tabular-nums tracking-wide">
+          <span className="tabular-nums tracking-wider text-[12px] px-1 font-extrabold text-[#3B2416]">
             {currentPageIndex + 1} / {Math.max(pages.length, 1)}
           </span>
           <button
             type="button"
             onClick={handleNext}
             disabled={currentPageIndex >= pages.length - 1}
-            className="p-1.5 rounded-full hover:bg-black/5 disabled:opacity-30 cursor-pointer transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#F2EDE4] disabled:opacity-30 cursor-pointer transition-colors"
             aria-label="Page suivante"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Right Tools: Fullscreen, PDF, Share, Audio, Close */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Right Tools: Fullscreen, PDF, Audio (buttons 28–32px, icons 15–16px) */}
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={toggleFullscreen}
-            className="p-2 rounded-full hover:bg-black/5 text-[#5A4535] transition-colors cursor-pointer hidden sm:inline-flex"
-            title="Plein écran"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F2EDE4] text-[#6B5A4D] transition-colors cursor-pointer hidden sm:inline-flex"
+            title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullscreen ? <Minimize2 className="w-[15px] h-[15px]" /> : <Maximize2 className="w-[15px] h-[15px]" />}
           </button>
 
           <button
             type="button"
             onClick={handleDownloadPdf}
             disabled={isDownloadingPdf}
-            className="p-2 rounded-full hover:bg-black/5 text-[#5A4535] transition-colors cursor-pointer disabled:opacity-40"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#F2EDE4] text-[#6B5A4D] transition-colors cursor-pointer disabled:opacity-40"
             title="Télécharger le livre PDF"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-[15px] h-[15px]" />
           </button>
 
+          {/* Audio Pill Button */}
           <button
             type="button"
             onClick={toggleSpeech}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               isPlayingAudio
                 ? "bg-[#1194FF] text-white shadow-xs animate-pulse"
                 : "bg-[#BFE5FF] hover:bg-[#AEE0FF] text-[#0060A8]"
             }`}
+            title={isPlayingAudio ? "Arrêter la lecture" : "Écouter l'histoire"}
           >
-            {isPlayingAudio ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-            <span className="hidden xs:inline">{isPlayingAudio ? "Arrêter" : "Écouter"}</span>
+            {isPlayingAudio ? <VolumeX className="w-[15px] h-[15px]" /> : <Volume2 className="w-[15px] h-[15px]" />}
           </button>
-
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-black/5 text-[#5A4535] transition-colors cursor-pointer ml-1"
-              title="Fermer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
       </div>
 
       {/* ------------------------------------------------------------ */}
-      {/* Realistic Open Book Spread Container                         */}
+      {/* 2. Main Centered Book Stage (.book-stage)                    */}
       {/* ------------------------------------------------------------ */}
-      <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8 min-h-[460px]">
-        {/* The Open Book Mockup */}
-        <div className="relative w-full max-w-4xl aspect-[16/10] sm:aspect-[16/9.5] rounded-[22px] sm:rounded-[30px] shadow-[0_20px_50px_rgba(40,25,15,0.18)] bg-[#FDFBF7] border border-[#E3D8C6] overflow-hidden flex flex-col md:flex-row">
-          
-          {/* Background Realistic Page Stack Depth Effect */}
-          <div className="absolute inset-x-0 bottom-0 h-2 bg-[#EFE7D8] border-t border-[#DFD3BE]" />
+      <div className="book-stage relative z-10 flex-1 min-w-0 min-h-0 flex items-center justify-center p-3 sm:p-5 md:p-6 overflow-hidden">
+        
+        {/* Floating Left Page Turn Button */}
+        <button
+          type="button"
+          onClick={handlePrev}
+          disabled={currentPageIndex === 0}
+          className="absolute left-2 sm:left-4 z-30 w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-white/95 hover:bg-white border border-[#EDE3CF] shadow-[0_2px_8px_rgba(0,0,0,0.06)] flex items-center justify-center text-[#5A4535] hover:text-[#2A180E] disabled:opacity-20 cursor-pointer transition-all hover:scale-105 active:scale-95"
+          aria-label="Page précédente"
+        >
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        {/* Floating Right Page Turn Button */}
+        <button
+          type="button"
+          onClick={handleNext}
+          disabled={currentPageIndex >= pages.length - 1}
+          className="absolute right-2 sm:right-4 z-30 w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-white/95 hover:bg-white border border-[#EDE3CF] shadow-[0_2px_8px_rgba(0,0,0,0.06)] flex items-center justify-center text-[#5A4535] hover:text-[#2A180E] disabled:opacity-20 cursor-pointer transition-all hover:scale-105 active:scale-95"
+          aria-label="Page suivante"
+        >
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+
+        {/* Open Book Spread (Strictly preserving aspect ratio, centered in soft cream space) */}
+        <div
+          className="relative w-full max-w-[680px] xl:max-w-[740px] aspect-[16/10.5] max-h-[58vh] rounded-[18px] sm:rounded-[24px] bg-[#FFFDF9] border border-[#E8DFC8] shadow-[0_14px_38px_rgba(60,35,18,0.12)] flex flex-row overflow-hidden transition-all"
+        >
+          {/* Subtle realistic book page edge at bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-1.5 bg-[#EAE2D2] border-t border-[#DBD0BE] z-10" />
 
           {/* ======================================================== */}
-          {/* LEFT PAGE : Full Illustration                            */}
+          {/* LEFT PAGE : Illustration with soft frame                */}
           {/* ======================================================== */}
-          <div className="relative flex-1 p-3 sm:p-5 md:p-6 flex items-center justify-center bg-[#FAF6EE]">
-            <div className="relative w-full h-full rounded-[16px] sm:rounded-[20px] overflow-hidden shadow-xs border border-[#EDE3CF] bg-[#F3ECE0]">
+          <div className="relative flex-1 p-3 sm:p-4 md:p-5 flex items-center justify-center bg-[#FAF6EE]">
+            <div className="relative w-full h-full rounded-[14px] sm:rounded-[16px] overflow-hidden border border-[#E9DFCE] bg-[#F2EDE2] shadow-2xs">
               <Image
                 src={currentPage.illustrationUrl || story.coverUrl}
                 alt={currentPage.title || story.title}
                 fill
                 priority
-                sizes="(max-width: 768px) 100vw, 480px"
+                sizes="(max-width: 768px) 100vw, 420px"
                 className="object-cover"
               />
             </div>
 
-            {/* Left page curl / fold shadow near spine */}
-            <div className="absolute inset-y-0 right-0 w-8 sm:w-12 bg-gradient-to-l from-black/10 via-black/3 to-transparent pointer-events-none" />
+            {/* Subtle inner spine shadow on left page */}
+            <div className="absolute inset-y-0 right-0 w-8 sm:w-10 bg-gradient-to-l from-black/8 via-black/2 to-transparent pointer-events-none" />
           </div>
 
           {/* ======================================================== */}
-          {/* CENTRAL BOOK SPINE / FOLD                                */}
+          {/* CENTRAL SPINE / SEAM                                    */}
           {/* ======================================================== */}
-          <div className="hidden md:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-8 z-20 pointer-events-none bg-gradient-to-r from-black/12 via-black/2 to-black/12" />
-          <div className="hidden md:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-[#D4C5AD] z-20 pointer-events-none" />
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-6 z-20 pointer-events-none bg-gradient-to-r from-black/10 via-black/2 to-black/10" />
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-[#D8CCB7] z-20 pointer-events-none" />
 
           {/* ======================================================== */}
-          {/* RIGHT PAGE : Story Text & Author Header                  */}
+          {/* RIGHT PAGE : Story Text, Author, Floral Accent & Folio    */}
           {/* ======================================================== */}
-          <div className="relative flex-1 p-5 sm:p-8 md:p-10 flex flex-col justify-between bg-[#FCFAF5]">
-            {/* Right page fold shadow near spine */}
-            <div className="hidden md:block absolute inset-y-0 left-0 w-8 sm:w-12 bg-gradient-to-r from-black/10 via-black/3 to-transparent pointer-events-none" />
+          <div className="relative flex-1 p-4 sm:p-6 md:p-7 flex flex-col justify-between bg-[#FFFEFC]">
+            {/* Spine shadow on right page */}
+            <div className="absolute inset-y-0 left-0 w-8 sm:w-10 bg-gradient-to-r from-black/8 via-black/2 to-transparent pointer-events-none" />
 
-            {/* Header: Author / Child Name in small caps */}
+            {/* Top: Author in small caps */}
             <div className="flex items-center justify-end w-full">
-              <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.18em] text-[#8C7A6D]">
+              <span className="text-[9.5px] sm:text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9A8778]">
                 {authorName}
               </span>
             </div>
 
-            {/* Main Story Narrative */}
-            <div className="my-auto py-3 sm:py-6 max-w-md">
-              <p className="text-[15px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-normal text-[#2A180E] leading-[1.65] sm:leading-[1.7] tracking-normal font-serif antialiased">
+            {/* Middle: Story Text in elegant readable serif typography */}
+            <div className="my-auto py-1 sm:py-2 max-w-sm overflow-hidden">
+              <p className="text-[13px] sm:text-[15px] md:text-[17px] font-normal text-[#2A180E] leading-[1.65] sm:leading-[1.7] tracking-normal font-serif antialiased line-clamp-8">
                 {currentPage.text}
               </p>
             </div>
 
-            {/* Bottom: Page Folio Number */}
-            <div className="flex items-center justify-end w-full">
-              <span className="text-xs sm:text-sm font-bold text-[#8C7A6D] tabular-nums">
-                {currentPage.pageNumber || currentPageIndex + 1}
-              </span>
+            {/* Bottom: Petit Baobab Floral Ornament */}
+            <div className="flex flex-col items-center justify-center gap-1 w-full mt-auto">
+              <div className="flex items-center justify-center gap-1 text-[#C49B3E]">
+                <svg className="w-5 h-3.5 fill-current opacity-85" viewBox="0 0 24 16">
+                  <path d="M12,8 C9,3 4,4 2,7 C5,10 10,10 12,8 Z M12,8 C15,3 20,4 22,7 C19,10 14,10 12,8 Z" />
+                </svg>
+              </div>
+              <div className="w-16 h-[1px] bg-[#E8DFC8]" />
             </div>
           </div>
         </div>

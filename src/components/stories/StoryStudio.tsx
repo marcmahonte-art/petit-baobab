@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import {
   Sparkles,
   ArrowUp,
@@ -24,7 +25,7 @@ interface StoryStudioProps {
 }
 
 const INSPIRATION_CHIPS = [
-  "Mon enfant de 7 ans ne veut pas dormir chez sa grand-mère",
+  "Mon enfant de 7 ans ne veut pas dormir chez sa grand-mère.",
   "Peur du noir et des bruits de la nuit",
   "La rentrée des classes au village",
   "Partager son goûter avec un nouvel ami",
@@ -44,10 +45,11 @@ export function StoryStudio({
     "Mon enfant de 7 ans ne veut pas dormir chez sa grand-mère. Je vais lui créer un livre d'histoires pour l'aider à surmonter cette difficulté."
   )
   const [assistantExplanation, setAssistantExplanation] = useState(
-    "J'ai écrit une histoire pour un enfant de 7 ans. Elle raconte l'histoire de Milo, un petit garçon qui surmonte son appréhension lors d'une soirée pyjama chez sa grand-mère en découvrant la magie de ses histoires du soir et d'un ours en peluche nommé Barnaby."
+    "J'ai écrit une histoire pour un enfant de 7 ans. Elle raconte l'histoire de Milo, un petit garçon qui surmonte son appréhension lors d'une soirée pyjama chez sa grand-mère en découvrant la magie de ses histoires du soir et d'un ours en peluche nommé Barnabé."
   )
   const [isGenerating, setIsGenerating] = useState(false)
   const [activeStyle, setActiveStyle] = useState<"album-jeunesse" | "petit-baobab-3d" | "aquarelle">("album-jeunesse")
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
   const handleGenerateFromPrompt = async (textToUse?: string) => {
     const text = (textToUse || promptText).trim()
@@ -55,6 +57,7 @@ export function StoryStudio({
 
     setIsGenerating(true)
     setLastUserPrompt(text)
+    if (isMobileDrawerOpen) setIsMobileDrawerOpen(false)
 
     try {
       const payload = {
@@ -86,151 +89,238 @@ export function StoryStudio({
     }
   }
 
-  return (
-    <div className="flex flex-col w-full h-full min-h-[calc(100vh-100px)]">
-      {/* Top Studio Nav Switcher */}
-      <div className="flex items-center justify-between px-4 py-2 mb-2 border-b border-[#EFE7DB] text-xs font-bold text-[#684C38]">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#20C997] animate-pulse" />
-          <span className="uppercase tracking-wider font-extrabold text-[#3B2416]">
-            Studio Petit Baobab
+  // Assistant Panel Content Component
+  const renderAssistantContent = () => (
+    <div className="flex flex-col h-full justify-between p-3 sm:p-3.5 bg-white rounded-[20px] border border-[#F0E7DA] shadow-2xs">
+      {/* Scrollable conversation and inspiration pills */}
+      <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+        {/* User Prompt Message with Child Avatar */}
+        {lastUserPrompt && (
+          <div className="flex items-start gap-2">
+            <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 border border-[#F0E7DA] mt-0.5">
+              <Image
+                src="/illustrations/premium-boy.webp"
+                alt="Avatar"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="p-2.5 sm:p-3 rounded-[16px] rounded-tl-xs bg-[#FDF4EC] text-[#2A180E] text-[12px] font-medium leading-relaxed border border-[#F6E9DE] shadow-2xs flex-1">
+              {lastUserPrompt}
+            </div>
+          </div>
+        )}
+
+        {/* Categories / Badges */}
+        <div className="flex items-center gap-1.5 pl-8">
+          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#7D6AF8]">
+            Livre d&apos;histoires
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-[#7D6AF8]/10 text-[#7D6AF8] text-[10px]">
+          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full border border-[#E3D9C9] text-[#7A695C] bg-white">
+            Expérience
+          </span>
+        </div>
+
+        {/* Assistant Response with Sparkles badge */}
+        <div className="flex items-start gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#EDE9FE] text-[#7D6AF8] flex items-center justify-center shrink-0 mt-0.5">
+            <Sparkles className="w-3.5 h-3.5 fill-current" />
+          </div>
+          <div className="p-2.5 sm:p-3 rounded-[14px] bg-[#FCFAF6] border border-[#F0E7DA] text-[11.5px] sm:text-[12px] text-[#3B2416] leading-[1.5] flex-1">
+            <p className="font-normal">{assistantExplanation}</p>
+          </div>
+        </div>
+
+        {/* Suggestions Capsules */}
+        <div className="flex flex-col gap-1.5 pt-1">
+          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-[#7A695C] uppercase tracking-wider">
+            <span className="text-amber-500">💡</span>
+            <span>IDÉES D&apos;HISTOIRES EN 1 CLIC</span>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            {INSPIRATION_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => {
+                  setPromptText(chip)
+                  handleGenerateFromPrompt(chip)
+                }}
+                className="group flex items-center gap-2 px-2.5 py-1.5 rounded-[12px] bg-[#FCFAF6] hover:bg-[#FFF5E6] text-[#4A3525] border border-[#EFE7DB] hover:border-[#FFD95C] transition-all text-left cursor-pointer"
+              >
+                <div className="w-4 h-4 rounded-md bg-[#FFE9B8] text-[#8A5600] flex items-center justify-center shrink-0 text-[10px]">
+                  💡
+                </div>
+                <span className="text-[11px] font-semibold truncate flex-1">
+                  {chip}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Compact Prompt Box */}
+      <div className="pt-2.5 mt-2 border-t border-[#F0E7DA]">
+        <div className="relative flex flex-col p-2.5 rounded-[14px] bg-white border border-[#E8DFC8] focus-within:border-[#7D6AF8] transition-all shadow-2xs">
+          <textarea
+            value={promptText}
+            onChange={(e) => setPromptText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                handleGenerateFromPrompt()
+              }
+            }}
+            rows={2}
+            placeholder="Décris une autre histoire ou modifie celle-ci..."
+            className="w-full bg-transparent resize-none focus:outline-none text-[12px] font-semibold text-[#2A180E] placeholder-[#A09082] leading-snug"
+          />
+
+          {/* Bottom toolbar inside input */}
+          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-[#F2ECE1]">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                className="w-6 h-6 rounded-full border border-[#E3D9C9] text-[#7A695C] flex items-center justify-center hover:bg-[#F2EDE4] transition-colors cursor-pointer"
+                title="Ajouter des options"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStyle((prev) =>
+                    prev === "album-jeunesse"
+                      ? "petit-baobab-3d"
+                      : prev === "petit-baobab-3d"
+                      ? "aquarelle"
+                      : "album-jeunesse"
+                  )
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white text-[10.5px] font-bold text-[#5A4535] border border-[#E0D5C3] hover:bg-[#F7F3EA] transition-colors cursor-pointer"
+                title="Changer de style visuel"
+              >
+                <Wand2 className="w-3 h-3 text-[#7D6AF8]" />
+                <span className="capitalize">{activeStyle.replace("-", " ")}</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleGenerateFromPrompt()}
+              disabled={isGenerating || !promptText.trim()}
+              className="w-7 h-7 rounded-full bg-[#7D6AF8] hover:bg-[#6853F2] disabled:opacity-40 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+              aria-label="Envoyer"
+            >
+              {isGenerating ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex flex-col w-full h-full flex-1 min-h-0">
+      {/* ------------------------------------------------------------ */}
+      {/* Top Studio Bar (Matching Reference Mockup Exactly)          */}
+      {/* ------------------------------------------------------------ */}
+      <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 mb-2.5 text-xs font-bold shrink-0">
+        {/* Left: Studio indicator */}
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#1D9E75] animate-pulse" />
+          <span className="uppercase tracking-wider font-extrabold text-[12px] text-[#3B2416]">
+            STUDIO PETIT BAOBAB
+          </span>
+          <span className="px-2 py-0.5 rounded-full bg-[#EDE9FE] text-[#7D6AF8] text-[10px] font-extrabold hidden sm:inline-block">
             Mode Prompt Libre
           </span>
         </div>
 
-        {onSwitchToWizard && (
-          <button
-            type="button"
-            onClick={onSwitchToWizard}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#F0E7DA]/60 border border-[#EFE7DB] transition-all cursor-pointer text-[#3B2416]"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#7D6AF8]" />
-            <span>Passer au mode formulaire guidé</span>
-          </button>
-        )}
-      </div>
+        {/* Right: Switcher button + Child Avatar */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {onSwitchToWizard && (
+            <button
+              type="button"
+              onClick={onSwitchToWizard}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-[#F2ECE1] border border-[#EAE0D0] text-[11px] font-extrabold text-[#4A3525] transition-all cursor-pointer shadow-2xs"
+            >
+              <SlidersHorizontal className="w-3 h-3 text-[#7D6AF8]" />
+              <span>Passer au mode formulaire guidé</span>
+            </button>
+          )}
 
-      {/* Main Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-stretch">
-        {/* ========================================================== */}
-        {/* LEFT COLUMN : Conversation, Prompts & Suggestions          */}
-        {/* ========================================================== */}
-        <div className="lg:col-span-5 flex flex-col justify-between p-4 sm:p-5 bg-white rounded-3xl border border-[#F0E7DA] shadow-xs">
-          <div className="flex flex-col gap-5 overflow-y-auto max-h-[calc(100vh-320px)] pr-1">
-            {/* User Prompt Bubble */}
-            {lastUserPrompt && (
-              <div className="flex justify-end">
-                <div className="max-w-[90%] sm:max-w-[85%] p-4 rounded-3xl rounded-tr-sm bg-[#F5EFEB] text-[#2A180E] text-sm sm:text-[15px] font-medium leading-relaxed shadow-2xs">
-                  {lastUserPrompt}
-                </div>
-              </div>
-            )}
-
-            {/* Assistant Explanation Card */}
-            <div className="flex flex-col gap-2.5 animate-in fade-in duration-300">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#E8F0FE] text-[#1967D2]">
-                  Livre d&apos;histoires
-                </span>
-                <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-[#DCD3C4] text-[#6B5A4D]">
-                  Expérience
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#FCFAF6] border border-[#F0E7DA] text-sm text-[#3B2416] leading-relaxed">
-                <p className="font-normal">{assistantExplanation}</p>
-              </div>
-            </div>
-
-            {/* Suggestions Chips */}
-            <div className="flex flex-col gap-2 pt-2">
-              <span className="text-xs font-bold text-[#8C7A6D] uppercase tracking-wider">
-                Idées d&apos;histoires en 1 clic
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {INSPIRATION_CHIPS.map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => {
-                      setPromptText(chip)
-                      handleGenerateFromPrompt(chip)
-                    }}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#FFF9F2] hover:bg-[#FFEEC9] text-[#684C38] border border-[#F0E7DA] transition-all text-left cursor-pointer"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Prompt Bar Input Box at Bottom (Gemini style) */}
-          <div className="pt-4 mt-4 border-t border-[#F0E7DA]">
-            <div className="relative flex flex-col p-3 rounded-2xl bg-[#F8F4ED] border border-[#E8DFC8] focus-within:border-[#7D6AF8] focus-within:bg-white transition-all shadow-xs">
-              <textarea
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleGenerateFromPrompt()
-                  }
-                }}
-                rows={2}
-                placeholder="Décris ton idée d'histoire ou la situation de ton enfant..."
-                className="w-full bg-transparent resize-none focus:outline-none text-sm font-semibold text-[#2A180E] placeholder-[#9E8E81] leading-relaxed"
-              />
-
-              {/* Action Toolbar Inside Prompt Box */}
-              <div className="flex items-center justify-between pt-2 mt-1 border-t border-[#E8DFC8]/40">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveStyle((prev) =>
-                        prev === "album-jeunesse"
-                          ? "petit-baobab-3d"
-                          : prev === "petit-baobab-3d"
-                          ? "aquarelle"
-                          : "album-jeunesse"
-                      )
-                    }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white text-[11px] font-bold text-[#5A4535] border border-[#DCD3C4] hover:bg-[#F2EDE4] transition-colors cursor-pointer"
-                    title="Changer de style"
-                  >
-                    <Wand2 className="w-3 h-3 text-[#7D6AF8]" />
-                    <span className="capitalize">{activeStyle.replace("-", " ")}</span>
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleGenerateFromPrompt()}
-                  disabled={isGenerating || !promptText.trim()}
-                  className="w-8 h-8 rounded-full bg-[#1194FF] hover:bg-[#007EE5] disabled:opacity-40 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                  aria-label="Envoyer"
-                >
-                  {isGenerating ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-                  )}
-                </button>
-              </div>
-            </div>
+          {/* Child avatar circle */}
+          <div className="relative w-7 h-7 rounded-full overflow-hidden border border-[#E0D5C3] shadow-2xs shrink-0">
+            <Image
+              src="/illustrations/premium-boy.webp"
+              alt="Profil"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
+      </div>
 
-        {/* ========================================================== */}
-        {/* RIGHT COLUMN : Realistic Open Book Preview                 */}
-        {/* ========================================================== */}
-        <div className="lg:col-span-7 flex flex-col bg-[#F6F1E7] rounded-3xl border border-[#E3D8C6] overflow-hidden shadow-xs">
+      {/* ------------------------------------------------------------ */}
+      {/* Main Studio View: Assistant (300–330px) | Storybook (flex: 1) */}
+      {/* ------------------------------------------------------------ */}
+      <div className="flex flex-row gap-3 xl:gap-4 flex-1 min-w-0 min-h-0 items-stretch">
+        {/* Desktop & Tablet Assistant Panel */}
+        <div className="hidden md:flex flex-col shrink-0 md:w-[270px] xl:w-[320px] max-w-[330px] h-[calc(100vh-80px)]">
+          {renderAssistantContent()}
+        </div>
+
+        {/* Storybook Hero Zone (occupies the majority of space: flex: 1) */}
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col h-[calc(100vh-80px)]">
           <OpenBookView story={activeStory} authorName={authorName} />
         </div>
       </div>
+
+      {/* ------------------------------------------------------------ */}
+      {/* Mobile Drawer Trigger Button & Bottom Sheet (< 768px)       */}
+      {/* ------------------------------------------------------------ */}
+      <div className="md:hidden fixed bottom-18 right-4 z-40">
+        <button
+          type="button"
+          onClick={() => setIsMobileDrawerOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#7D6AF8] text-white font-extrabold text-xs shadow-lg hover:bg-[#6853F2] active:scale-95 transition-all cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 fill-current" />
+          <span>✨ Créer une histoire</span>
+        </button>
+      </div>
+
+      {/* Mobile Assistant Drawer */}
+      {isMobileDrawerOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-xs">
+          <div className="w-full bg-[#FFF9F2] rounded-t-[24px] p-3 shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between pb-2 mb-1 border-b border-[#EFE7DB]">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#1D9E75]" />
+                <span className="text-xs font-black uppercase text-[#3B2416]">Assistant Studio</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#EDE3D3] text-[#5A4535] text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {renderAssistantContent()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
