@@ -11,7 +11,7 @@ import { StoryReaderModal } from "./StoryReaderModal"
 import { MY_STORIES, RECOMMENDED_STORIES, STORY_THEMES } from "@/lib/stories/mock-stories"
 import { getCustomStoriesLocally } from "@/lib/stories/story-service"
 import { Story, StoryThemeId } from "@/lib/stories/types"
-import { ArrowRight, BookOpen, Sparkles, Heart } from "lucide-react"
+import { ArrowRight, BookOpen, Heart } from "lucide-react"
 
 export function StoriesPageContent() {
   const router = useRouter()
@@ -61,11 +61,10 @@ export function StoriesPageContent() {
 
   return (
     <div className="flex flex-col gap-7 md:gap-9">
-      {/* Top Header */}
+      {/* Top Header — le compte et la cloche viennent du profil réel */}
       <StoriesHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        userName="Moussa"
       />
 
       {/* Hero Banner */}
