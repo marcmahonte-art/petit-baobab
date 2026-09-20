@@ -80,6 +80,18 @@ function isNoindexPath(pathname: string): boolean {
   return NOINDEX_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+// Routes destinées à la FAMILLE : un visiteur non connecté doit passer par
+// /login (espace famille par défaut), qui le renvoie ensuite sur la page
+// demandée grâce à `?next=`. Les autres routes enfant renvoient vers /school,
+// l'entrée élève (code de classe) — page qui propose aussi un lien vers /login.
+// Sans cette distinction, un parent non connecté atterrissait sur l'espace
+// école, sans rapport avec sa demande.
+const FAMILY_ROUTES = ["/dashboard", "/parametres"];
+
+function isFamilyRoute(pathname: string): boolean {
+  return FAMILY_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`));
+}
+
 /**
  * Résumé de session basé sur la simple PRÉSENCE des cookies (pas de
  * vérification cryptographique). Utilisé pour l'affichage, pas pour décider
@@ -126,6 +138,7 @@ export async function proxy(request: NextRequest) {
     // Un élève ne peut JAMAIS y accéder, même avec son token.
     if (!adultToken) {
       const url = request.nextUrl.clone();
+      url.search = "";
       url.pathname = "/login";
       url.searchParams.set("space", "school");
       return withNoindex(NextResponse.redirect(url));
@@ -178,7 +191,13 @@ export async function proxy(request: NextRequest) {
         return withNoindex(NextResponse.next({ request: { headers } }));
       }
       const url = request.nextUrl.clone();
-      url.pathname = "/school";
+      url.search = "";
+      if (isFamilyRoute(pathname)) {
+        url.pathname = "/login";
+        url.searchParams.set("next", pathname);
+      } else {
+        url.pathname = "/school";
+      }
       return withNoindex(NextResponse.redirect(url));
     }
   }

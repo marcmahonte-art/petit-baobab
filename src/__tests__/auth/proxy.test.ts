@@ -67,14 +67,25 @@ describe("proxy — protection des routes", () => {
     expect(res.headers.get("location")).toContain("/dashboardstudent");
   });
 
-  it("/dashboard avec un sb-student-token FORGÉ → redirect /school (la présence du cookie ne suffit pas)", async () => {
+  it("/dashboard avec un sb-student-token FORGÉ → redirect /login (la présence du cookie ne suffit pas)", async () => {
     const res = await proxy(makeReq("/dashboard", { "sb-student-token": "student-jwt" }));
-    expect(res.headers.get("location")).toContain("/school");
+    const loc = res.headers.get("location") ?? "";
+    expect(loc).toContain("/login");
+    expect(loc).toContain("next=%2Fdashboard");
   });
 
-  it("/dashboard sans aucun token → redirect /school", async () => {
+  it("/dashboard sans aucun token → redirect /login?next=/dashboard (espace famille)", async () => {
     const res = await proxy(makeReq("/dashboard"));
-    expect(res.headers.get("location")).toContain("/school");
+    const loc = res.headers.get("location") ?? "";
+    expect(loc).toContain("/login");
+    expect(loc).toContain("next=%2Fdashboard");
+  });
+
+  it("/parametres sans session → redirect /login?next=/parametres (page famille)", async () => {
+    const res = await proxy(makeReq("/parametres"));
+    const loc = res.headers.get("location") ?? "";
+    expect(loc).toContain("/login");
+    expect(loc).toContain("next=%2Fparametres");
   });
 
   it("/school (exact) → toujours 200 (public)", async () => {
