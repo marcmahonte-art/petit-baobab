@@ -1,11 +1,12 @@
 ﻿import { NextResponse } from "next/server"
 import { getSupabaseServer } from "@/lib/supabaseServer"
+import { resolveApiSession } from "@/lib/auth/api-session"
 
 export async function POST(request: Request) {
   try {
     const supabase = await getSupabaseServer()
 
-    const sessionType = request.headers.get("x-session-type")
+    const session = await resolveApiSession(request)
     const body = await request.json().catch(() => null)
     if (!body) {
       return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 })
@@ -31,10 +32,10 @@ export async function POST(request: Request) {
     let accountId: string
     let profile: { id: string; name: string }
 
-    if (sessionType === "student") {
-      // Session élève : identifiants injectés par le middleware
-      const profileId = request.headers.get("x-profile-id")
-      const classroomId = request.headers.get("x-classroom-id")
+    if (session.type === "student") {
+      // Session élève : identifiants issus du JWT vérifié (cookie httpOnly).
+      const profileId = session.profileId
+      const classroomId = session.classroomId
       if (!profileId || !classroomId) {
         return NextResponse.json({ error: "Session élève incomplète." }, { status: 401 })
       }
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Profil introuvable." }, { status: 404 })
       }
       profile = { id: studentProfile.id, name: studentProfile.name }
-    } else if (sessionType === "parent" || sessionType === "teacher") {
+    } else {
       // Session parent/teacher : authentification Supabase Auth
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
@@ -104,8 +105,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Aucun profil enfant." }, { status: 404 })
       }
       profile = { id: firstProfile.id, name: firstProfile.name }
-    } else {
-      return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
     }
 
     let finalImageUrl = imageUrl

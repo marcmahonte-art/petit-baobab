@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { getServerUser } from "@/lib/auth";
+import { resolveApiSession } from "@/lib/auth/api-session";
 
 function sanitizeFilename(filename: string) {
   return filename
@@ -12,10 +13,12 @@ function sanitizeFilename(filename: string) {
 }
 
 export async function GET(request: NextRequest) {
-  // PROTECTION A — Authentification obligatoire (parent OU élève)
-  const sessionType = request.headers.get("x-session-type");
-  const user = sessionType === "student" ? null : await getServerUser();
-  if (!user && sessionType !== "student") {
+  // PROTECTION A — Authentification obligatoire (parent OU élève).
+  // La session est lue depuis les cookies : le proxy ne couvre aucune route
+  // /api/*, un en-tête `x-session-type` n'arriverait jamais jusqu'ici.
+  const session = await resolveApiSession(request);
+  const user = session.type === "student" ? null : await getServerUser();
+  if (!user && session.type !== "student") {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 

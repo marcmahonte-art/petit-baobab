@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerUser, adjustStars, STARS_REASONS } from "@/lib/auth";
-import { getStudentSession } from "@/lib/auth/student-session";
+import { resolveApiSession } from "@/lib/auth/api-session";
 
 type MagicDrawingStyle =
   | "noir_blanc"
@@ -110,14 +110,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // 1. Determine session type from middleware headers
-  const sessionType = request.headers.get("x-session-type");
-  if (!sessionType) {
-    return NextResponse.json(
-      { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },
-      { status: 401 }
-    );
-  }
+  // 1. Déterminer la session à partir des cookies. Le proxy ne couvre aucune
+  //    route /api/* : un en-tête `x-session-type` n'arriverait jamais ici.
+  const session = await resolveApiSession(request);
+  const sessionType = session.type;
 
   let accountId: string | null = null;
   let starsBalance: number | null = null;
@@ -148,8 +144,8 @@ export async function POST(request: Request) {
     starsBalance = data.stars_balance;
     plan = data.plan;
   } else if (sessionType === "student") {
-    // Student session – fetch school account via classroom_id header
-    const classroomId = request.headers.get("x-classroom-id");
+    // Student session – fetch school account via classroom_id
+    const classroomId = session.classroomId;
     if (!classroomId) {
       return NextResponse.json(
         { error: "invalid_session", message: "Informations de classe manquantes." },
@@ -210,12 +206,11 @@ export async function POST(request: Request) {
     );
   }
 
-  if (sessionType === "student") {
-    const studentSession = await getStudentSession()
-    if (!studentSession) {
+  if (session.type === "student") {
+    if (!session.profileId) {
       return NextResponse.json({ error: "Session élève invalide." }, { status: 401 })
     }
-    if (profileId !== studentSession.profile_id) {
+    if (profileId !== session.profileId) {
       return NextResponse.json({ error: "Profil non autorisé." }, { status: 403 })
     }
   }
