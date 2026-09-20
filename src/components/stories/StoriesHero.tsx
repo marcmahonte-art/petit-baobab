@@ -44,18 +44,23 @@ export function StoriesHero({ onCreateClick }: StoriesHeroProps) {
       </div>
 
       {/* Right Illustration: Moussa reading open book under baobab.
-           Mobile / tablette : dans le flux, sous le texte (taille inchangée).
-           Desktop (lg+) : positionnée en absolu, ancrée en bas à droite du Hero,
-           occupant ~92% de la hauteur et ~58% de la largeur avec object-cover
-           pour remplir l'espace. Le Hero la clippe proprement (overflow-hidden). */}
-      <div className="relative mt-6 lg:mt-0 mx-auto w-full max-w-[360px] sm:max-w-[420px] lg:absolute lg:right-0 lg:bottom-0 lg:mx-0 lg:h-[92%] lg:w-[58%] lg:aspect-auto">
+           Le conteneur porte TOUJOURS le ratio de l'image (514/361) : c'est ce qui
+           garantit qu'aucun bord de l'illustration n'est rogné.
+
+           Mobile / tablette : dans le flux, sous le texte, largeur plafonnée.
+           Desktop (lg+) : en absolu, ancrée en bas à droite, hauteur = toute la
+           hauteur du Hero (donc plus de bande vide au-dessus) ; la largeur en
+           découle par le ratio. Le Hero la clippe proprement (overflow-hidden).
+           `lg:max-w-none` est indispensable : sans lui, `sm:max-w-[420px]`
+           continue de plafonner la largeur en desktop. */}
+      <div className="relative mt-6 lg:mt-0 mx-auto w-full max-w-[360px] sm:max-w-[420px] aspect-[514/361] lg:absolute lg:right-0 lg:bottom-0 lg:mx-0 lg:h-full lg:w-auto lg:max-w-none">
         <Image
           src="/illustrations/histoires/hero-moussa.png"
           alt="Moussa découvrant des histoires magiques"
           fill
           priority
           sizes="(max-width: 1023px) 420px, 620px"
-          className="object-cover object-right-bottom lg:object-right"
+          className="object-cover object-right-bottom"
         />
       </div>
     </section>
