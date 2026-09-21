@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { filterContent } from "@/lib/ai/learning-coach";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const OPENAI_CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini";
 
@@ -118,6 +119,29 @@ export async function POST(request: Request) {
     const faq = faqAnswer(content);
     if (faq) {
       return NextResponse.json({ reply: faq, source: "faq" });
+    }
+
+    // Limitation de débit — UNIQUEMENT sur le chemin IA (celui qui coûte de
+    // l'argent). Le raccourci FAQ ci-dessus est gratuit et instantané, il n'a
+    // pas besoin d'être bridé. Cette route est forcément publique (le widget
+    // d'aide s'affiche aussi pour les visiteurs anonymes), donc le débit est le
+    // seul garde-fou : sans lui, n'importe qui peut boucler ici et consommer
+    // le budget OpenAI du compte.
+    const limit = rateLimit(`help-ai:${clientIp(request)}`, 12, 5 * 60_000);
+    if (!limit.allowed) {
+      // Le client (HelpBot) lit `data.reply` sans tester le statut : on renvoie
+      // donc un message utile plutôt qu'une erreur brute.
+      return NextResponse.json(
+        {
+          reply:
+            "Tu m'as posé beaucoup de questions d'un coup ! Réessaie dans une minute, ou écris-nous directement sur WhatsApp.",
+          source: "rate_limited",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        }
+      );
     }
 
     const raw = await chat([

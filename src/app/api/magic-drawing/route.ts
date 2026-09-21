@@ -101,6 +101,27 @@ avoid: ${negativePrompt}`;
 
 export async function POST(request: Request) {
   const supabase = await getSupabaseServer();
+
+  // 1. Authentification AVANT tout contrôle de configuration.
+  //    Déterminer la session à partir des cookies : le proxy ne couvre aucune
+  //    route /api/*, donc un en-tête `x-session-type` n'arriverait jamais ici.
+  const session = await resolveApiSession(request);
+  const sessionType = session.type;
+
+  // `resolveApiSession` renvoie « parent » dès qu'aucun cookie ÉLÈVE valide
+  // n'est présent : ce n'est PAS une preuve d'authentification. C'est donc à
+  // la route de valider la session adulte elle-même.
+  const user = sessionType === "parent" ? await getServerUser() : null;
+  if (sessionType === "parent" && !user) {
+    return NextResponse.json(
+      { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },
+      { status: 401 }
+    );
+  }
+
+  // 2. Configuration du service — APRÈS l'authentification. Placé avant, ce
+  //    contrôle renvoyait un 500 « clé manquante » à un appelant ANONYME, qui
+  //    apprenait ainsi l'état de configuration du serveur.
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -110,18 +131,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // 1. Déterminer la session à partir des cookies. Le proxy ne couvre aucune
-  //    route /api/* : un en-tête `x-session-type` n'arriverait jamais ici.
-  const session = await resolveApiSession(request);
-  const sessionType = session.type;
-
   let accountId: string | null = null;
   let starsBalance: number | null = null;
   let plan: string | null = null;
 
   if (sessionType === "parent") {
-    // Parent session – use Supabase auth user
-    const user = await getServerUser();
+    // `user` est garanti non nul par le contrôle d'authentification ci-dessus.
+    // Ce second test n'existe que pour que TypeScript puisse le prouver (le
+    // rétrécissement de type ne traverse pas la condition sur `sessionType`).
     if (!user) {
       return NextResponse.json(
         { error: "unauthorized", message: "Veuillez vous connecter pour créer un dessin magique." },

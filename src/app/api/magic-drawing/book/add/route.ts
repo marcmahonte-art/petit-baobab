@@ -29,7 +29,6 @@ export async function POST(request: Request) {
     }
     const mappedStyle = STYLE_MAP[style] || "Contour simple"
 
-    let accountId: string
     let profile: { id: string; name: string }
 
     if (session.type === "student") {
@@ -51,7 +50,6 @@ export async function POST(request: Request) {
       if (classErr || !classroom) {
         return NextResponse.json({ error: "Classe introuvable." }, { status: 404 })
       }
-      accountId = classroom.account_id
 
       // Vérification de sécurité : le dessin référencé appartient bien au profil élève
       if (providedDrawingId) {
@@ -92,7 +90,6 @@ export async function POST(request: Request) {
       if (!account) {
         return NextResponse.json({ error: "Compte introuvable." }, { status: 404 })
       }
-      accountId = account.id
 
       const { data: profiles } = await supabase
         .from("child_profiles")
