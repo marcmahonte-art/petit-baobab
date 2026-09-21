@@ -35,7 +35,6 @@ export const PortraitTemplate: React.FC<PortraitTemplateProps> = ({
   const favoriteFood = data.favoriteFood ?? "Le riz au poulet";
   const favoriteAnimal = data.favoriteAnimal ?? "Le lion";
   const futureDream = data.futureDream ?? "Je veux être médecin pour aider les autres.";
-  const dreamCatch = data.dreamCatch ?? "Rêve\nGrand !";
   const love = data.love ?? "Jouer avec mes amis,\nles gâteaux et les dessins.";
   const hate = data.hate ?? "Les légumes\net me lever tôt.";
 
@@ -316,10 +315,11 @@ export const PortraitTemplate: React.FC<PortraitTemplateProps> = ({
         />
       </div>
 
-      {/* Message "Rêve Grand !" incliné (-3deg) */}
-      <div className="absolute right-[5%] top-[68%] font-baloo font-extrabold text-[24px] sm:text-[27px] leading-[0.82] text-center -rotate-3 text-[#61351F] pointer-events-none z-10">
-        Rêve<br />Grand !
-      </div>
+      {/*
+        L'illustration baobab.png contient déjà le message « Rêve Grand ! »
+        avec ses rayons de soleil. Il était redoublé ici par un texte en dur,
+        d'où deux « Rêve Grand ! » décalés qui se chevauchaient sur la page.
+      */}
 
       {/* Cartes Souvenirs en bas : J'adore / Je déteste */}
       <div className="absolute left-[6%] right-[6%] bottom-[12%] grid grid-cols-2 gap-3 z-10">
