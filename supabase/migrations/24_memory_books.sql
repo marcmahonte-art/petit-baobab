@@ -62,3 +62,10 @@ CREATE POLICY "L'utilisateur peut supprimer les cahiers de souvenirs de sa famil
       WHERE acc.user_id = auth.uid()
     )
   );
+
+-- PostgREST met en cache le schéma. Sans ce rechargement explicite, l'API peut
+-- continuer à répondre `PGRST205 — Could not find the table 'public.memory_books'
+-- in the schema cache` alors que la table vient d'être créée. Le rechargement
+-- est normalement déclenché par le DDL, mais l'appeler ici évite toute fenêtre
+-- d'indisponibilité (et lève l'ambiguïté si l'on relance ce script).
+NOTIFY pgrst, 'reload schema';
