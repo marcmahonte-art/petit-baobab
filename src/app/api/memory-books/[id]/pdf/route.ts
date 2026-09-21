@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium } from "playwright";
+import { resolveApiSession } from "@/lib/auth/api-session";
+import { getServerUser } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Authentification obligatoire (parent OU élève) : ce PDF est la version
+  // imprimable d'un cahier de souvenirs, donc une donnée privée. Sans garde,
+  // l'endpoint lançait un navigateur headless pour n'importe quel visiteur,
+  // avec l'identifiant du cahier pour seul paramètre.
+  const session = await resolveApiSession(request);
+  if (session.type !== "student" && !(await getServerUser())) {
+    return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const baseUrl = process.env.VERCEL_URL
