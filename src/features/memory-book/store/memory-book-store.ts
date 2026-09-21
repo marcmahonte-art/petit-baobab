@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { MemoryBookRecord, PhotoElementData, PhotoTransform } from "../types/memory-book.types";
+import { MemoryBookRecord, PhotoElementData } from "../types/memory-book.types";
 import { memoryBookService } from "../services/memoryBookService";
 
 export type SaveStatusLabel = "Brouillon" | "Enregistrement..." | "Enregistré ✓" | "Erreur" | "Hors connexion";
@@ -41,6 +41,37 @@ interface MemoryBookState {
 
 let autoSaveTimer: NodeJS.Timeout | null = null;
 
+/**
+ * Dernier état réellement persisté (spec §42 : « ne sauvegarder que les données
+ * modifiées »). On compare l'état courant à cet instantané pour ne transmettre
+ * que les colonnes qui ont changé, et pour ne rien transmettre du tout quand
+ * rien n'a bougé.
+ */
+interface SavedSnapshot {
+  title: string;
+  theme: string;
+  school_year: string;
+  status: string;
+  current_page: number;
+  pages_data: string;
+}
+
+let savedSnapshot: SavedSnapshot | null = null;
+
+function takeSnapshot(book: MemoryBookRecord, activePageIndex: number): SavedSnapshot {
+  return {
+    title: book.title ?? "",
+    theme: book.theme ?? "",
+    school_year: book.school_year ?? "",
+    status: book.status ?? "",
+    current_page: activePageIndex,
+    // `pages_data` est une colonne JSONB unique : la comparaison porte donc sur
+    // la sérialisation complète. Un enregistrement par page demanderait une
+    // table dédiée (migration), hors périmètre ici.
+    pages_data: JSON.stringify(book.pages_data ?? []),
+  };
+}
+
 export const useMemoryBookStore = create<MemoryBookState>((set, get) => ({
   currentBook: null,
   activePageIndex: 0,
@@ -55,6 +86,7 @@ export const useMemoryBookStore = create<MemoryBookState>((set, get) => ({
     // Initialiser currentPage si renseigné dans le book
     const initialIndex = book.current_page !== undefined ? book.current_page : 0;
     const clampedIndex = Math.max(0, Math.min(initialIndex, (book.pages_data?.length || 1) - 1));
+    savedSnapshot = takeSnapshot(book, clampedIndex);
     set({
       currentBook: book,
       activePageIndex: clampedIndex,
@@ -301,34 +333,51 @@ export const useMemoryBookStore = create<MemoryBookState>((set, get) => ({
   },
 
   saveCurrentBook: async () => {
-    const { currentBook, isSaving, hasUnsavedChanges } = get();
+    const { currentBook, isSaving, hasUnsavedChanges, activePageIndex } = get();
     if (!currentBook || isSaving) return;
+
+    // Rien n'a bougé depuis la dernière écriture : inutile de solliciter le réseau.
+    if (!hasUnsavedChanges) {
+      set({ saveStatus: "Enregistré ✓" });
+      return;
+    }
+
+    const current = takeSnapshot(currentBook, activePageIndex);
+    const previous = savedSnapshot;
+
+    // On ne transmet que les colonnes dont la valeur diffère réellement.
+    const payload: Partial<MemoryBookRecord> = {};
+    if (!previous || previous.pages_data !== current.pages_data) {
+      payload.pages_data = currentBook.pages_data;
+    }
+    if (!previous || previous.title !== current.title) payload.title = currentBook.title;
+    if (!previous || previous.theme !== current.theme) payload.theme = currentBook.theme;
+    if (!previous || previous.school_year !== current.school_year) payload.school_year = currentBook.school_year;
+    if (!previous || previous.status !== current.status) payload.status = currentBook.status || "in_progress";
+    // `current_page` n'est volontairement pas transmis : la table memory_books
+    // ne possède pas cette colonne (voir supabase/migrations/24_memory_books.sql),
+    // et l'envoyer faisait échouer toute la requête PostgREST — donc toute la
+    // sauvegarde — sans que l'erreur remonte. La page courante reste un état
+    // local tant qu'une colonne dédiée n'est pas ajoutée en base.
+
+    if (Object.keys(payload).length === 0) {
+      savedSnapshot = current;
+      set({ hasUnsavedChanges: false, saveStatus: "Enregistré ✓" });
+      return;
+    }
 
     try {
       set({ isSaving: true, saveStatus: "Enregistrement..." });
 
-      await memoryBookService.updateBook(currentBook.id, {
-        pages_data: currentBook.pages_data,
-        title: currentBook.title,
-        school_year: currentBook.school_year,
-        theme: currentBook.theme,
-        status: currentBook.status || "in_progress",
-        current_page: get().activePageIndex,
-      });
+      await memoryBookService.updateBook(currentBook.id, payload);
 
+      savedSnapshot = current;
       set({
         isSaving: false,
         hasUnsavedChanges: false,
         lastSavedAt: new Date(),
         saveStatus: "Enregistré ✓",
       });
-
-      // Remettre "Brouillon" ou état au bout de 2.5s
-      setTimeout(() => {
-        if (!get().hasUnsavedChanges && get().saveStatus === "Enregistré ✓") {
-          set({ saveStatus: "Enregistré ✓" });
-        }
-      }, 2500);
     } catch (err) {
       console.error("Erreur sauvegarde du cahier:", err);
       set({

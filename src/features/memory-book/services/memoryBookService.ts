@@ -85,7 +85,7 @@ export const memoryBookService = {
       if (!error && data) {
         return data as MemoryBookRecord;
       }
-    } catch (e) {
+    } catch {
       console.warn("Lecture distante échouée, recherche en local pour", id);
     }
 
@@ -153,7 +153,7 @@ export const memoryBookService = {
       if (!error && data) {
         return data as MemoryBookRecord;
       }
-    } catch (e) {
+    } catch {
       console.warn("Sauvegarde distante différée (offline/fallback local actif)");
     }
 
@@ -192,11 +192,20 @@ export const memoryBookService = {
         .select()
         .single();
 
-      if (!error && data) {
+      if (error) {
+        // Auparavant l'erreur était ignorée et la fonction retombait sur le
+        // cache local : l'interface affichait « Enregistré ✓ » alors que rien
+        // n'avait été écrit en base. On la remonte désormais pour que le statut
+        // de sauvegarde reflète la réalité.
+        throw new Error(error.message);
+      }
+
+      if (data) {
         return data as MemoryBookRecord;
       }
     } catch (e) {
-      console.warn("Sync update Supabase en attente/échouée");
+      console.error("[memoryBookService] Échec de la synchronisation Supabase:", e);
+      throw e;
     }
 
     return updatedRecord;

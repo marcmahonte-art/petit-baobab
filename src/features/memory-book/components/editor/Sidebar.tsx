@@ -2,19 +2,39 @@
 
 import React from "react";
 import Image from "next/image";
+import {
+  BookOpen,
+  Palette,
+  Backpack,
+  Users,
+  Star,
+  Library,
+  Trophy,
+  TreePalm,
+  MessageCircle,
+  Lock,
+  FileText,
+} from "lucide-react";
 import { useMemoryBookStore } from "../../store/memory-book-store";
 
-const PAGES_META = [
-  { title: "Ma couverture", icon: "📖" },
-  { title: "Mon portrait", icon: "🎨" },
-  { title: "Mon année", icon: "🎒" },
-  { title: "Mes camarades", icon: "👫" },
-  { title: "Mes souvenirs", icon: "⭐" },
-  { title: "Mes livres", icon: "📚" },
-  { title: "Mes fiertés", icon: "🏆" },
-  { title: "Mes vacances", icon: "🏖️" },
-  { title: "Les petits mots", icon: "💬" },
-  { title: "Mes petits secrets", icon: "🔒" },
+type PageIcon = React.ComponentType<{ className?: string; strokeWidth?: number }>;
+
+/**
+ * Les icônes reprennent celles des maquettes (tracés filaires) plutôt que des
+ * emoji : la spec §13 décrit un `icon: string` par page, mais le rendu attendu
+ * est celui du design system.
+ */
+const PAGES_META: Array<{ title: string; Icon: PageIcon }> = [
+  { title: "Ma couverture", Icon: BookOpen },
+  { title: "Mon portrait", Icon: Palette },
+  { title: "Mon année", Icon: Backpack },
+  { title: "Mes camarades", Icon: Users },
+  { title: "Mes souvenirs", Icon: Star },
+  { title: "Mes livres", Icon: Library },
+  { title: "Mes fiertés", Icon: Trophy },
+  { title: "Mes vacances", Icon: TreePalm },
+  { title: "Les petits mots", Icon: MessageCircle },
+  { title: "Mes petits secrets", Icon: Lock },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -55,12 +75,13 @@ export const Sidebar: React.FC = () => {
         />
       </div>
 
-      {/* Navigation verticale des 10 pages */}
+      {/* Navigation verticale des pages */}
       <nav className="flex flex-col gap-1">
         {Array.from({ length: totalPages }).map((_, index) => {
-          const meta = PAGES_META[index] || { title: `Page ${index + 1}`, icon: "📄" };
+          const meta = PAGES_META[index] || { title: `Page ${index + 1}`, Icon: FileText };
           const pageTitle = pages[index]?.title || meta.title;
           const isActive = index === activePageIndex;
+          const { Icon } = meta;
 
           return (
             <button
@@ -69,13 +90,11 @@ export const Sidebar: React.FC = () => {
               onClick={() => setActivePageIndex(index)}
               className={`w-full text-left py-2.5 px-3 rounded-[12px] text-xs sm:text-sm font-bold flex items-center gap-2.5 transition duration-150 cursor-pointer ${
                 isActive
-                  ? "bg-[#EEE9FF] text-[#7255F5] shadow-2xs font-extrabold"
-                  : "bg-transparent text-[#403832] hover:bg-[#F4ECE1]/60"
+                  ? "bg-[#F0EBFF] text-[#7658E8] font-extrabold"
+                  : "bg-transparent text-[#61351F] hover:bg-[#F4ECE1]/60"
               }`}
             >
-              <span className="w-5 text-center text-base flex-shrink-0">
-                {meta.icon}
-              </span>
+              <Icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={isActive ? 2.4 : 1.9} />
               <span className="truncate">
                 {index + 1}. {pageTitle}
               </span>

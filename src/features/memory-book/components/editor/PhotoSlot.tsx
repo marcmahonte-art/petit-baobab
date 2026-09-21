@@ -12,7 +12,9 @@ import {
   Loader2,
   RotateCw,
   Maximize2,
+  X,
 } from "lucide-react";
+import { clampPhotoZoom, normalizeRotation } from "../../constants/photo";
 
 interface PhotoSlotProps {
   photoData?: PhotoElementData;
@@ -77,19 +79,19 @@ const [zoom, setZoom] = useState(photoData?.zoom || 1);
   };
 
   const handleZoomIn = () => {
-    const newZoom = Math.max(1, Math.min(3, Math.round((zoom + 0.2) * 10) / 10));
+    const newZoom = clampPhotoZoom(zoom + 0.2);
     setZoom(newZoom);
     onUpdate({ zoom: newZoom });
   };
 
   const handleZoomOut = () => {
-    const newZoom = Math.max(1, Math.min(3, Math.round((zoom - 0.2) * 10) / 10));
+    const newZoom = clampPhotoZoom(zoom - 0.2);
     setZoom(newZoom);
     onUpdate({ zoom: newZoom });
   };
 
   const handleRotate = () => {
-    const newRotation = (rotation + 90) % 360;
+    const newRotation = normalizeRotation(rotation + 90);
     setRotation(newRotation);
     onUpdate({ rotation: newRotation });
   };
@@ -174,7 +176,7 @@ const [zoom, setZoom] = useState(photoData?.zoom || 1);
               <Camera className="w-8 h-8 text-amber-700" />
             </div>
             <span className="font-bold text-amber-900 text-sm md:text-base">
-              {photoData?.placeholderText || "Ajouter une photo 📸"}
+              {photoData?.placeholderText || "Ajouter une photo"}
             </span>
             <span className="text-xs text-amber-700/80 mt-1">Appuie ici pour choisir une photo</span>
           </button>
@@ -261,9 +263,9 @@ const [zoom, setZoom] = useState(photoData?.zoom || 1);
           <button
             type="button"
             onClick={() => setShowFullscreen(false)}
-            className="absolute top-4 right-4 text-white text-2xl font-bold bg-white/20 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/30 transition"
+            className="absolute top-4 right-4 text-white bg-white/20 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/30 transition"
           >
-            ✕
+            <X className="w-5 h-5" strokeWidth={2.4} />
           </button>
           {imageUrl && (
             <img

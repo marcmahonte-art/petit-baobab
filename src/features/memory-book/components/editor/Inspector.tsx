@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useRef } from "react";
+import {
+  Pencil,
+  Palette,
+  Settings,
+  Image as ImageIcon,
+  Trash2,
+  Crop,
+  RotateCcw,
+  RotateCw,
+  RefreshCw,
+  Lightbulb,
+  Check,
+} from "lucide-react";
 import { useMemoryBookStore } from "../../store/memory-book-store";
+import { clampPhotoZoom, normalizeRotation, PHOTO_ZOOM_MAX, PHOTO_ZOOM_MIN, PHOTO_ZOOM_STEP } from "../../constants/photo";
 
 const THEMES = [
   { id: "baobab", name: "Thème Baobab", color: "#7658E8", desc: "Couleurs officielles violet & ocre" },
@@ -66,14 +80,12 @@ export const Inspector: React.FC<InspectorProps> = () => {
 
   const handleZoomChange = (newZoom: number) => {
     if (!activePage) return;
-    const clamped = Math.max(0.8, Math.min(1.8, Number(newZoom.toFixed(2))));
-    updatePagePhotoTransform(activePage.id, { zoom: clamped });
+    updatePagePhotoTransform(activePage.id, { zoom: clampPhotoZoom(newZoom) });
   };
 
   const handleRotate = (delta: number) => {
     if (!activePage) return;
-    const newRot = (rotation + delta) % 360;
-    updatePagePhotoTransform(activePage.id, { rotation: newRot });
+    updatePagePhotoTransform(activePage.id, { rotation: normalizeRotation(rotation + delta) });
   };
 
   const handleResetPhoto = () => {
@@ -97,35 +109,38 @@ export const Inspector: React.FC<InspectorProps> = () => {
         <button
           type="button"
           onClick={() => setActiveTab("edit")}
-          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer ${
+          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer inline-flex items-center justify-center gap-1.5 ${
             activeTab === "edit"
               ? "bg-[#7658E8] text-white shadow-2xs"
               : "bg-transparent text-[#61351F] hover:bg-white/40"
           }`}
         >
-          ✏️ Éditer
+          <Pencil className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Éditer
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("theme")}
-          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer ${
+          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer inline-flex items-center justify-center gap-1.5 ${
             activeTab === "theme"
               ? "bg-[#7658E8] text-white shadow-2xs"
               : "bg-transparent text-[#61351F] hover:bg-white/40"
           }`}
         >
-          🎨 Thème
+          <Palette className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Thème
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("settings")}
-          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer ${
+          className={`h-[42px] rounded-[11px] font-extrabold text-xs sm:text-sm transition cursor-pointer inline-flex items-center justify-center gap-1.5 ${
             activeTab === "settings"
               ? "bg-[#7658E8] text-white shadow-2xs"
               : "bg-transparent text-[#61351F] hover:bg-white/40"
           }`}
         >
-          ⚙️ Paramètres
+          <Settings className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Paramètres
         </button>
       </div>
 
@@ -136,7 +151,8 @@ export const Inspector: React.FC<InspectorProps> = () => {
             {/* Section Photo & Recadrage */}
             <div className="border border-[#61351F]/[0.07] rounded-[18px] p-4 bg-[#FFFDF9] shadow-2xs">
               <h3 className="text-sm font-extrabold text-[#61351F] mb-3 flex items-center gap-1.5">
-                📷 Photo
+                <ImageIcon className="w-4 h-4 text-[#7658E8]" strokeWidth={2.2} />
+                Photo
               </h3>
 
               <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3.5 items-center mb-4">
@@ -159,23 +175,26 @@ export const Inspector: React.FC<InspectorProps> = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-[40px] rounded-[12px] px-3 font-extrabold text-xs bg-[#7658E8] text-white hover:bg-[#6849dd] active:scale-95 transition shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                    className="h-[40px] rounded-[12px] px-3 font-extrabold text-xs bg-[#7658E8] text-white hover:bg-[#6849dd] active:scale-95 transition shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    📷 Changer la photo
+                    <ImageIcon className="w-3.5 h-3.5" strokeWidth={2.4} />
+                    Changer la photo
                   </button>
                   <button
                     type="button"
                     onClick={() => activePage && removePagePhoto(activePage.id)}
-                    className="h-[40px] rounded-[12px] px-3 font-extrabold text-xs bg-white border border-[#ded7cf] text-[#39322d] hover:bg-[#FDF9F3] active:scale-95 transition cursor-pointer flex items-center justify-center gap-1"
+                    className="h-[40px] rounded-[12px] px-3 font-extrabold text-xs bg-white border border-[#ded7cf] text-[#39322d] hover:bg-[#FDF9F3] active:scale-95 transition cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    🗑️ Supprimer
+                    <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
+                    Supprimer
                   </button>
                 </div>
               </div>
 
               {/* Recadrer la photo */}
-              <h4 className="text-xs font-extrabold text-[#61351F] mb-2.5 flex items-center gap-1">
-                🔍 Recadrer la photo
+              <h4 className="text-xs font-extrabold text-[#61351F] mb-2.5 flex items-center gap-1.5">
+                <Crop className="w-3.5 h-3.5 text-[#7658E8]" strokeWidth={2.2} />
+                Recadrer la photo
               </h4>
               <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3.5 items-center">
                 <div className="w-[110px] h-[100px] sm:w-[130px] sm:h-[115px] rounded-[10px] overflow-hidden bg-[#f2ede4] border border-[#ded7cf] relative flex items-center justify-center">
@@ -199,23 +218,23 @@ export const Inspector: React.FC<InspectorProps> = () => {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => handleZoomChange(zoom - 0.1)}
+                        onClick={() => handleZoomChange(zoom - PHOTO_ZOOM_STEP)}
                         className="w-[30px] h-[30px] rounded-[8px] bg-white border border-[#ded7cf] font-extrabold text-sm flex items-center justify-center hover:bg-[#F9F4EB] active:scale-95 cursor-pointer"
                       >
                         -
                       </button>
                       <input
                         type="range"
-                        min="0.8"
-                        max="1.8"
-                        step="0.05"
+                        min={PHOTO_ZOOM_MIN}
+                        max={PHOTO_ZOOM_MAX}
+                        step={PHOTO_ZOOM_STEP}
                         value={zoom}
                         onChange={(e) => handleZoomChange(Number(e.target.value))}
                         className="flex-1 accent-[#7658E8] cursor-pointer"
                       />
                       <button
                         type="button"
-                        onClick={() => handleZoomChange(zoom + 0.1)}
+                        onClick={() => handleZoomChange(zoom + PHOTO_ZOOM_STEP)}
                         className="w-[30px] h-[30px] rounded-[8px] bg-white border border-[#ded7cf] font-extrabold text-sm flex items-center justify-center hover:bg-[#F9F4EB] active:scale-95 cursor-pointer"
                       >
                         +
@@ -236,17 +255,19 @@ export const Inspector: React.FC<InspectorProps> = () => {
                         type="button"
                         onClick={() => handleRotate(-5)}
                         title="Tourner de 5° vers la gauche"
-                        className="flex-1 h-[36px] bg-white border border-[#ded7cf] rounded-[8px] text-base hover:bg-[#F9F4EB] active:scale-95 flex items-center justify-center cursor-pointer"
+                        className="flex-1 h-[36px] bg-white border border-[#ded7cf] rounded-[8px] text-base hover:bg-[#F9F4EB] active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        ↺ -5°
+                        <RotateCcw className="w-3.5 h-3.5" strokeWidth={2.2} />
+                        -5°
                       </button>
                       <button
                         type="button"
                         onClick={() => handleRotate(5)}
                         title="Tourner de 5° vers la droite"
-                        className="flex-1 h-[36px] bg-white border border-[#ded7cf] rounded-[8px] text-base hover:bg-[#F9F4EB] active:scale-95 flex items-center justify-center cursor-pointer"
+                        className="flex-1 h-[36px] bg-white border border-[#ded7cf] rounded-[8px] text-base hover:bg-[#F9F4EB] active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
                       >
-                        ↻ +5°
+                        <RotateCw className="w-3.5 h-3.5" strokeWidth={2.2} />
+                        +5°
                       </button>
                     </div>
                   </div>
@@ -257,7 +278,8 @@ export const Inspector: React.FC<InspectorProps> = () => {
             {/* Section Texte (champs en fonction de la page active) */}
             <div className="border border-[#61351F]/[0.07] rounded-[18px] p-4 bg-[#FFFDF9] shadow-2xs flex flex-col gap-3">
               <h3 className="text-sm font-extrabold text-[#61351F] flex items-center gap-1.5">
-                ✏️ Textes de la page
+                <Pencil className="w-4 h-4 text-[#7658E8]" strokeWidth={2.2} />
+                Textes de la page
               </h3>
 
               {activePage.templateId === "portrait-v1" && (
@@ -373,8 +395,9 @@ export const Inspector: React.FC<InspectorProps> = () => {
 
         {activeTab === "theme" && (
           <div className="border border-[#61351F]/[0.07] rounded-[18px] p-4 bg-[#FFFDF9] shadow-2xs flex flex-col gap-3">
-            <h3 className="text-sm font-extrabold text-[#61351F]">
-              🎨 Palettes & Thèmes du Cahier
+            <h3 className="text-sm font-extrabold text-[#61351F] flex items-center gap-1.5">
+              <Palette className="w-4 h-4 text-[#7658E8]" strokeWidth={2.2} />
+              Palettes &amp; Thèmes du Cahier
             </h3>
             <p className="text-xs text-[#91877D] mb-1">
               Choisis l&apos;ambiance chromatique de ton livre de souvenirs :
@@ -415,8 +438,9 @@ export const Inspector: React.FC<InspectorProps> = () => {
 
         {activeTab === "settings" && (
           <div className="border border-[#61351F]/[0.07] rounded-[18px] p-4 bg-[#FFFDF9] shadow-2xs flex flex-col gap-3">
-            <h3 className="text-sm font-extrabold text-[#61351F]">
-              ⚙️ Paramètres du Cahier
+            <h3 className="text-sm font-extrabold text-[#61351F] flex items-center gap-1.5">
+              <Settings className="w-4 h-4 text-[#7658E8]" strokeWidth={2.2} />
+              Paramètres du Cahier
             </h3>
             <div className="rounded-[12px] bg-[#FFF9F2] p-3 border border-[#E8DED0] text-xs flex flex-col gap-1.5">
               <div className="flex justify-between font-bold text-[#61351F]">
@@ -437,9 +461,10 @@ export const Inspector: React.FC<InspectorProps> = () => {
               <button
                 type="button"
                 onClick={handleResetPhoto}
-                className="w-full py-2.5 px-3 rounded-[12px] border border-[#ded7cf] bg-white text-xs font-bold text-[#61351F] hover:bg-gray-50 transition cursor-pointer shadow-2xs"
+                className="w-full py-2.5 px-3 rounded-[12px] border border-[#ded7cf] bg-white text-xs font-bold text-[#61351F] hover:bg-gray-50 transition cursor-pointer shadow-2xs inline-flex items-center justify-center gap-1.5"
               >
-                🔄 Réinitialiser les cadrages photos
+                <RefreshCw className="w-3.5 h-3.5" strokeWidth={2.2} />
+                Réinitialiser les cadrages photos
               </button>
             </div>
           </div>
@@ -447,11 +472,12 @@ export const Inspector: React.FC<InspectorProps> = () => {
       </div>
 
       {/* Notice d'enregistrement en bas de l'inspecteur */}
-      <div className="mt-4 p-3 border border-[#cfeaf6] bg-[#effaff] rounded-[14px] text-[#1681bd] text-xs flex items-center justify-between shadow-2xs flex-shrink-0">
+      <div className="mt-4 p-3 border border-[#16866B]/20 bg-[#DFF1E9] rounded-[14px] text-[#16866B] text-xs flex items-center justify-between shadow-2xs flex-shrink-0">
         <span className="font-bold flex items-center gap-1.5">
-          💡 Enregistrement automatique actif
+          <Lightbulb className="w-3.5 h-3.5" strokeWidth={2.2} />
+          Enregistrement automatique actif
         </span>
-        <span className="text-[#14955d] text-lg font-bold">✓</span>
+        <Check className="w-4 h-4" strokeWidth={2.6} />
       </div>
     </aside>
   );

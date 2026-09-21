@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ArrowLeft, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemoryBookStore } from "../../store/memory-book-store";
 import { getTemplateComponent } from "./templates/template-registry";
 
@@ -36,7 +37,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
           onClick={onClose}
           className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#F0EBFF] hover:bg-[#e4dcff] text-[#7658E8] font-extrabold text-xs sm:text-sm transition cursor-pointer active:scale-95"
         >
-          <span>←</span>
+          <ArrowLeft className="w-4 h-4" strokeWidth={2.4} />
           <span>Retour à l&apos;édition</span>
         </button>
 
@@ -48,7 +49,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             disabled={activePageIndex === 0}
             className="w-8 h-8 rounded-full bg-[#FAF3E4] font-bold text-sm text-[#61351F] flex items-center justify-center disabled:opacity-30 cursor-pointer hover:bg-[#f0e4d0] transition"
           >
-            ‹
+            <ChevronLeft className="w-4 h-4" strokeWidth={2.6} />
           </button>
           <span className="font-baloo font-bold text-sm sm:text-base text-[#61351F] px-2">
             Page {activePageIndex + 1} / {totalPages}
@@ -59,7 +60,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             disabled={activePageIndex === totalPages - 1}
             className="w-8 h-8 rounded-full bg-[#FAF3E4] font-bold text-sm text-[#61351F] flex items-center justify-center disabled:opacity-30 cursor-pointer hover:bg-[#f0e4d0] transition"
           >
-            ›
+            <ChevronRight className="w-4 h-4" strokeWidth={2.6} />
           </button>
         </div>
 
@@ -89,7 +90,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             disabled={isDownloadingPdf}
             className="px-4 py-2 rounded-xl bg-[#7658E8] hover:bg-[#6849dd] text-white font-extrabold text-xs sm:text-sm shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
           >
-            <span>📥</span>
+            <Download className="w-4 h-4" strokeWidth={2.4} />
             <span>{isDownloadingPdf ? "Préparation..." : "Télécharger PDF"}</span>
           </button>
         </div>

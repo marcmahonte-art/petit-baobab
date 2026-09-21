@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowLeft, BookOpen, Eye, Download, ChevronDown } from "lucide-react";
 import { useMemoryBookStore } from "../../store/memory-book-store";
 
 interface TopBarProps {
@@ -59,12 +60,12 @@ export const TopBar: React.FC<TopBarProps> = ({
           onClick={onBack}
           className="flex items-center gap-2 text-sm font-bold text-[#403832] hover:text-[#61351F] transition py-1 px-2 -ml-2 rounded-xl hover:bg-black/5 flex-shrink-0"
         >
-          <span className="text-base leading-none">←</span>
+          <ArrowLeft className="w-4 h-4 flex-shrink-0" strokeWidth={2.4} />
           <span className="hidden sm:inline">Retour</span>
         </Link>
 
-        <div className="w-[34px] h-[34px] rounded-[9px] bg-[#7c5bef] text-white flex items-center justify-center text-lg flex-shrink-0 shadow-xs">
-          📖
+        <div className="w-[34px] h-[34px] rounded-[9px] bg-[#7658E8] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+          <BookOpen className="w-[19px] h-[19px]" strokeWidth={2.2} />
         </div>
 
         <div className="flex flex-col min-w-0">
@@ -92,7 +93,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           onClick={onPreview}
           className="h-[40px] sm:h-[44px] rounded-[14px] px-3 sm:px-4 font-bold text-xs sm:text-sm bg-[#F0EBFF] text-[#7658E8] hover:bg-[#e4dcff] active:scale-95 transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
         >
-          <span className="text-base leading-none">👁</span>
+          <Eye className="w-4 h-4 flex-shrink-0" strokeWidth={2.2} />
           <span className="hidden md:inline">Prévisualiser</span>
         </button>
 
@@ -103,7 +104,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           disabled={isDownloadingPdf}
           className="h-[40px] sm:h-[44px] rounded-[14px] px-3 sm:px-4 font-bold text-xs sm:text-sm bg-[#7658E8] hover:bg-[#6849dd] text-white shadow-[0_8px_18px_rgba(118,88,232,0.22)] active:scale-95 transition inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
         >
-          <span className="text-base leading-none">📥</span>
+          <Download className="w-4 h-4 flex-shrink-0" strokeWidth={2.2} />
           <span className="hidden sm:inline">
             {isDownloadingPdf ? "Préparation..." : "Télécharger PDF"}
           </span>
@@ -118,7 +119,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             className="object-cover object-top"
           />
         </div>
-        <span className="text-[10px] text-[#71675e] hidden lg:inline">▼</span>
+        <ChevronDown className="w-4 h-4 text-[#71675e] hidden lg:block flex-shrink-0" strokeWidth={2.2} />
       </div>
     </header>
   );

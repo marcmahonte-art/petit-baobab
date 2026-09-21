@@ -9,6 +9,7 @@ import { CanvasZone } from "./CanvasZone";
 import { Inspector } from "./Inspector";
 import { PreviewModal } from "./PreviewModal";
 import { useRouter } from "next/navigation";
+import { BookOpen, Pencil, Eye, X } from "lucide-react";
 
 interface MemoryBookEditorProps {
   initialBook: MemoryBookRecord;
@@ -128,27 +129,30 @@ export const MemoryBookEditor: React.FC<MemoryBookEditorProps> = ({
         <button
           type="button"
           onClick={() => setMobileDrawer(mobileDrawer === "pages" ? "none" : "pages")}
-          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition ${
-            mobileDrawer === "pages" ? "bg-[#EEE9FF] text-[#7658E8]" : "text-[#5f554d]"
+          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition inline-flex items-center gap-1.5 ${
+            mobileDrawer === "pages" ? "bg-[#F0EBFF] text-[#7658E8]" : "text-[#5f554d]"
           }`}
         >
-          📖 Pages
+          <BookOpen className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Pages
         </button>
         <button
           type="button"
           onClick={() => setMobileDrawer(mobileDrawer === "edit" ? "none" : "edit")}
-          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition ${
-            mobileDrawer === "edit" ? "bg-[#EEE9FF] text-[#7658E8]" : "text-[#5f554d]"
+          className={`px-4 py-2 rounded-[12px] font-extrabold text-xs transition inline-flex items-center gap-1.5 ${
+            mobileDrawer === "edit" ? "bg-[#F0EBFF] text-[#7658E8]" : "text-[#5f554d]"
           }`}
         >
-          ✏️ Éditer
+          <Pencil className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Éditer
         </button>
         <button
           type="button"
           onClick={() => setPreviewOpen(true)}
-          className="px-4 py-2 rounded-[12px] font-extrabold text-xs text-[#5f554d] hover:bg-gray-100"
+          className="px-4 py-2 rounded-[12px] font-extrabold text-xs text-[#5f554d] hover:bg-gray-100 inline-flex items-center gap-1.5"
         >
-          👁 Aperçu
+          <Eye className="w-3.5 h-3.5" strokeWidth={2.4} />
+          Aperçu
         </button>
       </div>
 
@@ -162,9 +166,10 @@ export const MemoryBookEditor: React.FC<MemoryBookEditorProps> = ({
             <button
               type="button"
               onClick={() => setMobileDrawer("none")}
-              className="text-xs font-bold text-[#91877D] px-2 py-1 bg-[#F1EEE9] rounded-lg"
+              className="text-xs font-bold text-[#91877D] px-2 py-1 bg-[#F1EEE9] rounded-lg inline-flex items-center gap-1"
             >
-              Fermer ✕
+              Fermer
+              <X className="w-3 h-3" strokeWidth={2.6} />
             </button>
           </div>
           {mobileDrawer === "pages" ? <Sidebar /> : <Inspector />}
