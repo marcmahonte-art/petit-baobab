@@ -25,6 +25,7 @@ export default function NewMemoryBookPage() {
   const [bookTitle, setBookTitle] = useState(`Cahier de Souvenirs de ${childName}`);
   const [schoolYear, setSchoolYear] = useState("2025 - 2026");
   const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +33,7 @@ export default function NewMemoryBookPage() {
 
     try {
       setIsCreating(true);
+      setErrorMessage(null);
       const newBook = await memoryBookService.createBook({
         profileId: childId,
         templateId: selectedTemplate.id,
@@ -42,6 +44,11 @@ export default function NewMemoryBookPage() {
       router.push(`/learn/souvenirs/${newBook.id}`);
     } catch (err) {
       console.error("Erreur lors de la création du cahier:", err);
+      // Sans ce message, un rejet de la base renvoyait le bouton à son état
+      // initial sans rien expliquer à l'utilisateur.
+      setErrorMessage(
+        err instanceof Error ? err.message : "La création du cahier a échoué."
+      );
       setIsCreating(false);
     }
   };
@@ -142,6 +149,15 @@ export default function NewMemoryBookPage() {
                 ))}
               </div>
             </div>
+
+            {errorMessage && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-[#F3C9C9] bg-[#FDF1F1] px-4 py-3 text-sm font-bold text-[#9B2C2C]"
+              >
+                La création du cahier a échoué : {errorMessage}
+              </div>
+            )}
 
             {/* Bouton de confirmation */}
             <div className="flex justify-end pt-4">

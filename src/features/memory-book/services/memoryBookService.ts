@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { MemoryBookRecord, MemoryBookPage } from "../types/memory-book.types";
 import { SCHOOL_MEMORY_BOOK_TEMPLATE_V1 } from "../constants/default-templates";
+import { generateUuid } from "../utils/uuid";
 
 const LOCAL_STORAGE_KEY = "petit_baobab_memory_books_cache";
 
@@ -105,7 +106,9 @@ export const memoryBookService = {
   }): Promise<MemoryBookRecord> {
     const template = SCHOOL_MEMORY_BOOK_TEMPLATE_V1;
     const now = new Date().toISOString();
-    const newId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `mb_${Date.now()}`;
+    // `memory_books.id` est de type UUID : un identifiant maison ferait rejeter
+    // l'insertion par PostgREST (22P02). Voir `utils/uuid.ts`.
+    const newId = generateUuid();
 
     // Copie profonde des pages du modèle par défaut pour isoler les modifications
     const initialPages: MemoryBookPage[] = JSON.parse(JSON.stringify(template.pages));
@@ -129,7 +132,10 @@ export const memoryBookService = {
     const currentLocals = getLocalBooks();
     saveLocalBooks([newRecord, ...currentLocals.filter((b) => b.id !== newId)]);
 
-    // 2. Persistance Supabase (silencieuse en cas d'erreur réseau)
+    // 2. Persistance Supabase
+    let inserted: MemoryBookRecord | null = null;
+    let rejection: string | null = null;
+
     try {
       const { data, error } = await supabase
         .from("memory_books")
@@ -150,11 +156,27 @@ export const memoryBookService = {
         .select()
         .single();
 
-      if (!error && data) {
-        return data as MemoryBookRecord;
+      if (error) {
+        rejection = error.message;
+      } else if (data) {
+        inserted = data as MemoryBookRecord;
       }
     } catch {
+      // Panne réseau : le repli local reste légitime ici, l'insertion pourra
+      // aboutir à la prochaine tentative.
       console.warn("Sauvegarde distante différée (offline/fallback local actif)");
+    }
+
+    // Un REJET de la base (charge utile invalide, RLS, contrainte) ne se
+    // résoudra pas en réessayant. Le taire laissait le cahier uniquement dans
+    // le localStorage : invisible depuis un autre navigateur, et perdu au
+    // premier nettoyage du cache. On le remonte donc à l'appelant.
+    if (rejection) {
+      throw new Error(rejection);
+    }
+
+    if (inserted) {
+      return inserted;
     }
 
     return newRecord;

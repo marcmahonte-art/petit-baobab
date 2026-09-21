@@ -10,6 +10,7 @@ import { memoryBookService } from "@/features/memory-book/services/memoryBookSer
 import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types";
 import { BookCard } from "@/features/memory-book/components/common/BookCard";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, Plus, Sparkles, Loader2, CheckCircle2, PenLine, Images, Leaf } from "lucide-react";
 
@@ -226,16 +227,21 @@ export default function MemoryBooksListPage() {
                 <span>Mes cahiers de souvenirs</span>
               </h2>
 
+              {/*
+                Ce bouton menait à `handleCreateFastBook`, qui rouvrait le
+                premier brouillon au lieu de créer un cahier : il ne pouvait
+                donc jamais en ajouter un second. On pointe vers la page de
+                création, qui laisse choisir le titre et l'année scolaire.
+                Le bouton principal conserve, lui, son ouverture en un clic.
+              */}
               {books.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleCreateFastBook}
-                  disabled={isCreatingFast}
+                <Link
+                  href="/learn/souvenirs/nouveau"
                   className="text-xs md:text-sm font-bold text-[#3B2416] bg-white hover:bg-[#FFF9F2] border border-[#F0E7DA] px-4 py-2 rounded-full transition flex items-center gap-1.5 shadow-[0_2px_10px_rgba(59,36,22,0.06)] cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Nouveau cahier</span>
-                </button>
+                </Link>
               )}
             </div>
 
