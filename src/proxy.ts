@@ -147,11 +147,25 @@ export async function proxy(request: NextRequest) {
       url.searchParams.set("space", "school");
       return withNoindex(NextResponse.redirect(url));
     }
-    // Le routage par rôle (école vs parent) et le plan (ecole_pro) sont gérés
-    // côté serveur par les pages et les routes API elles-mêmes (elles lisent
-    // account.plan). On ne se fie PAS au cookie pb-role ici : il n'est pas
-    // toujours posé (login email/mdp) et peut être résiduel, ce qui
-    // redirigerait à tort une école vers /parents.
+    // ⚠️ LIMITE ASSUMÉE : ce bloc ne teste que la PRÉSENCE du cookie
+    // `sb-access-token` — ni sa signature, ni son expiration. C'est un simple
+    // filtre « premier rideau », volontairement sans appel réseau : le proxy
+    // s'exécute à chaque requête et une vérification Supabase y ajouterait un
+    // aller-retour systématique. Le projet ne dispose pas non plus de
+    // SUPABASE_JWT_SECRET, donc pas de vérification locale possible.
+    //
+    // La VRAIE vérification (session valide + plan `ecole_pro`) est faite côté
+    // serveur par les pages et layouts via `requireTeacherPage()`, et par les
+    // routes /api/school/* via `getTeacherSession()`. Conséquence d'un cookie
+    // forgé ou expiré : il passait ce filtre et affichait une coquille de page
+    // vide — les données restaient protégées par les routes API, mais l'UX
+    // était cassée (pas de redirection vers la connexion). D'où l'ajout des
+    // gardes de page : `src/app/school/{assistant,classes,students}/layout.tsx`
+    // et les pages `activities`, `etoiles`, `progression`.
+    //
+    // On ne se fie PAS non plus au cookie pb-role ici : il n'est pas toujours
+    // posé (login email/mdp) et peut être résiduel, ce qui redirigerait à tort
+    // une école vers /parents.
     return withNoindex(NextResponse.next());
   }
 
