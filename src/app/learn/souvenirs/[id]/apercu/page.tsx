@@ -109,7 +109,7 @@ export default function MemoryBookPreviewPage({ params }: PreviewPageProps) {
     } finally {
       setDownloading(false);
     }
-  }, [bookId, book?.title]);
+  }, [bookId, book]);
 
   if (loading) {
     return (
@@ -212,7 +212,7 @@ export default function MemoryBookPreviewPage({ params }: PreviewPageProps) {
 
       <div ref={stageRef} className="mb-preview-stage mx-auto max-w-6xl px-3 py-6">
         <div
-          className="mb-preview-pages mx-auto w-[210mm] origin-top"
+          className="mb-preview-pages mx-auto w-[210mm]"
           style={{ zoom: scale }}
         >
           <BookPrint book={book} />
