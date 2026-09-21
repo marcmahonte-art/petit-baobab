@@ -142,7 +142,11 @@ create index if not exists story_pages_story_id_page_number_idx on public.story_
 create index if not exists story_characters_story_id_idx on public.story_characters(story_id);
 create index if not exists story_illustrations_page_id_idx on public.story_illustrations(page_id);
 create index if not exists story_audio_page_id_idx on public.story_audio(page_id);
-create index if not exists story_generations_story_id_created_at_idx on public.story_generations(story_id, created_at desc);
+-- `story_generations` n'a pas de colonne `created_at` : elle date ses lignes avec
+-- `started_at`. L'index d'origine visait `created_at` et faisait donc échouer
+-- TOUT le script en `42703 — column "created_at" does not exist` (et, la
+-- transaction étant annulée, aucune table n'était créée).
+create index if not exists story_generations_story_id_started_at_idx on public.story_generations(story_id, started_at desc);
 
 -- ============================================================
 -- Row Level Security (RLS)
@@ -156,24 +160,48 @@ alter table public.story_generations enable row level security;
 alter table public.story_favorites enable row level security;
 alter table public.story_views enable row level security;
 
+-- ============================================================
+-- Politiques RLS
+--
+-- ⚠️ CORRECTIF DE SÉCURITÉ — ne pas réintroduire `or auth.uid() is null`.
+-- `auth.uid()` renvoie NULL précisément quand la requête est ANONYME : une
+-- condition `... or auth.uid() is null` est donc VRAIE pour un visiteur non
+-- connecté. Comme la clé anon est publique (NEXT_PUBLIC_SUPABASE_ANON_KEY) et
+-- que `getSupabaseServer()` s'appuie dessus, la faille était exploitable
+-- directement depuis un navigateur : n'importe qui pouvait réécrire ou
+-- supprimer TOUTES les histoires, pages et personnages.
+-- Les écritures sont donc réservées au propriétaire authentifié. La lecture
+-- publique (histoires mises en avant ou sans propriétaire) reste ouverte, ce
+-- qui est l'intention du projet.
+--
+-- `drop policy if exists` avant chaque `create policy` : le script redevient
+-- réexécutable (sans quoi une seconde exécution échoue en 42710).
+-- ============================================================
+
 -- Politiques stories
+drop policy if exists "Les utilisateurs peuvent lire les histoires publiques ou leurs propres histoires" on public.stories;
 create policy "Les utilisateurs peuvent lire les histoires publiques ou leurs propres histoires"
   on public.stories for select
   using (user_id = auth.uid() or is_featured = true or user_id is null);
 
+drop policy if exists "Les utilisateurs peuvent créer leurs propres histoires" on public.stories;
 create policy "Les utilisateurs peuvent créer leurs propres histoires"
   on public.stories for insert
-  with check (auth.uid() is not null and (user_id = auth.uid() or user_id is null));
+  with check (auth.uid() is not null and user_id = auth.uid());
 
+drop policy if exists "Les utilisateurs peuvent modifier leurs propres histoires" on public.stories;
 create policy "Les utilisateurs peuvent modifier leurs propres histoires"
   on public.stories for update
-  using (user_id = auth.uid() or auth.uid() is null);
+  using (auth.uid() is not null and user_id = auth.uid())
+  with check (auth.uid() is not null and user_id = auth.uid());
 
+drop policy if exists "Les utilisateurs peuvent supprimer leurs propres histoires" on public.stories;
 create policy "Les utilisateurs peuvent supprimer leurs propres histoires"
   on public.stories for delete
-  using (user_id = auth.uid());
+  using (auth.uid() is not null and user_id = auth.uid());
 
 -- Politiques story_pages
+drop policy if exists "Accès en lecture aux pages des histoires accessibles" on public.story_pages;
 create policy "Accès en lecture aux pages des histoires accessibles"
   on public.story_pages for select
   using (
@@ -184,29 +212,76 @@ create policy "Accès en lecture aux pages des histoires accessibles"
     )
   );
 
+drop policy if exists "Modification des pages par le propriétaire de l'histoire" on public.story_pages;
 create policy "Modification des pages par le propriétaire de l'histoire"
   on public.story_pages for all
   using (
-    exists (
+    auth.uid() is not null
+    and exists (
       select 1 from public.stories s
       where s.id = story_pages.story_id
-      and (s.user_id = auth.uid() or auth.uid() is null)
+      and s.user_id = auth.uid()
+    )
+  )
+  with check (
+    auth.uid() is not null
+    and exists (
+      select 1 from public.stories s
+      where s.id = story_pages.story_id
+      and s.user_id = auth.uid()
     )
   );
 
 -- Politiques story_characters
-create policy "Accès aux personnages par le propriétaire de l'histoire"
-  on public.story_characters for all
+-- Même découpage que story_pages : lecture alignée sur l'accessibilité de
+-- l'histoire, écriture réservée au propriétaire. Un `for all` unique laissait
+-- `is_featured = true` ouvrir l'écriture des personnages à tout le monde.
+drop policy if exists "Lecture des personnages d'une histoire accessible" on public.story_characters;
+create policy "Lecture des personnages d'une histoire accessible"
+  on public.story_characters for select
   using (
     exists (
       select 1 from public.stories s
       where s.id = story_characters.story_id
-      and (s.user_id = auth.uid() or s.is_featured = true or auth.uid() is null)
+      and (s.user_id = auth.uid() or s.is_featured = true or s.user_id is null)
+    )
+  );
+
+drop policy if exists "Modification des personnages par le propriétaire de l'histoire" on public.story_characters;
+create policy "Modification des personnages par le propriétaire de l'histoire"
+  on public.story_characters for all
+  using (
+    auth.uid() is not null
+    and exists (
+      select 1 from public.stories s
+      where s.id = story_characters.story_id
+      and s.user_id = auth.uid()
+    )
+  )
+  with check (
+    auth.uid() is not null
+    and exists (
+      select 1 from public.stories s
+      where s.id = story_characters.story_id
+      and s.user_id = auth.uid()
     )
   );
 
 -- Politiques favoris
+drop policy if exists "Gestion des favoris par utilisateur" on public.story_favorites;
 create policy "Gestion des favoris par utilisateur"
   on public.story_favorites for all
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (auth.uid() is not null and user_id = auth.uid())
+  with check (auth.uid() is not null and user_id = auth.uid());
+
+-- ============================================================
+-- story_illustrations, story_audio, story_generations, story_views
+-- restent SANS politique : RLS activé + aucune politique = accès refusé à
+-- `anon` et `authenticated` (seule la clé service passe). C'est volontaire —
+-- l'application ne les interroge pas encore (0 référence dans `src/`) et
+-- deviner leurs règles d'accès maintenant risquerait d'ouvrir une brèche. À
+-- compléter quand le module sera effectivement branché.
+-- ============================================================
+
+-- Rechargement du cache de schéma PostgREST (même raison que la migration 24).
+notify pgrst, 'reload schema';
