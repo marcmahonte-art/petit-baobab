@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { MemoryBookRecord, MemoryBookPage } from "../types/memory-book.types";
 import { SCHOOL_MEMORY_BOOK_TEMPLATE_V1 } from "../constants/default-templates";
 import { generateUuid } from "../utils/uuid";
+import { isMemoryBookColumn, toMemoryBookRow } from "../utils/row";
 
 const LOCAL_STORAGE_KEY = "petit_baobab_memory_books_cache";
 
@@ -139,20 +140,7 @@ export const memoryBookService = {
     try {
       const { data, error } = await supabase
         .from("memory_books")
-        .insert({
-          id: newRecord.id,
-          profile_id: newRecord.profile_id,
-          template_id: newRecord.template_id,
-          title: newRecord.title,
-          school_year: newRecord.school_year,
-          theme: newRecord.theme,
-          status: newRecord.status,
-          cover_color: newRecord.cover_color,
-          pages_data: newRecord.pages_data,
-          thumbnail_url: newRecord.thumbnail_url,
-          created_at: newRecord.created_at,
-          updated_at: newRecord.updated_at,
-        })
+        .insert(toMemoryBookRow(newRecord))
         .select()
         .single();
 
@@ -187,10 +175,6 @@ export const memoryBookService = {
    */
   async updateBook(id: string, updates: Partial<MemoryBookRecord>): Promise<MemoryBookRecord> {
     const now = new Date().toISOString();
-    const payload = {
-      ...updates,
-      updated_at: now,
-    };
 
     // 1. Mise à jour cache local
     const locals = getLocalBooks();
@@ -198,39 +182,73 @@ export const memoryBookService = {
     let updatedRecord: MemoryBookRecord;
 
     if (index !== -1) {
-      updatedRecord = { ...locals[index], ...payload };
+      updatedRecord = { ...locals[index], ...updates, updated_at: now };
       locals[index] = updatedRecord;
       saveLocalBooks(locals);
     } else {
-      updatedRecord = payload as MemoryBookRecord;
+      updatedRecord = { ...(updates as MemoryBookRecord), updated_at: now };
     }
 
     // 2. Sync Supabase
+    const row = toMemoryBookRow(updatedRecord);
+    const patch: Record<string, unknown> = { updated_at: now };
+
+    for (const key of Object.keys(updates)) {
+      if (key === "id" || key === "created_at") continue;
+      if (isMemoryBookColumn(key)) patch[key] = (row as Record<string, unknown>)[key];
+    }
+
+    let remote: MemoryBookRecord | null = null;
+    let rejection: string | null = null;
+
     try {
       const { data, error } = await supabase
         .from("memory_books")
-        .update(payload)
+        .update(patch)
         .eq("id", id)
-        .select()
-        .single();
+        // `maybeSingle` et non `single` : zéro ligne modifiée n'est pas une
+        // erreur ici, c'est le signal que le cahier n'existe qu'en local.
+        .maybeSingle();
 
       if (error) {
         // Auparavant l'erreur était ignorée et la fonction retombait sur le
         // cache local : l'interface affichait « Enregistré ✓ » alors que rien
         // n'avait été écrit en base. On la remonte désormais pour que le statut
         // de sauvegarde reflète la réalité.
-        throw new Error(error.message);
+        rejection = error.message;
+      } else if (data) {
+        remote = data as MemoryBookRecord;
       }
-
-      if (data) {
-        return data as MemoryBookRecord;
-      }
-    } catch (e) {
-      console.error("[memoryBookService] Échec de la synchronisation Supabase:", e);
-      throw e;
+    } catch {
+      console.warn("Mise à jour distante différée (offline/fallback local actif)");
+      return updatedRecord;
     }
 
-    return updatedRecord;
+    if (rejection) {
+      console.error("[memoryBookService] Échec de la synchronisation Supabase:", rejection);
+      throw new Error(rejection);
+    }
+
+    if (remote) {
+      return remote;
+    }
+
+    // Aucune ligne modifiée : ce cahier n'existe qu'en local — créé avant que
+    // la table `memory_books` ne soit disponible, ou dont l'insertion distante
+    // avait échoué. On l'insère pour le rattacher à la base plutôt que de
+    // laisser la sauvegarde échouer indéfiniment.
+    const { data: inserted, error: insertError } = await supabase
+      .from("memory_books")
+      .insert(row)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("[memoryBookService] Rattachement du cahier local refusé:", insertError.message);
+      throw new Error(insertError.message);
+    }
+
+    return (inserted as MemoryBookRecord) ?? updatedRecord;
   },
 
   /**
