@@ -133,8 +133,12 @@ export async function proxy(request: NextRequest) {
     return res;
   };
 
-  // BLOC 1 — Protéger /school/dashboard (enseignants uniquement)
-  if (pathname.startsWith("/school/dashboard")) {
+  // BLOC 1 — Espace enseignant : TOUT /school/* exige un jeton adulte.
+  // `/school` (exact) reste public : c'est la page de connexion (élève + lien
+  // vers l'espace enseignant). Sans cette garde, tout le back-office
+  // enseignant (/school/students, /school/classes, /school/assistant,
+  // /school/etoiles, …) était servi à des visiteurs anonymes.
+  if (pathname.startsWith("/school/")) {
     // Un élève ne peut JAMAIS y accéder, même avec son token.
     if (!adultToken) {
       const url = request.nextUrl.clone();
@@ -143,11 +147,11 @@ export async function proxy(request: NextRequest) {
       url.searchParams.set("space", "school");
       return withNoindex(NextResponse.redirect(url));
     }
-    // Le routage par rôle (école vs parent) est géré côté serveur par la
-    // page /school/dashboard elle-même (elle lit account.plan et redirige
-    // un compte non-école vers /parents). On ne se fie PAS au cookie
-    // pb-role ici : il n'est pas toujours posé (login email/mdp) et peut
-    // être résiduel, ce qui redirigerait à tort une école vers /parents.
+    // Le routage par rôle (école vs parent) et le plan (ecole_pro) sont gérés
+    // côté serveur par les pages et les routes API elles-mêmes (elles lisent
+    // account.plan). On ne se fie PAS au cookie pb-role ici : il n'est pas
+    // toujours posé (login email/mdp) et peut être résiduel, ce qui
+    // redirigerait à tort une école vers /parents.
     return withNoindex(NextResponse.next());
   }
 

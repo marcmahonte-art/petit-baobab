@@ -126,6 +126,37 @@ describe("proxy — espace apprenant /learn/*", () => {
   });
 });
 
+describe("proxy — espace enseignant /school/*", () => {
+  it.each([
+    "/school/dashboard",
+    "/school/students",
+    "/school/classes",
+    "/school/assistant",
+    "/school/etoiles",
+    "/school/progression",
+    "/school/facturation",
+    "/school/parametres",
+  ])("%s sans session → redirect /login?space=school", async (pathname) => {
+    const res = await proxy(makeReq(pathname));
+    const loc = res.headers.get("location") ?? "";
+    expect(loc).toContain("/login");
+    expect(loc).toContain("space=school");
+  });
+
+  it.each(["/school/students", "/school/assistant"])(
+    "%s avec sb-access-token → 200 (accès enseignant)",
+    async (pathname) => {
+      const res = await proxy(makeReq(pathname, { "sb-access-token": "adult-jwt" }));
+      expect(res.headers.get("location")).toBeNull();
+    }
+  );
+
+  it("/school (exact) reste public → 200", async () => {
+    const res = await proxy(makeReq("/school"));
+    expect(res.headers.get("location")).toBeNull();
+  });
+});
+
 describe("proxy — X-Robots-Tag: noindex", () => {
   it.each(["/dashboard", "/learn/dashboard", "/parametres", "/login"])(
     "%s → X-Robots-Tag: noindex, nofollow",
