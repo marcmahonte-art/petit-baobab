@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/app/learn/_components/sidebar";
 import { Header } from "@/app/learn/_components/header";
@@ -10,13 +10,14 @@ import { useProfile } from "@/lib/profile-store";
 import { AVAILABLE_MEMORY_BOOK_TEMPLATES } from "@/features/memory-book/constants/default-templates";
 import { TemplateCard } from "@/features/memory-book/components/common/TemplateCard";
 import { memoryBookService } from "@/features/memory-book/services/memoryBookService";
+import { isValidUuid } from "@/features/memory-book/utils/uuid";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Sparkles, Loader2, BookOpen, CalendarDays, ChevronRight } from "lucide-react";
 
 export default function NewMemoryBookPage() {
   const router = useRouter();
-  const { studentSession } = useAuthStore();
+  const { studentSession, isInitialized, checkSession } = useAuthStore();
   const profile = useProfile();
   const childId = studentSession?.profileId || profile?.id || "default_child";
   const childName = studentSession?.name || profile?.name || "Mon Enfant";
@@ -27,9 +28,35 @@ export default function NewMemoryBookPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Sans `checkSession()`, le client Supabase du navigateur n'a aucune session :
+  // `auth.uid()` vaut NULL et la politique RLS refuse l'insertion (42501). Même
+  // cause que sur la page liste.
+  useEffect(() => {
+    if (!isInitialized) {
+      void checkSession();
+    }
+  }, [isInitialized, checkSession]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplate || isCreating) return;
+
+    // Sans session, la politique RLS refuse l'insertion en 42501 : autant le
+    // bloquer ici avec un message clair.
+    if (!isInitialized) {
+      setErrorMessage("Préparation de ta session… Réessaie dans un instant.");
+      void checkSession();
+      return;
+    }
+
+    // Un `profile_id` qui n'est pas un UUID (« default_child ») serait rejeté
+    // par la colonne `uuid` et la clé étrangère vers `child_profiles`.
+    if (!isValidUuid(childId)) {
+      setErrorMessage(
+        "Aucun profil enfant valide n'a été trouvé. Recharge la page, puis réessaie."
+      );
+      return;
+    }
 
     try {
       setIsCreating(true);

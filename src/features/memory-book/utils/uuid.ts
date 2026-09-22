@@ -12,6 +12,22 @@
  * compose donc un UUID v4 à la main plutôt que de retomber sur un identifiant
  * maison.
  */
+/**
+ * Indique si une valeur peut être stockée dans une colonne `UUID`.
+ *
+ * Sert à détecter les identifiants qui ne viendraient pas de la base :
+ * `"default_child"` (valeur de repli utilisée dans les pages quand le profil
+ * n'est pas encore chargé) ou un identifiant fabriqué côté client. Envoyés à
+ * PostgREST, ils provoquent `22P02 invalid input syntax for type uuid`, ou une
+ * violation de clé étrangère.
+ */
+export function isValidUuid(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
 export function generateUuid(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();

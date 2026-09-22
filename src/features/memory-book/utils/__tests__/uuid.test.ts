@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { generateUuid } from "../uuid";
+import { generateUuid, isValidUuid } from "../uuid";
 
 // Version 4 (nibble `4` en 3ᵉ groupe) et variante RFC 4122 (`8|9|a|b` en tête
 // du 4ᵉ groupe) : c'est exactement ce que la colonne `UUID` de Postgres attend.
@@ -7,6 +7,25 @@ const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("isValidUuid", () => {
+  it("accepte un UUID de la base", () => {
+    expect(isValidUuid("3ece233a-354c-4765-83e5-4385f749cccc")).toBe(true);
+    expect(isValidUuid(generateUuid())).toBe(true);
+  });
+
+  it("refuse la valeur de repli des pages, qui ferait rejeter l'insertion en 22P02", () => {
+    expect(isValidUuid("default_child")).toBe(false);
+  });
+
+  it("refuse les valeurs non textuelles et les identifiants tronqués", () => {
+    expect(isValidUuid(undefined)).toBe(false);
+    expect(isValidUuid(null)).toBe(false);
+    expect(isValidUuid(42)).toBe(false);
+    expect(isValidUuid("")).toBe(false);
+    expect(isValidUuid("d3015b09-865d-4a1e-bcf4-5a4517819de")).toBe(false);
+  });
 });
 
 describe("generateUuid", () => {

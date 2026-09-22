@@ -7,6 +7,7 @@ import { MobileBottomNav } from "@/components/child-dashboard";
 import { useAuthStore } from "@/lib/auth-store";
 import { useProfile } from "@/lib/profile-store";
 import { memoryBookService } from "@/features/memory-book/services/memoryBookService";
+import { isValidUuid } from "@/features/memory-book/utils/uuid";
 import { MemoryBookRecord } from "@/features/memory-book/types/memory-book.types";
 import { BookCard } from "@/features/memory-book/components/common/BookCard";
 import Image from "next/image";
@@ -29,14 +30,33 @@ const memorySteps = [
 
 export default function MemoryBooksListPage() {
   const router = useRouter();
-  const { user, studentSession } = useAuthStore();
+  const { user, studentSession, isInitialized, checkSession } = useAuthStore();
   const profile = useProfile();
   const childId = studentSession?.profileId || profile?.id || "default_child";
   const childName = studentSession?.name || profile?.name || "Mon Enfant";
+  // Un `profile_id` qui n'est pas un UUID (« default_child ») serait rejeté par
+  // la base : autant le détecter avant d'envoyer la requête.
+  const canPersist = isValidUuid(childId);
 
   const [books, setBooks] = useState<MemoryBookRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreatingFast, setIsCreatingFast] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  // --- POURQUOI CET APPEL EST INDISPENSABLE ---
+  // `checkSession()` fait `supabase.auth.setSession(...)` : sans lui, le client
+  // Supabase du navigateur n'a AUCUNE session, `auth.uid()` vaut donc NULL et la
+  // politique RLS de `memory_books` (qui exige `acc.user_id = auth.uid()`) refuse
+  // l'insertion en 42501. Aucune page du dossier `souvenirs` n'appelait
+  // `checkSession()` — contrairement à `/learn/dashboard`, `/learn/coach`… —, si
+  // bien que la création échouait dès qu'on arrivait sur la page sans passer par
+  // le tableau de bord. L'erreur était en plus avalée : le bouton revenait à son
+  // état initial sans rien signaler.
+  useEffect(() => {
+    if (!isInitialized) {
+      void checkSession();
+    }
+  }, [isInitialized, checkSession]);
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -65,17 +85,32 @@ export default function MemoryBooksListPage() {
 
   const handleCreateFastBook = async () => {
     if (isCreatingFast) return;
+    setCreateError(null);
 
-    // Si non connecté et pas de profil actif, rediriger vers login existant
-    if (!user && !studentSession && childId === "default_child") {
+    // La session n'est pas encore connue : on la réclame et on attend le
+    // prochain clic, plutôt que de tenter une insertion qui sera refusée par RLS.
+    if (!isInitialized) {
+      void checkSession();
+      setCreateError("Préparation de ta session… Réessaie dans un instant.");
+      return;
+    }
+
+    if (!user && !studentSession) {
       router.push("/login?next=/learn/souvenirs");
+      return;
+    }
+
+    if (!canPersist) {
+      setCreateError(
+        "Aucun profil enfant valide n'a été trouvé. Recharge la page, puis réessaie."
+      );
       return;
     }
 
     try {
       setIsCreatingFast(true);
 
-      // Création ou récupération du cahier de souvenirs existant
+      // Ouvre le brouillon existant s'il y en a un ; sinon crée le cahier.
       const existingDraft = books.find(
         (b) => b.status === "draft" || b.status === "in_progress"
       );
@@ -94,6 +129,13 @@ export default function MemoryBooksListPage() {
       router.push(`/learn/souvenirs/${newBook.id}`);
     } catch (e) {
       console.error("Erreur ouverture/création du cahier:", e);
+      // Avant, cet échec ne remontait pas du tout : le bouton revenait à son
+      // état initial et rien ne se passait visiblement.
+      setCreateError(
+        e instanceof Error
+          ? e.message
+          : "La création du cahier a échoué. Vérifie ta connexion et réessaie."
+      );
       setIsCreatingFast(false);
     }
   };
@@ -189,6 +231,15 @@ export default function MemoryBooksListPage() {
                     <span>Format A4 prêt à imprimer</span>
                   </div>
                 </div>
+
+                {createError && (
+                  <div
+                    role="alert"
+                    className="mt-4 rounded-2xl border border-[#F3C9C9] bg-[#FDF1F1] px-4 py-3 text-sm font-bold text-[#9B2C2C]"
+                  >
+                    {createError}
+                  </div>
+                )}
               </div>
 
               <div className="relative mx-auto hidden w-full max-w-[300px] lg:block">
