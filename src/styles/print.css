@@ -1,6 +1,7 @@
 /* =========================================================================
-   print.css — Version impression du cahier de souvenirs
-   Masque toute l'UI interactive et n'affiche QUE les pages du cahier.
+   print.css — Feuille d'impression globale (importée dans src/app/layout.tsx).
+   Masque toute l'UI interactive et n'affiche QUE le conteneur .print-only.
+   Utilisée par le module cahier de coloriage (PrintButton, coloring-books-page).
    ========================================================================= */
 
 /* Conteneur réservé à l'impression : masqué à l'écran, visible au print */

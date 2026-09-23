@@ -25,7 +25,7 @@ const STUDENT_TOKEN = "sb-student-token";
 
 // Routes enfant : accessibles à un adulte connecté OU à un élève.
 // "/learn" couvre TOUT l'espace apprenant (/learn/dashboard,
-// /learn/parcours, /learn/souvenirs, /learn/histoires, …) : toutes ces
+// /learn/parcours, /learn/histoires, …) : toutes ces
 // pages sont des pages d'espace enfant, jamais des pages publiques.
 const CHILD_ROUTES = [
   "/dashboard",

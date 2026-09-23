@@ -100,7 +100,7 @@ describe("proxy — protection des routes", () => {
 });
 
 describe("proxy — espace apprenant /learn/*", () => {
-  it.each(["/learn/dashboard", "/learn/parcours", "/learn/souvenirs", "/learn/histoires"])(
+  it.each(["/learn/dashboard", "/learn/parcours", "/learn/histoires"])(
     "%s sans session → redirect /school",
     async (pathname) => {
       const res = await proxy(makeReq(pathname));
