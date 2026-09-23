@@ -19,13 +19,13 @@ export function StoryCreator() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   // Form State
-  const [name, setName] = useState("Moussa")
+  const [name, setName] = useState("")
   const [heroType, setHeroType] = useState<"garcon" | "fille" | "enfant" | "animal" | "imaginaire">("garcon")
-  const [age, setAge] = useState(7)
-  const [country, setCountry] = useState("Burkina Faso")
-  const [environment, setEnvironment] = useState("savane")
+  const [age, setAge] = useState<number | undefined>(undefined)
+  const [country, setCountry] = useState("")
+  const [environment, setEnvironment] = useState("")
   const [theme, setTheme] = useState<StoryThemeId>("aventure")
-  const [educationalGoal, setEducationalGoal] = useState("partage")
+  const [educationalGoal, setEducationalGoal] = useState("")
   const [visualStyle, setVisualStyle] = useState<"petit-baobab-3d" | "album-jeunesse" | "aquarelle">("petit-baobab-3d")
 
   const totalSteps = 5

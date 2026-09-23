@@ -3,8 +3,8 @@
 import { Sprout, Compass, Rocket } from "lucide-react"
 
 interface AgeStepProps {
-  age: number
-  onAgeChange: (age: number) => void
+  age: number | undefined
+  onAgeChange: (age: number | undefined) => void
 }
 
 const AGE_RANGES = [
@@ -41,7 +41,7 @@ export function AgeStep({ age, onAgeChange }: AgeStepProps) {
         <span className="text-xs font-black uppercase tracking-wider text-[#FFB300] bg-[#FFB300]/10 px-3 py-1 rounded-full">
           Étape 2 sur 5
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#3B2416] mt-2">
+        <h2 className="text-xl sm:text-2xl font-black text-[#3B2416] mt-2">
           Quel âge a le petit lecteur ?
         </h2>
         <p className="text-[#684C38] text-sm mt-1">
@@ -52,9 +52,10 @@ export function AgeStep({ age, onAgeChange }: AgeStepProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto w-full">
         {AGE_RANGES.map((item) => {
           const isSelected =
-            (item.representativeAge === 4 && age <= 5) ||
+            age != null &&
+            ((item.representativeAge === 4 && age <= 5) ||
             (item.representativeAge === 7 && age >= 6 && age <= 8) ||
-            (item.representativeAge === 10 && age >= 9)
+            (item.representativeAge === 10 && age >= 9))
           const IconComp = item.Icon
 
           return (

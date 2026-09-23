@@ -31,7 +31,7 @@ const A4_SPREAD_RATIO = 297 / 210
 export function OpenBookView({
   story,
   onClose,
-  authorName = "MARC MAHONTE",
+  authorName = "",
   className,
 }: OpenBookViewProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)

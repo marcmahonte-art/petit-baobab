@@ -44,7 +44,7 @@ export function buildStoryFromPlanner(
     title: plannerOutput.title,
     description: plannerOutput.description,
     moral: plannerOutput.moral,
-    coverUrl: pages[0]?.illustrationUrl || "/illustrations/histoires/story-moussa-baobab.webp",
+    coverUrl: pages[0]?.illustrationUrl || null,
     ageRange: `${input.age - 1}-${input.age + 1} ans`,
     themeId: input.theme,
     themeLabel: categoryMeta.label,

@@ -11,7 +11,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react"
 import { OpenBookView } from "./OpenBookView"
-import { MY_STORIES } from "@/lib/stories/mock-stories"
 import { saveCustomStoryLocally } from "@/lib/stories/story-service"
 import { useProfile } from "@/lib/hooks/useProfile"
 import type { Story } from "@/lib/stories/types"
@@ -38,10 +37,26 @@ interface ChatMessage {
 
 export function StoryStudio({
   initialStory,
-  authorName = "MARC MAHONTE",
+  authorName = "",
   onSwitchToWizard,
 }: StoryStudioProps) {
-  const [activeStory, setActiveStory] = useState<Story>(initialStory || MY_STORIES[0])
+  const EMPTY_STORY: Story = {
+    id: "",
+    title: "",
+    description: "",
+    coverUrl: "",
+    ageRange: "",
+    themeId: "aventure",
+    themeLabel: "Aventure",
+    category: "",
+    categoryColor: "",
+    pages: [],
+    status: "draft",
+    isFavorite: false,
+    readCount: 0,
+    createdAt: new Date().toISOString(),
+  }
+  const [activeStory, setActiveStory] = useState<Story>(initialStory || EMPTY_STORY)
   // Conversation vierge au démarrage : aucun message simulé.
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [promptText, setPromptText] = useState("")

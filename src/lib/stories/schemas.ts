@@ -6,16 +6,16 @@ import { z } from "zod"
 
 export const StoryCreationInputSchema = z.object({
   prompt: z.string().optional(),
-  name: z.string().max(30).optional().default("Milo"),
-  heroType: z.enum(["garcon", "fille", "enfant", "animal", "imaginaire"]).default("enfant"),
-  age: z.number().int().min(3).max(12).default(7),
-  country: z.string().default("Burkina Faso"),
-  region: z.string().optional().default("Afrique de l'Ouest"),
-  environment: z.string().default("maison familiale"),
-  theme: z.enum(["aventure", "amitie", "nature", "famille", "culture", "education"]).default("famille"),
-  educationalGoal: z.string().default("confiance en soi"),
-  visualStyle: z.enum(["petit-baobab-3d", "album-jeunesse", "aquarelle"]).default("album-jeunesse"),
-  authorName: z.string().optional().default("Marc Mahonte"),
+  name: z.string().max(30).optional(),
+  heroType: z.enum(["garcon", "fille", "enfant", "animal", "imaginaire"]).optional(),
+  age: z.number().int().min(3).max(12).nullish().optional(),
+  country: z.string().optional(),
+  region: z.string().optional(),
+  environment: z.string().optional(),
+  theme: z.enum(["aventure", "amitie", "nature", "famille", "culture", "education"]).optional(),
+  educationalGoal: z.string().optional(),
+  visualStyle: z.enum(["petit-baobab-3d", "album-jeunesse", "aquarelle"]).optional(),
+  authorName: z.string().optional(),
 })
 
 export type StoryCreationInput = z.infer<typeof StoryCreationInputSchema>

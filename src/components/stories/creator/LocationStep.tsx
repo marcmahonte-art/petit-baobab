@@ -43,7 +43,7 @@ export function LocationStep({
         <span className="text-xs font-black uppercase tracking-wider text-[#20C997] bg-[#20C997]/10 px-3 py-1 rounded-full">
           Étape 3 sur 5
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-[#3B2416] mt-2">
+        <h2 className="text-xl sm:text-2xl font-black text-[#3B2416] mt-2">
           Où se déroule l&apos;aventure ?
         </h2>
         <p className="text-[#684C38] text-sm mt-1">
