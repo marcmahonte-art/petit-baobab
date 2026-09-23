@@ -31,7 +31,7 @@ Contraintes impératives de format :
 - Tu dois retourner EXCLUSIVEMENT un JSON valide respectant scrupuleusement la structure demandée, sans markdown ni texte additionnel.`
 
 export function buildStoryPrompt(input: StoryCreationInput, countryContext?: AfricanCountryContext): string {
-  const wordsPerPage = input.age <= 5 ? "25 à 45" : input.age <= 8 ? "45 à 75" : "70 à 110"
+  const wordsPerPage = (input.age ?? 7) <= 5 ? "25 à 45" : (input.age ?? 7) <= 8 ? "45 à 75" : "70 à 110"
 
   const contextHints = countryContext
     ? `

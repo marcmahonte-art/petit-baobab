@@ -37,16 +37,16 @@ export function buildStoryFromPlanner(
     education: { label: "Éducation", color: "#1194FF" },
   }
 
-  const categoryMeta = themeCategories[input.theme] || { label: "Aventure", color: "#FFB300" }
+  const categoryMeta = themeCategories[input.theme || "aventure"] || { label: "Aventure", color: "#FFB300" }
 
   return {
     id: storyId,
     title: plannerOutput.title,
     description: plannerOutput.description,
     moral: plannerOutput.moral,
-    coverUrl: pages[0]?.illustrationUrl || null,
-    ageRange: `${input.age - 1}-${input.age + 1} ans`,
-    themeId: input.theme,
+    coverUrl: (pages[0]?.illustrationUrl || "") as string | null,
+    ageRange: `${(input.age ?? 7) - 1}-${(input.age ?? 7) + 1} ans`,
+    themeId: (input.theme || "aventure") as StoryThemeId,
     themeLabel: categoryMeta.label,
     category: categoryMeta.label,
     categoryColor: categoryMeta.color,
