@@ -289,7 +289,7 @@ export function generateAfricanStoryFallback(input: StoryCreationInput): StoryPl
     education: `${heroName} et la clé du savoir éclatant`,
   }
 
-  const title = titles[input.theme] || `${heroName} à la découverte de ${country.name}`
+  const title = titles[input.theme || ""] || `${heroName} à la découverte de ${country.name}`
 
    const characterDesc = `Un enfant africain souriant de ${childAge} ans nommé ${heroName}, aux yeux vifs et chaleureux, vêtu d'une jolie tenue traditionnelle en tissu artisanal.`
 
@@ -411,8 +411,7 @@ export interface StoryGenerationResult {
  * Fonction maîtresse : génère une histoire complète de 10 pages
  */
 export async function generateStory(input: StoryCreationInput): Promise<StoryGenerationResult> {
-  const countryContext = resolveCountryContext(input.country)
-
+  const countryContext = resolveCountryContext(input.country || "")
   const prompt = buildStoryPrompt(input, countryContext)
 
   const geminiConfigured = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY)
