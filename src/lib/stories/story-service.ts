@@ -4,7 +4,7 @@
 // ============================================================
 
 import { MY_STORIES, RECOMMENDED_STORIES } from "./mock-stories"
-import type { Story, StoryPage } from "./types"
+import type { Story, StoryPage, StoryThemeId } from "./types"
 import type { StoryCreationInput, StoryPlannerOutput } from "./schemas"
 import { getPageIllustrationUrl } from "./generator"
 
@@ -44,7 +44,7 @@ export function buildStoryFromPlanner(
     title: plannerOutput.title,
     description: plannerOutput.description,
     moral: plannerOutput.moral,
-    coverUrl: (pages[0]?.illustrationUrl || "") as string | null,
+    coverUrl: (pages[0]?.illustrationUrl || "") as string,
     ageRange: `${(input.age ?? 7) - 1}-${(input.age ?? 7) + 1} ans`,
     themeId: (input.theme || "aventure") as StoryThemeId,
     themeLabel: categoryMeta.label,
